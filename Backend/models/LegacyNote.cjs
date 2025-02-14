@@ -5,7 +5,7 @@ const LegacyNoteSchema = new mongoose.Schema({
   email: { type: String, required: true },
   message: { type: String, required: true },
   deliveryDate: { type: Date, required: true },
-  mediaUrl: { type: String, required: false }
+  media: { type: [String], required: false } 
 });
 
 const LegacyNote = mongoose.model('LegacyNote', LegacyNoteSchema);
