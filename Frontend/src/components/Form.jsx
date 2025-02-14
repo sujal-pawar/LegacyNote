@@ -20,6 +20,11 @@ const Form = () => {
     formData.append('message', message);
     formData.append('deliveryDate', deliveryDate);
 
+    const mediaFiles = document.querySelector('input[name="media"]').files;
+    for (let i = 0; i < mediaFiles.length; i++) {
+      formData.append('media', mediaFiles[i]);
+    }
+
     try {
       const response = await fetch('http://localhost:5000/api/legacy/create', {
         method: 'POST',
@@ -43,7 +48,7 @@ const Form = () => {
       <h2 className="text-2xl font-bold text-center mb-4 text-white p-2 rounded-md hover:text-blue-300">
         Create Your LegacyNote
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" encType="mulipart/form-data" >
         <div>
           <label htmlFor="name" className="block text-md font-light pb-2">
             Full Name

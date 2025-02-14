@@ -2,17 +2,17 @@ const express = require('express');
 const multer = require('multer');
 const LegacyNote = require('../models/LegacyNote.cjs');
 const nodemailer = require('nodemailer');
-const path = require('path');
+// const path = require('path');
 require('dotenv').config();
 
 const router = express.Router();
 
 // Set up storage for multer to save files in the 'uploads' directory
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_, __, cb) => {
     cb(null, './uploads/');
   },
-  filename: (req, file, cb) => {
+  filename: (_, file, cb) => {
     // Generate a unique filename using the current timestamp and original file name
     cb(null, Date.now() + '-' + file.originalname);
   }
@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
@@ -65,7 +65,12 @@ router.post('/create', upload.array('media', 5), async (req, res) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'LegacyNote Submission Confirmation 🌟',
-      text: `Dear ${name},\n\nThank you for submitting your LegacyNote! 🌟\n\nWe have successfully received your message and media files. Your note will be delivered on the specified date: ${deliveryDate}.\n\nHere is a summary of your submission:\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}\n\nWe appreciate your trust in us to deliver your heartfelt message. If you have any questions or need further assistance, please feel free to reach out to us.\n\nBest regards,\nThe LegacyNote Team 💌`,
+      text: `Dear ${name},\n\nThank you for submitting your LegacyNote! 
+      🌟\n\nWe have successfully received your message and media files.
+      Your note will be delivered on the specified date: ${deliveryDate}.\n\n
+      We appreciate your trust in us to deliver your heartfelt message.
+      If you have any questions or need further assistance, please feel free to reach out to us.\n\nBest regards,\n
+      The LegacyNote Team 💌`,
     };
 
     // Send the email
