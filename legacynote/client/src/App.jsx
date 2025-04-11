@@ -25,11 +25,11 @@ import Footer from './components/Footer';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <div className="app-container">
           <Navbar />
-          <main className="main-content">
+          <main className="main-content">            
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />

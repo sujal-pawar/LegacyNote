@@ -5,11 +5,11 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-dark-color text-white py-8 mt-8">
+    <footer className="bg-dark-color text-white py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <Link to="/" className="flex items-center font-bold text-xl mb-4">
+            <Link to="/" className="flex text-white items-center font-bold text-xl mb-4">
               <FaClock className="mr-2" />
               LegacyNote
             </Link>
