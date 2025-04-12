@@ -67,9 +67,9 @@ exports.startScheduler = async () => {
     await agenda.start();
     console.log('Note delivery scheduler started');
     
-    // Schedule the job to run every hour
-    await agenda.every('1 hour', 'check notes for delivery');
-    console.log('Scheduled note delivery checks every hour');
+    // Schedule the job to run every minute
+    await agenda.every('1 minute', 'check notes for delivery');
+    console.log('Scheduled note delivery checks every minute');
   } catch (err) {
     console.error('Error starting scheduler:', err);
   }

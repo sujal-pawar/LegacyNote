@@ -103,21 +103,20 @@ exports.forgotPassword = async (req, res, next) => {
       .digest('hex');
 
     // Set expire
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    user.resetPasswordExpire = Date.now() + 30 * 60 * 1000; // 30 minutes
 
     await user.save({ validateBeforeSave: false });
 
-    // Create reset url
-    const resetUrl = `${req.protocol}://${req.get(
-      'host'
-    )}/api/auth/resetpassword/${resetToken}`;
+    // Create reset url - Use client-side URL instead of API URL
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please click the following link to reset your password: \n\n ${resetUrl} \n\nThis link is valid for 30 minutes. If you did not request this reset, please ignore this email.`;
 
     try {
       await sendEmail({
         email: user.email,
-        subject: 'Password reset token',
+        subject: 'LegacyNote Password Reset',
         message,
       });
 

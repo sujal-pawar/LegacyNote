@@ -9,7 +9,9 @@ const nodemailer = require('nodemailer');
  */
 exports.sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE,
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
       user: process.env.EMAIL_USERNAME,
       pass: process.env.EMAIL_PASSWORD,
@@ -17,7 +19,7 @@ exports.sendEmail = async (options) => {
   });
 
   const message = {
-    from: `${process.env.EMAIL_FROM}`,
+    from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,
@@ -36,7 +38,9 @@ exports.sendEmail = async (options) => {
  */
 exports.sendNoteEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE,
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
       user: process.env.EMAIL_USERNAME,
       pass: process.env.EMAIL_PASSWORD,
@@ -44,7 +48,7 @@ exports.sendNoteEmail = async (options) => {
   });
 
   const message = {
-    from: `${process.env.EMAIL_FROM}`,
+    from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
     to: options.email,
     subject: options.subject || 'Your LegacyNote has been delivered',
     html: `
