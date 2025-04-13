@@ -8,7 +8,7 @@ const Home = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="py-12 bg-gradient-to-r from-indigo-500 to-indigo-600 to-indigo-900 text-white">
+      <section className="py-12 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-8 md:mb-0">
@@ -23,7 +23,7 @@ const Home = () => {
                 {isAuthenticated ? (
                   <Link
                     to="/dashboard"
-                    className="btn bg-white text-indigo-600 hover:bg-gray-100 px-6 py-3"
+                    className="btn bg-white text-indigo-600 hover:bg-white px-6 py-3"
                   >
                     Go to Dashboard
                   </Link>
@@ -31,13 +31,13 @@ const Home = () => {
                   <>
                     <Link
                       to="/register"
-                      className="btn bg-white text-indigo-600 hover:bg-gray-100 px-6 py-3"
+                      className="btn bg-white text-indigo-600 hover:bg-white px-6 py-3"
                     >
                       Get Started
                     </Link>
                     <Link
                       to="/login"
-                      className="btn bg-transparent border-2 text-white hover:bg-white hover:text-indigo-600 px-6 py-3"
+                      className="btn border-2 text-white hover:bg-white hover:text-indigo-600 px-6 py-3"
                     >
                       Sign In
                     </Link>
@@ -50,7 +50,7 @@ const Home = () => {
                 <div className="bg-white rounded-lg shadow-xl p-6 mx-auto max-w-md">
                   <div className="flex items-center mb-4">
                     <FaClock className="text-indigo-600 text-2xl m-2" />
-                    <h3 className="text-lg font-semibold text-gray-800">
+                    <h3 className="text-lg font-semibold text-gray-800 ">
                       Message to Future Self
                     </h3>
                   </div>
@@ -196,7 +196,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-gradient-to-r from-indigo-500 to-indigo-600 to-indigo-900 text-white">
+      <section className="py-12 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Create Your Legacy?</h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">

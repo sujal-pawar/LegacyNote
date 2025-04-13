@@ -45,10 +45,16 @@ body {
   width: 100%;
 }
 
+/* nav{
+  position: fixed;
+  width:100%;
+  z-index: 50;
+} */
+
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
   line-height: 1.2;
 }
 

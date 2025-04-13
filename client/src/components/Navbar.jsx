@@ -19,7 +19,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-indigo-500 to-indigo-600 to-indigo-900 text-white shadow-md">
+    <nav className="bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white">
       <div className="max-w-7xl mx-auto px-6 scroll-m-1">
         <div className="flex justify-between h-16">
           <div className="flex">
