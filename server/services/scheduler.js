@@ -1,6 +1,12 @@
 const Agenda = require('agenda');
 const Note = require('../models/Note');
+const User = require('../models/User');
 const { sendNoteEmail } = require('../utils/email');
+
+// Helper function to get the frontend URL with fallback
+const getFrontendUrl = () => {
+  return process.env.FRONTEND_URL || 'http://localhost:5173';
+};
 
 // Initialize Agenda
 const agenda = new Agenda({
@@ -18,7 +24,9 @@ agenda.define('check notes for delivery', async (job) => {
     const notesToDeliver = await Note.find({
       deliveryDate: { $lte: currentDate },
       isDelivered: false,
-    }).select('+encryptedContent');
+    })
+    .select('+encryptedContent +accessKey')
+    .populate('user', 'name email'); // Populate user information to get sender name
 
     console.log(`Found ${notesToDeliver.length} notes to deliver`);
 
@@ -33,16 +41,30 @@ agenda.define('check notes for delivery', async (job) => {
           // Generate a shareable link if not already generated
           if (!note.shareableLink) {
             note.generateShareableLink();
+          } else {
+            // Check if the existing link has the undefined issue
+            if (note.shareableLink.includes('undefined/')) {
+              // Fix the URL by regenerating it
+              const frontendUrl = getFrontendUrl();
+              const accessKey = note.accessKey || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+              note.accessKey = accessKey;
+              note.shareableLink = `${frontendUrl}/shared-note/${note._id}/${accessKey}`;
+              console.log(`Fixed invalid shareable link for note ${note._id}: ${note.shareableLink}`);
+            }
           }
+          
+          // Get sender name for the email
+          const senderName = note.user.name || 'Someone';
           
           // Send email notification
           await sendNoteEmail({
             email: note.recipient.email,
             note: note,
             accessUrl: note.shareableLink,
+            senderName: senderName
           });
           
-          console.log(`Email sent to ${note.recipient.email} for note ${note._id}`);
+          console.log(`Email sent to ${note.recipient.email} for note ${note._id} from ${senderName}`);
         }
         
         // Mark as delivered

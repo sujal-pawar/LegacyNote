@@ -102,7 +102,14 @@ NoteSchema.methods.generateShareableLink = function () {
   const accessKey = Math.random().toString(36).slice(2) + 
                    Math.random().toString(36).slice(2);
   this.accessKey = accessKey;
-  this.shareableLink = `${process.env.FRONTEND_URL}/shared-note/${this._id}/${accessKey}`;
+  
+  // Get the frontend URL with a fallback
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  
+  // Generate the full shareable link
+  this.shareableLink = `${frontendUrl}/shared-note/${this._id}/${accessKey}`;
+  
+  console.log(`Generated link: ${this.shareableLink}`);
   return this.shareableLink;
 };
 
