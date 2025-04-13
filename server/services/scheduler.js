@@ -8,6 +8,20 @@ const getFrontendUrl = () => {
   return process.env.FRONTEND_URL || 'http://localhost:5173';
 };
 
+// Helper function to compare dates ignoring seconds and milliseconds
+// This provides a more precise delivery time for notes
+const isSameOrBefore = (date1, date2) => {
+  // Create copies to avoid modifying the original dates
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  
+  // Set seconds and milliseconds to 0 for comparing the dates up to minutes
+  d1.setSeconds(0, 0);
+  d2.setSeconds(0, 0);
+  
+  return d1 <= d2;
+};
+
 // Initialize Agenda
 const agenda = new Agenda({
   db: { address: process.env.MONGODB_URI, collection: 'jobs' },
@@ -22,16 +36,23 @@ agenda.define('check notes for delivery', async (job) => {
     // Find notes that should be delivered and haven't been delivered yet
     const currentDate = new Date();
     const notesToDeliver = await Note.find({
-      deliveryDate: { $lte: currentDate },
       isDelivered: false,
     })
     .select('+encryptedContent +accessKey')
     .populate('user', 'name email'); // Populate user information to get sender name
 
-    console.log(`Found ${notesToDeliver.length} notes to deliver`);
+    console.log(`Found ${notesToDeliver.length} undelivered notes to check`);
+
+    // Filter notes that are ready for delivery based on precise time
+    const readyNotes = notesToDeliver.filter(note => {
+      const deliveryDate = new Date(note.deliveryDate);
+      return isSameOrBefore(deliveryDate, currentDate);
+    });
+
+    console.log(`${readyNotes.length} notes are ready for delivery`);
 
     // Process each note
-    for (const note of notesToDeliver) {
+    for (const note of readyNotes) {
       try {
         // Decrypt content before sending
         note.content = note.decryptContent();
@@ -56,12 +77,19 @@ agenda.define('check notes for delivery', async (job) => {
           // Get sender name for the email
           const senderName = note.user.name || 'Someone';
           
+          // Customize subject for self-messages
+          let emailSubject = null;
+          if (note.isSelfMessage || (note.user.email === note.recipient.email)) {
+            emailSubject = `Your scheduled message "${note.title}" has arrived`;
+          }
+          
           // Send email notification
           await sendNoteEmail({
             email: note.recipient.email,
             note: note,
             accessUrl: note.shareableLink,
-            senderName: senderName
+            senderName: senderName,
+            subject: emailSubject
           });
           
           console.log(`Email sent to ${note.recipient.email} for note ${note._id} from ${senderName}`);

@@ -41,6 +41,11 @@ const NoteSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'Delivery date is required'],
     },
+    // Store the timezone offset for accurate time delivery
+    timezone: {
+      type: String,
+      default: 'UTC'
+    },
     isDelivered: {
       type: Boolean,
       default: false,
@@ -59,6 +64,11 @@ const NoteSchema = new mongoose.Schema(
       type: String,
       select: false,
     },
+    // Add a flag to indicate messages scheduled to self
+    isSelfMessage: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true,
@@ -83,6 +93,17 @@ NoteSchema.pre('save', function (next) {
   // It will only be decrypted when needed
   if (!this.isNew) {
     this.content = undefined;
+  }
+
+  // Set timezone if not provided
+  if (!this.timezone) {
+    this.timezone = 'UTC';
+  }
+
+  // If the recipient email matches the user's email, mark as self-message
+  if (this.recipient && this.recipient.email) {
+    // We'll need to populate the user later to compare emails
+    // This is handled in the controllers
   }
 
   next();
@@ -111,6 +132,19 @@ NoteSchema.methods.generateShareableLink = function () {
   
   console.log(`Generated link: ${this.shareableLink}`);
   return this.shareableLink;
+};
+
+// Helper method to check if a note is scheduled to self
+NoteSchema.methods.isScheduledToSelf = async function() {
+  // First ensure we have the user populated
+  if (!this.populated('user')) {
+    await this.populate('user', 'email');
+  }
+  
+  return this.recipient && 
+         this.recipient.email && 
+         this.user && 
+         this.user.email === this.recipient.email;
 };
 
 module.exports = mongoose.model('Note', NoteSchema); 

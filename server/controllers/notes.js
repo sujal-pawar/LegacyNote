@@ -60,6 +60,11 @@ exports.createNote = async (req, res, next) => {
   try {
     // Add user to req.body
     req.body.user = req.user.id;
+    
+    // Add timezone info if not provided
+    if (!req.body.timezone) {
+      req.body.timezone = req.body.timezone || 'UTC';
+    }
 
     // Create the note
     const note = await Note.create(req.body);
@@ -72,6 +77,17 @@ exports.createNote = async (req, res, next) => {
         success: false,
         error: 'User not found',
       });
+    }
+    
+    // Check if this is a self-message (recipient email matches user's email)
+    const isSelfMessage = req.body.recipient && 
+                         req.body.recipient.email && 
+                         req.body.recipient.email === user.email;
+    
+    // Update the note if it's a self-message
+    if (isSelfMessage) {
+      note.isSelfMessage = true;
+      await note.save({ validateBeforeSave: false });
     }
     
     try {

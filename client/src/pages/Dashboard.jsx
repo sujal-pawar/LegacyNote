@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { FaPlus, FaEdit, FaTrash, FaShare, FaCalendarAlt, FaSpinner, FaClock } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaShare, FaCalendarAlt, FaSpinner, FaClock, FaEnvelope } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { notesAPI } from '../api/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -84,9 +84,14 @@ const Dashboard = () => {
             Welcome back, <span className='text-indigo-500'>{user?.name?.split(' ')[0]}!</span> Manage your time capsule notes here.
           </p>
         </div>
-        <Link to="/create-note" className="btn btn-primary mt-4 hover:text-white md:mt-0 flex items-center justify-center">
-          <FaPlus className="mr-2" /> Create New Note
-        </Link>
+        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2">
+          <Link to="/create-note" className="btn btn-primary hover:text-white flex items-center justify-center">
+            <FaPlus className="mr-2" /> Create New Note
+          </Link>
+          <Link to="/self-message" className="btn btn-secondary hover:text-white flex items-center justify-center">
+            <FaEnvelope className="mr-2" /> Message to Self
+          </Link>
+        </div>
       </div>
 
       {loading ? (

@@ -6,7 +6,10 @@ const {
   login, 
   getMe, 
   forgotPassword, 
-  resetPassword 
+  resetPassword,
+  googleAuth,
+  verifyEmail,
+  sendVerificationOTP
 } = require('../controllers/auth');
 
 // Routes
@@ -15,5 +18,12 @@ router.post('/login', login);
 router.get('/me', protect, getMe);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
+
+// Google authentication
+router.post('/google', googleAuth);
+
+// Email verification
+router.post('/verify-email', verifyEmail);
+router.post('/send-verification-otp', sendVerificationOTP);
 
 module.exports = router; 

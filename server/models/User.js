@@ -25,8 +25,32 @@ const UserSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
+    // Google authentication
+    googleId: {
+      type: String,
+      select: false,
+    },
+    // Email verification
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationOTP: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpire: {
+      type: Date,
+      select: false,
+    },
+    // Password reset
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    // User preferences
+    timezone: {
+      type: String,
+      default: 'UTC',
+    },
   },
   {
     timestamps: true,
