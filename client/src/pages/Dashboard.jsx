@@ -76,7 +76,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
+    <div className="container mx-auto px-10 py-8 max-sm:px-6">
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold mb-2">Your Notes</h1>
@@ -84,7 +84,7 @@ const Dashboard = () => {
             Welcome back, <span className='text-indigo-500'>{user?.name?.split(' ')[0]}!</span> Manage your time capsule notes here.
           </p>
         </div>
-        <Link to="/create-note" className="btn btn-primary mt-4 md:mt-0 flex items-center justify-center">
+        <Link to="/create-note" className="btn btn-primary mt-4 hover:text-white md:mt-0 flex items-center justify-center">
           <FaPlus className="mr-2" /> Create New Note
         </Link>
       </div>
