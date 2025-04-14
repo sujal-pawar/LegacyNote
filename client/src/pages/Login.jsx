@@ -146,8 +146,8 @@ const Login = () => {
               className="max-w-md mx-auto"
             >
               <motion.div variants={itemVariants} className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Welcome Back</h2>
-                <p className="mt-2 text-gray-600  dark:text-gray-400">Sign in to access your secure notes</p>
+                <h2 className="text-3xl font-bold text-white  dark:text-gray-200">Welcome Back</h2>
+                <p className="mt-2 text-gray-200  dark:text-gray-400">Sign in to access your secure notes</p>
               </motion.div>
 
               {showError && (
@@ -166,7 +166,7 @@ const Login = () => {
                 {({ isSubmitting }) => (
                   <Form className="space-y-6 ">
                     <motion.div variants={itemVariants}>
-                      <label htmlFor="email" className="block  text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label htmlFor="email" className="block  text-sm font-medium text-gray-200 dark:text-gray-300">
                         <div className="flex items-center mb-1 ">
                           <FaEnvelope className="w-4 h-4 mr-2" />
                           Email Address
@@ -182,7 +182,7 @@ const Login = () => {
                     </motion.div>
 
                     <motion.div variants={itemVariants}>
-                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-200 dark:text-gray-300">
                         <div className="flex items-center mb-1">
                           <FaLock className="w-4 h-4 mr-2" />
                           Password
@@ -201,11 +201,11 @@ const Login = () => {
                       <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                         <input
                           type="checkbox"
-                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+                          className="rounded border-gray-300 text-white focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <span className="ml-2">Remember me</span>
+                        <span className="ml-2 text-white">Remember me</span>
                       </label>
-                      <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline dark:text-indigo-200">
+                      <Link to="/forgot-password" className="text-sm text-indigo-200 hover:underline dark:text-indigo-200">
                         Forgot password?
                       </Link>
                     </motion.div>
@@ -226,7 +226,7 @@ const Login = () => {
                         <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                       </div>
                       <div className="relative flex justify-center text-sm">
-                        <span className="px-2 text-gray-500 dark:text-gray-400">
+                        <span className="px-2 text-gray-100 z-100 bg-indigo-800 border-indigo-800 border-2 rounded-full dark:text-gray-400">
                           Or continue with
                         </span>
                       </div>
@@ -246,7 +246,7 @@ const Login = () => {
                       />
                     </motion.div>
 
-                    <motion.p variants={itemVariants} className="text-sm text-center text-gray-600 dark:text-gray-400">
+                    <motion.p variants={itemVariants} className="text-sm text-center text-gray-200 dark:text-gray-400">
                       Don't have an account?{' '}
                       <motion.span whileHover={{ scale: 1.05 }}>
                         <Link

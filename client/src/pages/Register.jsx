@@ -109,10 +109,10 @@ const Register = () => {
           <div className="lg:w-7/12 p-8 bg-gradient-to-br from-gray-800 to-indigo-700 to-gray-900 lg:p-12">
             <div className="max-w-md mx-auto">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+                <h2 className="text-3xl font-bold text-white dark:text-gray-200">
                   Create an Account
                 </h2>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-gray-200 dark:text-gray-400">
                   Join LegacyNote to start creating your time capsules
                 </p>
               </div>
@@ -131,7 +131,7 @@ const Register = () => {
                 {({ isSubmitting }) => (
                   <Form className="space-y-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-200 dark:text-gray-300">
                         <div className="flex items-center mb-1">
                           <FaUser className="w-4 h-4 mr-2" />
                           Full Name
@@ -151,7 +151,7 @@ const Register = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-200 dark:text-gray-300">
                         <div className="flex items-center mb-1">
                           <FaEnvelope className="w-4 h-4 mr-2" />
                           Email Address
@@ -171,7 +171,7 @@ const Register = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-200 dark:text-gray-300">
                         <div className="flex items-center mb-1">
                           <FaLock className="w-4 h-4 mr-2" />
                           Password
@@ -191,7 +191,7 @@ const Register = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-200 dark:text-gray-300">
                         <div className="flex items-center mb-1">
                           <FaCheck className="w-4 h-4 mr-2" />
                           Confirm Password
