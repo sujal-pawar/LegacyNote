@@ -165,9 +165,14 @@ const Footer = () => {
         <hr className="my-8 border-gray-800 dark:border-gray-700" />
 
         <div className="flex flex-col md:flex-row justify-between items-center">
+        <div className="flex flex-col max-sm:items-center " >
           <p className="text-sm text-gray-400 flex items-center">
-            &copy; {currentYear} LegacyNote. Made with <FaHeart className="text-red-500 mx-1" /> by Sujal
+            &copy; {currentYear} LegacyNote.
           </p>
+          <p className="text-sm text-gray-400 flex items-center">
+            Made with <FaHeart className="text-red-500 mx-1" /> by LegacyNote Team
+          </p>
+          </div>
           <div className="mt-4 md:mt-0 flex space-x-6">
             <Link
               to="/privacy"
