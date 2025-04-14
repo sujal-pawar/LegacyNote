@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FaUserCircle, FaClock, FaLock, FaSignOutAlt, FaHome, FaPlus } from 'react-icons/fa';
 import { GiHamburgerMenu } from 'react-icons/gi';
+import DarkModeToggle from './DarkModeToggle';
 
 const Navbar = () => {
   const { isAuthenticated, logout, user } = useAuth();

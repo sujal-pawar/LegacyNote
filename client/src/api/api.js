@@ -45,6 +45,7 @@ export const authAPI = {
   forgotPassword: (email) => api.post('/auth/forgotpassword', email),
   resetPassword: (resetToken, password) => 
     api.put(`/auth/resetpassword/${resetToken}`, { password }),
+  googleAuth: (userData) => api.post('/auth/google', userData),
 };
 
 // User API

@@ -12,8 +12,8 @@ const NotFound = () => {
           The page you are looking for might have been removed, had its name changed,
           or is temporarily unavailable.
         </p>
-        <Link to="/" className="btn btn-primary inline-flex items-center">
-          <FaHome className="mr-2" /> Go to Homepage
+        <Link to="/" className="btn btn-primary hover:text-white inline-flex items-center">
+           Go to Homepage
         </Link>
       </div>
     </div>

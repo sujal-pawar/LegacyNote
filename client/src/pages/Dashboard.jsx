@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { FaPlus, FaEdit, FaTrash, FaShare, FaCalendarAlt, FaSpinner, FaClock, FaEnvelope } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { FaPlus, FaEdit, FaTrash, FaShare, FaCalendarAlt, FaSpinner, FaClock, FaEnvelope, FaFilter, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { notesAPI } from '../api/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,6 +12,39 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.1,
+        when: "beforeChildren" 
+      }
+    },
+    exit: { opacity: 0 }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  const headerVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -67,108 +101,239 @@ const Dashboard = () => {
     const deliveryDate = new Date(note.deliveryDate);
     
     if (note.isDelivered) {
-      return { status: 'delivered', label: 'Delivered', badgeClass: 'badge-delivered' };
+      return { 
+        status: 'delivered', 
+        label: 'Delivered', 
+        badgeClass: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+      };
     } else if (deliveryDate > now) {
-      return { status: 'pending', label: 'Pending', badgeClass: 'badge-pending' };
+      return { 
+        status: 'pending', 
+        label: 'Pending', 
+        badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' 
+      };
     } else {
-      return { status: 'processing', label: 'Processing', badgeClass: 'badge-pending' };
+      return { 
+        status: 'processing', 
+        label: 'Processing', 
+        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
+      };
     }
   };
 
-  return (
-    <div className="container mx-auto px-10 py-8 max-sm:px-6">
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Your Notes</h1>
-          <p className="text-gray-600">
-            Welcome back, <span className='text-indigo-500'>{user?.name?.split(' ')[0]}!</span> Manage your time capsule notes here.
-          </p>
-        </div>
-        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2">
-          <Link to="/create-note" className="btn btn-primary hover:text-white flex items-center justify-center">
-            <FaPlus className="mr-2" /> Create New Note
-          </Link>
-          <Link to="/self-message" className="btn btn-secondary hover:text-white flex items-center justify-center">
-            <FaEnvelope className="mr-2" /> Message to Self
-          </Link>
-        </div>
-      </div>
+  // Filter notes based on search term and status filter
+  const filteredNotes = notes.filter(note => {
+    const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        note.content.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterStatus === 'all') return matchesSearch;
+    const { status } = getDeliveryStatus(note);
+    return matchesSearch && status === filterStatus;
+  });
 
-      {loading ? (
-        <div className="flex justify-center items-center my-12">
-          <FaSpinner className="animate-spin text-3xl text-primary-color mr-2" />
-          <span>Loading your notes...</span>
-        </div>
-      ) : error ? (
-        <div className="alert alert-danger">{error}</div>
-      ) : notes.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <FaClock className="text-5xl text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">No Notes Yet</h2>
-          <p className="text-gray-600 mb-6">
-            You haven't created any time capsule notes yet. Start creating your legacy by adding your first note.
-          </p>
-          <Link to="/create-note" className="btn btn-primary">
-            Create Your First Note
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {notes.map(note => {
-            const { status, label, badgeClass } = getDeliveryStatus(note);
-            
-            return (
-              <div key={note._id} className="bg-white rounded-lg shadow-md overflow-hidden note-card">
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{note.title}</h3>
-                    <span className={`note-badge ${badgeClass}`}>{label}</span>
-                  </div>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {note.content ? note.content.substring(0, 150) + (note.content.length > 150 ? '...' : '') : 'No content available'}
-                  </p>
-                  <div className="flex items-center text-sm text-gray-500 mb-4">
-                    <FaCalendarAlt className="mr-1" />
-                    <span>
-                      Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Link
-                      to={`/view-note/${note._id}`}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
-                    >
-                      View
-                    </Link>
-                    {!note.isDelivered && (
-                      <Link
-                        to={`/edit-note/${note._id}`}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center text-sm"
-                      >
-                        <FaEdit className="mr-1" /> Edit
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => handleShareNote(note._id)}
-                      className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center text-sm"
-                    >
-                      <FaShare className="mr-1" /> Share
-                    </button>
-                    <button
-                      onClick={() => handleDeleteNote(note._id)}
-                      className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 flex items-center text-sm"
-                    >
-                      <FaTrash className="mr-1" /> Delete
-                    </button>
-                  </div>
-                </div>
+  return (
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
+      className="min-h-screen py-16 px-6 max-sm:px-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200"
+    >
+      <div className="container mx-auto">
+        {/* Header Section */}
+        <motion.div 
+          variants={headerVariants}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8"
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2 text-gray-800 dark:text-gray-200">Welcome <span className='text-indigo-500'>{user?.name?.split(' ')[0]}!</span> </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Manage your time capsule notes here.
+              </p>
+            </div>
+            <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link 
+                  to="/create-note" 
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:text-white hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center justify-center"
+                >
+                  <FaPlus className="mr-2" /> Create New Note
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link 
+                  to="/self-message" 
+                  className="px-4 py-2 bg-purple-600 text-white hover:text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 disabled:opacity-50 dark:bg-purple-700 dark:hover:bg-purple-600 transition-colors flex items-center justify-center"
+                >
+                  <FaEnvelope className="mr-2" /> Message to Self
+                </Link>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Search and Filter Section */}
+          <div className="mt-6 flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="text-gray-400" />
               </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Search notes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex-shrink-0 flex items-center">
+              <span className="mr-2 text-gray-600 dark:text-gray-400 flex items-center">
+                <FaFilter className="mr-1" /> Filter:
+              </span>
+              <select
+                className="border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 py-2 px-3"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="all">All Notes</option>
+                <option value="delivered">Delivered</option>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+              </select>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Notes Section */}
+        {loading ? (
+          <motion.div 
+            variants={itemVariants}
+            className="flex justify-center items-center my-12 text-gray-700 dark:text-gray-300"
+          >
+            <FaSpinner className="animate-spin text-3xl text-indigo-500 mr-2" />
+            <span>Loading your notes...</span>
+          </motion.div>
+        ) : error ? (
+          <motion.div 
+            variants={itemVariants}
+            className="p-4 bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 rounded-lg"
+          >
+            {error}
+          </motion.div>
+        ) : filteredNotes.length === 0 ? (
+          <motion.div 
+            variants={itemVariants}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center"
+          >
+            {searchTerm || filterStatus !== 'all' ? (
+              <>
+                <FaSearch className="text-5xl text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-200">No Matching Notes</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  We couldn't find any notes matching your search criteria. Try adjusting your filters.
+                </p>
+                <button 
+                  onClick={() => {setSearchTerm(''); setFilterStatus('all');}}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors inline-block"
+                >
+                  Clear Filters
+                </button>
+              </>
+            ) : (
+              <>
+                <FaClock className="text-5xl text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-200">No Notes Yet</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  You haven't created any time capsule notes yet. Start creating your legacy by adding your first note.
+                </p>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link 
+                    to="/create-note" 
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors inline-block"
+                  >
+                    Create Your First Note
+                  </Link>
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div 
+            variants={containerVariants}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {filteredNotes.map(note => {
+              const { status, label, badgeClass } = getDeliveryStatus(note);
+              
+              return (
+                <motion.div
+                  key={note._id}
+                  variants={itemVariants}
+                  whileHover={{ y: -5 }}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200 border border-gray-100 dark:border-gray-700"
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">{note.title}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badgeClass}`}>{label}</span>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                      {note.content ? note.content.substring(0, 150) + (note.content.length > 150 ? '...' : '') : 'No content available'}
+                    </p>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <FaCalendarAlt className="mr-1" />
+                      <span>
+                        Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Link
+                          to={`/view-note/${note._id}`}
+                          className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center text-sm"
+                        >
+                          View
+                        </Link>
+                      </motion.div>
+                      
+                      {!note.isDelivered && (
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Link
+                            to={`/edit-note/${note._id}`}
+                            className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800/40 flex items-center text-sm"
+                          >
+                            <FaEdit className="mr-1" /> Edit
+                          </Link>
+                        </motion.div>
+                      )}
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleShareNote(note._id)}
+                        className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md hover:bg-green-200 dark:hover:bg-green-800/40 flex items-center text-sm"
+                      >
+                        <FaShare className="mr-1" /> Share
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleDeleteNote(note._id)}
+                        className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-800/40 flex items-center text-sm"
+                      >
+                        <FaTrash className="mr-1" /> Delete
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

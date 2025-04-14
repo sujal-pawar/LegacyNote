@@ -75,6 +75,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Google login/register
+  const googleLogin = async (userData) => {
+    try {
+      setLoading(true);
+      const res = await authAPI.googleAuth(userData);
+      localStorage.setItem('token', res.data.token);
+      setToken(res.data.token);
+      setUser(res.data.user);
+      setIsAuthenticated(true);
+      toast.success('Google login successful!');
+      return true;
+    } catch (err) {
+      setError(err.response?.data?.error || 'Google login failed');
+      toast.error(err.response?.data?.error || 'Google login failed');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Logout user
   const logout = () => {
     localStorage.removeItem('token');
@@ -153,6 +173,7 @@ export const AuthProvider = ({ children }) => {
         resetPassword,
         updateProfile,
         clearErrors,
+        googleLogin,
       }}
     >
       {children}

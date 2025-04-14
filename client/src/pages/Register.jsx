@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { FaUser, FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaCheck, FaClock, FaShieldAlt, FaGlobe } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
@@ -39,15 +39,9 @@ const Register = () => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       setShowError(false);
-      
-      // Remove confirmPassword before sending to API
       const { confirmPassword, ...userData } = values;
-      
       const success = await register(userData);
-      
-      if (success) {
-        navigate('/dashboard');
-      }
+      if (success) navigate('/dashboard');
     } catch (error) {
       setErrorMessage(error.response?.data?.error || 'Registration failed. Please try again.');
       setShowError(true);
@@ -57,104 +51,195 @@ const Register = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">Create an Account</h2>
-          <p className="text-gray-600">Join LegacyNote to start creating your time capsules</p>
-        </div>
-
-        {showError && (
-          <div className="alert alert-danger mb-4" role="alert">
-            {errorMessage}
+    <div className="min-h-screen py-8 max-sm:py-6 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col lg:flex-row bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+          
+          {/* Left Side - Why Create an Account */}
+          <div className="lg:w-5/12 max-sm:hidden bg-gradient-to-br from-indigo-900 to-indigo-700 to-indigo-500 text-white p-8 lg:p-12">
+            <div className="h-full flex flex-col justify-between">
+              <div>
+                <h2 className="text-3xl font-bold mb-6">Why Join LegacyNote?</h2>
+                
+                <div className="space-y-6">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 mt-1">
+                      <FaClock className="w-6 h-6 text-indigo-200" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-xl font-semibold mb-2">Create Time Capsules</h3>
+                      <p className="text-indigo-100">
+                        Preserve your memories, thoughts, and important moments for future access. 
+                        Set specific dates for when they can be opened.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 mt-1">
+                      <FaShieldAlt className="w-6 h-6 text-indigo-200" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-xl font-semibold mb-2">Secure & Private</h3>
+                      <p className="text-indigo-100">
+                        Your notes are encrypted and only accessible by you. We prioritize your 
+                        privacy and data security at all times.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 mt-1">
+                      <FaGlobe className="w-6 h-6 text-indigo-200" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-xl font-semibold mb-2">Access Anywhere</h3>
+                      <p className="text-indigo-100">
+                        Access your notes from any device, anywhere in the world. 
+                        Your digital legacy is always at your fingertips.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
           </div>
-        )}
-
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={handleSubmit}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <div className="mb-4">
-                <label htmlFor="name" className="form-label flex items-center">
-                  <FaUser className="mr-2" /> Full Name
-                </label>
-                <Field
-                  type="text"
-                  name="name"
-                  id="name"
-                  className="form-control"
-                  placeholder="Enter your name"
-                />
-                <ErrorMessage name="name" component="div" className="form-error" />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="email" className="form-label flex items-center">
-                  <FaEnvelope className="mr-2" /> Email Address
-                </label>
-                <Field
-                  type="email"
-                  name="email"
-                  id="email"
-                  className="form-control"
-                  placeholder="Enter your email"
-                />
-                <ErrorMessage name="email" component="div" className="form-error" />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="password" className="form-label flex items-center">
-                  <FaLock className="mr-2" /> Password
-                </label>
-                <Field
-                  type="password"
-                  name="password"
-                  id="password"
-                  className="form-control"
-                  placeholder="Enter your password"
-                />
-                <ErrorMessage name="password" component="div" className="form-error" />
-              </div>
-
-              <div className="mb-6">
-                <label htmlFor="confirmPassword" className="form-label flex items-center">
-                  <FaCheck className="mr-2" /> Confirm Password
-                </label>
-                <Field
-                  type="password"
-                  name="confirmPassword"
-                  id="confirmPassword"
-                  className="form-control"
-                  placeholder="Confirm your password"
-                />
-                <ErrorMessage name="confirmPassword" component="div" className="form-error" />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
-              </button>
-
-              <div className="mt-4 text-center">
-                <p>
-                  Already have an account?{' '}
-                  <Link to="/login" className="text-primary-color hover:underline">
-                    Sign in
-                  </Link>
+          
+          {/* Right Side - Registration Form */}
+          <div className="lg:w-7/12 p-8 bg-gradient-to-br from-gray-800 to-indigo-700 to-gray-900 lg:p-12">
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+                  Create an Account
+                </h2>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                  Join LegacyNote to start creating your time capsules
                 </p>
               </div>
-            </Form>
-          )}
-        </Formik>
+
+              {showError && (
+                <div className="p-3 mb-6 text-sm bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg">
+                  {errorMessage}
+                </div>
+              )}
+
+              <Formik
+                initialValues={initialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleSubmit}
+              >
+                {({ isSubmitting }) => (
+                  <Form className="space-y-6">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center mb-1">
+                          <FaUser className="w-4 h-4 mr-2" />
+                          Full Name
+                        </div>
+                      </label>
+                      <Field
+                        name="name"
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg dark:border-gray-300 dark:bg-transparent dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Enter your name"
+                      />
+                      <ErrorMessage
+                        name="name"
+                        component="div"
+                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center mb-1">
+                          <FaEnvelope className="w-4 h-4 mr-2" />
+                          Email Address
+                        </div>
+                      </label>
+                      <Field
+                        name="email"
+                        type="email"
+                        className="w-full px-3 py-2 border rounded-lg dark:border-gray-300 dark:bg-transparent dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="your@email.com"
+                      />
+                      <ErrorMessage
+                        name="email"
+                        component="div"
+                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center mb-1">
+                          <FaLock className="w-4 h-4 mr-2" />
+                          Password
+                        </div>
+                      </label>
+                      <Field
+                        name="password"
+                        type="password"
+                        className="w-full px-3 py-2 border rounded-lg dark:border-gray-300 dark:bg-transparent dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="••••••••"
+                      />
+                      <ErrorMessage
+                        name="password"
+                        component="div"
+                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center mb-1">
+                          <FaCheck className="w-4 h-4 mr-2" />
+                          Confirm Password
+                        </div>
+                      </label>
+                      <Field
+                        name="confirmPassword"
+                        type="password"
+                        className="w-full px-3 py-2 border rounded-lg dark:border-gray-300 dark:bg-transparent dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="••••••••"
+                      />
+                      <ErrorMessage
+                        name="confirmPassword"
+                        component="div"
+                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full px-4 py-2 border border-white text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+                      >
+                        {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                      </button>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-sm text-gray-100 dark:text-gray-100">
+                        Already have an account?{' '}
+                        <Link
+                          to="/login"
+                          className="font-medium pl-2 text-indigo-600 hover:underline dark:text-white "
+                        >
+                          Sign in
+                        </Link>
+                      </p>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Register; 
+export default Register;
