@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FaUserCircle, FaClock, FaLock, FaSignOutAlt, FaHome, FaPlus } from 'react-icons/fa';
@@ -9,6 +9,7 @@ const Navbar = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -19,8 +20,29 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <nav className="bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white">
+    <nav className={`sticky top-0 z-50 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white transition-all duration-300 ${
+      isScrolled ? "shadow-lg px-2" : "py-2 "
+    }`}
+    
+  >
+    
       <div className="max-w-7xl mx-auto px-6 scroll-m-1">
         <div className="flex justify-between h-16">
           <div className="flex">
