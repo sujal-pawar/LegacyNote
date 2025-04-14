@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaEnvelope, FaCalendarCheck } from 'react-icons/fa';
+import { FaArrowLeft, FaEnvelope, FaCalendarCheck, FaSpinner } from 'react-icons/fa';
 import SelfMessageForm from '../components/SelfMessageForm';
 import { notesAPI } from '../api/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -65,81 +65,107 @@ const SelfMessage = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-6">
-        <Link to="/dashboard" className="text-primary-color hover:underline flex items-center w-auto inline-flex">
-          <FaArrowLeft className="mr-2" /> Back to Dashboard
-        </Link>
-      </div>
+    <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <Link 
+              to="/dashboard" 
+              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center"
+            >
+              <FaArrowLeft className="mr-2" /> Back to Dashboard
+            </Link>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <SelfMessageForm onSuccess={handleSuccess} />
-          
-          {showSuccessMessage && (
-            <div className="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-              <span className="flex items-center">
-                <FaCalendarCheck className="mr-2" />
-                Message scheduled successfully!
-              </span>
-            </div>
-          )}
-        </div>
-        
-        <div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800 flex items-center">
-              <FaEnvelope className="mr-2" />
-              Your Scheduled Messages
-            </h2>
-            
-            {loading ? (
-              <p className="text-gray-600">Loading your messages...</p>
-            ) : selfMessages.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">
-                <p>You haven't scheduled any messages to yourself yet.</p>
-                <p className="mt-2 text-sm">Use the form to send a message to your future self!</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {selfMessages.map(message => (
-                  <div key={message._id} className="border border-gray-200 rounded-md p-4 hover:shadow-sm transition-shadow">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-semibold text-lg text-primary-color">{message.title}</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        message.isDelivered 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {message.isDelivered ? 'Delivered' : 'Scheduled'}
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {message.content}
-                    </p>
-                    
-                    <div className="mt-2 text-xs text-gray-500 flex justify-between">
-                      <span>
-                        Created: {new Date(message.createdAt).toLocaleDateString()}
-                      </span>
-                      <span>
-                        Delivery: {new Date(message.deliveryDate).toLocaleString()}
-                      </span>
-                    </div>
-                    
-                    <div className="mt-2">
-                      <Link 
-                        to={`/view-note/${message._id}`} 
-                        className="text-sm text-primary-color hover:underline"
-                      >
-                        View Details
-                      </Link>
-                    </div>
+          <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-gray-200">
+            Message Your Future Self
+          </h1>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
+                  Create a Time Capsule Message
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Send a message to your future self. Set a date when you want to receive it.
+                </p>
+                
+                <SelfMessageForm onSuccess={handleSuccess} />
+                
+                {showSuccessMessage && (
+                  <div className="mt-4 bg-green-100 dark:bg-green-900/20 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg">
+                    <span className="flex items-center">
+                      <FaCalendarCheck className="mr-2" />
+                      Message scheduled successfully!
+                    </span>
                   </div>
-                ))}
+                )}
               </div>
-            )}
+            </div>
+            
+            <div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+                  <FaEnvelope className="mr-2" />
+                  Your Scheduled Messages
+                </h2>
+                
+                {loading ? (
+                  <div className="flex justify-center items-center py-12 text-gray-700 dark:text-gray-300">
+                    <FaSpinner className="animate-spin text-xl text-indigo-600 dark:text-indigo-400 mr-2" />
+                    <span>Loading your messages...</span>
+                  </div>
+                ) : selfMessages.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <p>You haven't scheduled any messages to yourself yet.</p>
+                    <p className="mt-2 text-sm">Use the form to send a message to your future self!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {selfMessages.map(message => (
+                      <div 
+                        key={message._id} 
+                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50 dark:bg-gray-700"
+                      >
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-semibold text-lg text-indigo-600 dark:text-indigo-400">{message.title}</h3>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            message.isDelivered 
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          }`}>
+                            {message.isDelivered ? 'Delivered' : 'Scheduled'}
+                          </span>
+                        </div>
+                        
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                          {message.content}
+                        </p>
+                        
+                        <div className="mt-3 text-xs text-gray-500 dark:text-gray-500 flex justify-between">
+                          <span>
+                            Created: {new Date(message.createdAt).toLocaleDateString()}
+                          </span>
+                          <span>
+                            Delivery: {new Date(message.deliveryDate).toLocaleString()}
+                          </span>
+                        </div>
+                        
+                        <div className="mt-3">
+                          <Link 
+                            to={`/view-note/${message._id}`} 
+                            className="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 hover:underline"
+                          >
+                            View Details
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -147,4 +173,4 @@ const SelfMessage = () => {
   );
 };
 
-export default SelfMessage; 
+export default SelfMessage;
