@@ -90,7 +90,7 @@ exports.sendNoteEmail = async (options) => {
             background-color: #ffffff;
             border-radius: 12px;
             padding: 40px;
-            margin: 20px;
+            margin: 20px 0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
           }
           .header {
