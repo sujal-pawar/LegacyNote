@@ -43,4 +43,17 @@ exports.protect = async (req, res, next) => {
       error: 'Not authorized to access this route',
     });
   }
+};
+
+// Check if email is verified
+exports.emailVerified = async (req, res, next) => {
+  if (!req.user.isEmailVerified) {
+    return res.status(403).json({
+      success: false,
+      error: 'Email verification required',
+      verificationNeeded: true
+    });
+  }
+  
+  next();
 }; 

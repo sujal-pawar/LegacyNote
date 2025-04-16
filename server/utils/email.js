@@ -89,7 +89,7 @@ exports.sendNoteEmail = async (options) => {
           .container {
             background-color: #ffffff;
             border-radius: 12px;
-            padding: 40px;
+            padding: 20px;
             margin: 20px 0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
           }
@@ -242,7 +242,7 @@ exports.sendNoteCreationConfirmation = async (options) => {
           .container {
             background-color: #ffffff;
             border-radius: 12px;
-            padding: 40px;
+            padding: 20px;
             margin: 20px 0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
           }
@@ -408,7 +408,7 @@ exports.sendPasswordResetEmail = async (options) => {
           .container {
             background-color: #ffffff;
             border-radius: 12px;
-            padding: 40px;
+            padding: 20px;
             margin: 20px 0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
           }
@@ -569,7 +569,7 @@ exports.sendVerificationOTP = async (options) => {
           .container {
             background-color: #ffffff;
             border-radius: 12px;
-            padding: 40px;
+            padding: 20px;
             margin: 20px 0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
           }

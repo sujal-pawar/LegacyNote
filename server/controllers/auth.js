@@ -9,14 +9,55 @@ exports.register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    // Create user
+    // Check if user with this email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email already registered'
+      });
+    }
+
+    // Create user with isEmailVerified set to false
     const user = await User.create({
       name,
       email,
       password,
+      isEmailVerified: false
     });
 
-    sendTokenResponse(user, 201, res);
+    // Generate OTP for email verification
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    
+    // Set OTP and expiry (10 minutes)
+    user.emailVerificationOTP = otp;
+    user.emailVerificationExpire = Date.now() + 10 * 60 * 1000;
+
+    await user.save({ validateBeforeSave: false });
+
+    // Send verification email
+    try {
+      await sendVerificationOTP({
+        email: user.email,
+        otp: otp,
+        userName: user.name
+      });
+      
+      // Return success response with token and verification needed flag
+      sendTokenResponse(user, 201, res, true);
+    } catch (err) {
+      console.error('Error sending verification email:', err);
+      
+      // Reset verification fields if email sending fails
+      user.emailVerificationOTP = undefined;
+      user.emailVerificationExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Registration successful but verification email could not be sent. Please request a new OTP.'
+      });
+    }
   } catch (err) {
     next(err);
   }
@@ -55,6 +96,29 @@ exports.login = async (req, res, next) => {
         success: false,
         error: 'Invalid credentials',
       });
+    }
+
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      // Send new OTP for verification
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+      
+      user.emailVerificationOTP = otp;
+      user.emailVerificationExpire = Date.now() + 10 * 60 * 1000;
+      await user.save({ validateBeforeSave: false });
+      
+      try {
+        await sendVerificationOTP({
+          email: user.email,
+          otp: otp,
+          userName: user.name
+        });
+      } catch (err) {
+        console.error('Error sending verification email:', err);
+        // Continue even if email fails
+      }
+      
+      return sendTokenResponse(user, 200, res, true);
     }
 
     sendTokenResponse(user, 200, res);
@@ -324,7 +388,7 @@ exports.sendVerificationOTP = async (req, res, next) => {
 };
 
 // Helper function to get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, res) => {
+const sendTokenResponse = (user, statusCode, res, verificationNeeded = false) => {
   // Create token
   const token = user.getSignedJwtToken();
 
@@ -336,5 +400,6 @@ const sendTokenResponse = (user, statusCode, res) => {
       name: user.name,
       email: user.email,
     },
+    verificationNeeded,
   });
 }; 

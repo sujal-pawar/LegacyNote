@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect, emailVerified } = require('../middleware/auth');
 const { 
   getNotes, 
   getNote, 
@@ -11,19 +11,20 @@ const {
   getSharedNote
 } = require('../controllers/notes');
 
-// Protected routes
+// Routes with email verification required
 router.route('/')
-  .get(protect, getNotes)
-  .post(protect, createNote);
+  .get(protect, emailVerified, getNotes)
+  .post(protect, emailVerified, createNote);
 
 router.route('/:id')
-  .get(protect, getNote)
-  .put(protect, updateNote)
-  .delete(protect, deleteNote);
+  .get(protect, emailVerified, getNote)
+  .put(protect, emailVerified, updateNote)
+  .delete(protect, emailVerified, deleteNote);
 
-router.post('/:id/share', protect, shareNote);
+router.route('/share/:id')
+  .post(protect, emailVerified, shareNote);
 
-// Public route for accessing shared notes
-router.get('/shared/:id/:accessKey', getSharedNote);
+// Public route - no email verification needed
+router.route('/shared/:id').get(getSharedNote);
 
 module.exports = router; 
