@@ -54,7 +54,7 @@ const initializeAgenda = () => {
 
   // Log connection attempt (mask password for security)
   const maskedUri = mongoURI.replace(/:([^@]+)@/, ':***@');
-  console.log(`Scheduler connecting to MongoDB: ${maskedUri}`);
+  // console.log(`Scheduler connecting to MongoDB: ${maskedUri}`);
 
   // Create new agenda instance with better mongo options
   agenda = new Agenda({
@@ -71,9 +71,9 @@ const initializeAgenda = () => {
     processEvery: '30 seconds', // Check for jobs every 30 seconds for more precise delivery
   });
 
-  // Add agenda monitoring
-  agenda.on('ready', () => console.log('Agenda connected to MongoDB and is ready'));
-  agenda.on('error', (err) => console.error('Agenda connection error:', err));
+  // // Add agenda monitoring
+  // agenda.on('ready', () => console.log('Agenda connected to MongoDB and is ready'));
+  // agenda.on('error', (err) => console.error('Agenda connection error:', err));
 
   return agenda;
 };
@@ -84,7 +84,7 @@ const defineJobs = () => {
 
   agenda.define('check notes for delivery', async (job) => {
     try {
-      console.log('Running note delivery check...');
+      // console.log('Running note delivery check...');
       
       // Find notes that should be delivered and haven't been delivered yet
       const currentDate = new Date();
@@ -101,7 +101,7 @@ const defineJobs = () => {
         return;
       }
 
-      console.log(`Found ${notesToDeliver.length} undelivered notes to check`);
+      // console.log(`Found ${notesToDeliver.length} undelivered notes to check`);
 
       // Filter notes that are ready for delivery based on precise time
       const readyNotes = notesToDeliver.filter(note => {
@@ -109,7 +109,7 @@ const defineJobs = () => {
         return isSameOrBefore(deliveryDate, currentDate, note.exactTimeDelivery);
       });
 
-      console.log(`${readyNotes.length} notes are ready for delivery`);
+      // console.log(`${readyNotes.length} notes are ready for delivery`);
 
       // Process each note
       for (const note of readyNotes) {
@@ -129,7 +129,7 @@ const defineJobs = () => {
             const accessKey = note.accessKey || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
             note.accessKey = accessKey;
             note.shareableLink = `${frontendUrl}/shared-note/${note._id}/${accessKey}`;
-            console.log(`Fixed invalid shareable link for note ${note._id}: ${note.shareableLink}`);
+            // console.log(`Fixed invalid shareable link for note ${note._id}: ${note.shareableLink}`);
           }
           
           // Get sender name for the email
@@ -137,7 +137,7 @@ const defineJobs = () => {
           
           // Check if note has multiple recipients
           if (note.recipients && note.recipients.length > 0) {
-            console.log(`Processing ${note.recipients.length} recipients for note ${note._id}`);
+            // console.log(`Processing ${note.recipients.length} recipients for note ${note._id}`);
             
             // Track if any emails were attempted (to handle empty recipient lists)
             let emailsAttempted = false;
@@ -162,7 +162,7 @@ const defineJobs = () => {
                     subject: emailSubject
                   });
                   
-                  console.log(`Email sent to recipient ${recipient.email} for note ${note._id} from ${senderName}`);
+                  // console.log(`Email sent to recipient ${recipient.email} for note ${note._id} from ${senderName}`);
                 } catch (emailError) {
                   console.error(`Failed to send email to ${recipient.email} for note ${note._id}:`, emailError);
                   allEmailsSent = false;
@@ -208,7 +208,7 @@ const defineJobs = () => {
             } 
             // Special case to fix specific notes that are stuck in the system
             else if (note._id.toString() === '68028fdaa635da0e48f452f2') {
-              console.log(`Force-delivering stuck note with ID ${note._id}`);
+              // console.log(`Force-delivering stuck note with ID ${note._id}`);
               allEmailsSent = true;
             }
             else {
@@ -226,9 +226,9 @@ const defineJobs = () => {
             await note.save();
             
             if (note.isPublic && (!note.recipients || note.recipients.length === 0) && (!note.recipient || !note.recipient.email)) {
-              console.log(`Note ${note._id} marked as delivered (shared publicly without recipients)`);
+              // console.log(`Note ${note._id} marked as delivered (shared publicly without recipients)`);
             } else {
-              console.log(`Note ${note._id} marked as delivered after successful email delivery`);
+              // console.log(`Note ${note._id} marked as delivered after successful email delivery`);
             }
           } else {
             console.error(`Note ${note._id} NOT marked as delivered due to email delivery issues`);
@@ -258,20 +258,20 @@ exports.startScheduler = async () => {
     
     // Start agenda
     await agenda.start();
-    console.log('Note delivery scheduler started');
+    // console.log('Note delivery scheduler started');
     
     // Schedule the job to run every 30 seconds
     await agenda.every('30 seconds', 'check notes for delivery');
-    console.log('Scheduled note delivery checks every 30 seconds for precise delivery timing');
+    // console.log('Scheduled note delivery checks every 30 seconds for precise delivery timing');
     
     // Schedule an immediate check as well to handle any pending deliveries
     await agenda.now('check notes for delivery');
-    console.log('Scheduled immediate note delivery check');
+    // console.log('Scheduled immediate note delivery check');
   } catch (err) {
     console.error('Error starting scheduler:', err);
     
     // Try to restart after a delay if there was an error
-    console.log('Will attempt to restart scheduler in 60 seconds...');
+    // console.log('Will attempt to restart scheduler in 60 seconds...');
     setTimeout(exports.startScheduler, 60000);
   }
 };

@@ -65,15 +65,15 @@ export const notesAPI = {
     try {
       // Check if noteData is FormData
       if (noteData instanceof FormData) {
-        console.log('Submitting note with FormData');
+        // console.log('Submitting note with FormData');
         
         // Log the data being sent (for debugging)
         if (process.env.NODE_ENV !== 'production') {
           for (let [key, value] of noteData.entries()) {
             if (key !== 'mediaFiles') { // Don't log file binary data
-              console.log(`FormData: ${key} => ${value instanceof File ? value.name : value}`);
+              // console.log(`FormData: ${key} => ${value instanceof File ? value.name : value}`);
             } else {
-              console.log(`FormData: ${key} => [File: ${value.name}]`);
+              // console.log(`FormData: ${key} => [File: ${value.name}]`);
             }
           }
         }

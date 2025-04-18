@@ -2,118 +2,239 @@
 
 LegacyNote is a full-stack web application that allows users to create, store, protect, and schedule delivery of long-term notes, messages, and documents. It's designed to serve as a digital time capsule, ensuring your words stand the test of time and are delivered precisely when you intend.
 
-## Features
+![LegacyNote Platform](https://placeholder-for-legacynote-screenshot.png)
 
-- **Long-Term Note Storage:** Create and save personal notes, letters, or documents with robust encryption.
-- **Future Delivery Scheduler:** Schedule notes for delivery in the future (up to 10+ years).
-- **End-to-End Security:** All notes are encrypted for maximum security and privacy.
-- **User Authentication:** Secure JWT-based authentication system.
-- **Shareable Notes:** Generate special links to share your notes with others.
-- **Email Notifications:** Automatic email delivery when notes are released.
+## 🚀 Features
 
-## Tech Stack
+- **Time Capsule Notes**: Create and schedule notes that will be delivered at specific dates in the future
+- **Recipient Management**: Send notes to multiple recipients with email notification
+- **Media Support**: Attach images and files to your notes
+- **Secure Email Verification**: OTP-based email verification system
+- **Rich Text Editing**: Format your notes with a comprehensive editor
+- **Mobile Responsive**: Fully responsive design that works on all devices
+- **Dark Mode Support**: Toggle between light and dark themes
+- **Secure Authentication**: JWT-based authentication with Google OAuth integration
+- **User Dashboard**: Manage all your notes from a central dashboard
+- **Sharing Functionality**: Generate shareable links for your notes
 
-- **Frontend:** React.js with React Router
-- **Backend:** Node.js + Express.js
-- **Database:** MongoDB with Mongoose
-- **Authentication:** JWT-based authentication
-- **Scheduler:** Agenda.js for timed note delivery
-- **Encryption:** AES encryption for note content
+## 🛠️ Tech Stack
 
-## Prerequisites
+### Frontend
+- React 19
+- React Router v6
+- Formik & Yup for form validation
+- Tailwind CSS for styling
+- React Toastify for notifications
+- Google OAuth integration
 
-Before you begin, ensure you have the following installed:
-- Node.js (v14+)
-- npm or yarn
+### Backend
+- Node.js with Express
+- MongoDB with Mongoose
+- JWT for authentication
+- Nodemailer for email services
+- Cloudinary for media storage
+- Agenda.js for scheduled tasks
+
+## 📁 Project Structure
+
+```
+legacynote/
+├── client/                      
+│   ├── public/                  
+│   └── src/
+│       ├── api/                 
+│       ├── assets/              
+│       ├── components/          
+│       │   ├── Navbar.jsx       
+│       │   ├── Footer.jsx       
+│       │   ├── PrivateRoute.jsx 
+│       │   └── ...
+│       ├── contexts/            
+│       │   ├── AuthContext.jsx  
+│       │   └── ThemeContext.jsx 
+│       ├── pages/               
+│       │   ├── Dashboard.jsx    
+│       │   ├── Login.jsx        
+│       │   ├── Register.jsx     
+│       │   ├── CreateNote.jsx   
+│       │   ├── ViewNote.jsx     
+│       │   ├── EditNote.jsx     
+│       │   ├── VerifyEmail.jsx  
+│       │   └── ...
+│       ├── routes/              
+│       ├── utils/               
+│       ├── App.jsx              
+│       └── main.jsx             
+│
+├── server/                      
+│   ├── config/                  
+│   ├── controllers/             
+│   ├── middleware/              
+│   ├── models/                  
+│   ├── routes/                  
+│   ├── services/                
+│   ├── utils/                   
+│   ├── .env                     
+│   ├── .env.example             
+│   └── index.js                 
+│
+└── package.json                 
+```
+
+## 🔧 Setup and Installation
+
+### Prerequisites
+- Node.js (v14 or higher)
 - MongoDB (local installation or MongoDB Atlas account)
+- npm or yarn
 
-## Installation and Setup
+### Setting Up the Project
 
-### 1. Clone the Repository
-
+#### 1. Clone the Repository
 ```bash
 git clone https://github.com/yourusername/legacynote.git
 cd legacynote
 ```
 
-### 2. Backend Setup
-
+#### 2. Install Root Dependencies for Combined Start Command
 ```bash
-# Navigate to the server directory
+# From the root directory
+npm install
+```
+
+#### 3. Set Up the Backend Server
+```bash
 cd server
 
 # Install dependencies
 npm install
 
-# Create a .env file and add your configuration
-# You can use the .env.example as a template
+# Create .env file from example
 cp .env.example .env
 ```
 
-Edit the `.env` file to include your specific configuration:
-
+Edit the `.env` file with your specific configuration:
 ```
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/legacynote
 JWT_SECRET=your_jwt_secret_key_change_in_production
 JWT_EXPIRE=30d
-ENCRYPTION_KEY=your_encryption_key_change_in_production
 EMAIL_SERVICE=gmail
 EMAIL_USERNAME=your_email@gmail.com
 EMAIL_PASSWORD=your_email_app_password
 EMAIL_FROM=noreply@legacynote.com
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+FRONTEND_URL=http://localhost:5173
 ```
 
-### 3. Frontend Setup
-
+#### 4. Set Up the Frontend
 ```bash
-# Navigate to the client directory
 cd ../client
 
 # Install dependencies
 npm install
 ```
 
-### 4. Running the Application
-
-#### Start the Backend Server
-
+#### 5. Install All Dependencies at Once (Alternative)
 ```bash
-# From the server directory
+# From the root directory
+npm run install-all
+```
+
+### 6. Running the Application
+
+#### One-Command Startup (Start both client and server)
+```bash
+# From the root directory
+npm start
+```
+
+This will concurrently start:
+- The backend server on http://localhost:5000
+- The frontend development server on http://localhost:5173
+
+#### Start Backend Only
+```bash
+cd server
 npm run dev
 ```
 
-This will start the server on http://localhost:5000.
-
-#### Start the Frontend Development Server
-
+#### Start Frontend Only
 ```bash
-# From the client directory
+cd client
 npm run dev
 ```
 
-This will start the React app on http://localhost:5173.
+## 📱 Mobile-First Approach
 
-## Usage
+LegacyNote is designed with a mobile-first approach:
+- Responsive design for all screen sizes
+- Different navigation behavior for mobile vs desktop
+- Touch-friendly controls and interactions
+- Conditional navbar rendering based on device size
 
-1. **Registration/Login:** Create an account or log in with your credentials.
-2. **Create Notes:** Write and schedule your notes for future delivery.
-3. **Dashboard:** Manage all your created notes from one place.
-4. **Sharing:** Generate special links to share specific notes with others.
+## 🔒 Security Features
 
-## Deployment
+- JWT-based authentication
+- Password hashing with bcrypt
+- HTTP-only cookies for token storage
+- CORS protection
+- Email verification for new accounts
+- OAuth integration for secure third-party login
+- Encrypted note content
 
-For production deployment, consider:
-- Using environment variables for all secrets
-- Setting up proper HTTPS
-- Implementing additional security measures
-- Using a production-grade MongoDB setup
+## 🧩 Key Components
 
-## License
+### Authentication Flow
+- User registration with email verification
+- Secure login with JWT tokens
+- Password reset functionality
+- Google OAuth integration
+
+### Note Management
+- Creation, editing, and deletion of notes
+- Future delivery scheduling
+- Media file attachments
+- Recipient management
+
+### User Interface
+- Responsive design across devices
+- Dark/light theme toggle
+- Toast notifications for user feedback
+- Loading states and error handling
+
+## 🌐 Deployment
+
+### Deploying the Backend
+The backend can be deployed to services like:
+- Heroku
+- Digital Ocean
+- AWS
+- Railway
+
+### Deploying the Frontend
+The frontend can be deployed to:
+- Vercel
+- Netlify
+- Firebase Hosting
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
 - [React.js](https://reactjs.org/)
 - [Node.js](https://nodejs.org/)
@@ -122,4 +243,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Mongoose](https://mongoosejs.com/)
 - [Agenda.js](https://github.com/agenda/agenda)
 - [JWT](https://jwt.io/)
-- [CryptoJS](https://github.com/brix/crypto-js) 
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Formik](https://formik.org/)
+- [React Toastify](https://fkhadra.github.io/react-toastify/)
+
+---
+
+Made with ❤️ by Your Team
