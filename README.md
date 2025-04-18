@@ -2,8 +2,6 @@
 
 LegacyNote is a full-stack web application that allows users to create, store, protect, and schedule delivery of long-term notes, messages, and documents. It's designed to serve as a digital time capsule, ensuring your words stand the test of time and are delivered precisely when you intend.
 
-![LegacyNote Platform](https://placeholder-for-legacynote-screenshot.png)
-
 ## 🚀 Features
 
 - **Time Capsule Notes**: Create and schedule notes that will be delivered at specific dates in the future
