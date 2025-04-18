@@ -46,6 +46,8 @@ export const authAPI = {
   resetPassword: (resetToken, password) => 
     api.put(`/auth/resetpassword/${resetToken}`, { password }),
   googleAuth: (userData) => api.post('/auth/google', userData),
+  resendVerification: (email) => api.post('/auth/resend-verification', { email }),
+  verifyEmail: (email, otp) => api.post('/auth/verify-email', { email, otp }),
 };
 
 // User API
@@ -59,11 +61,63 @@ export const userAPI = {
 export const notesAPI = {
   getNotes: () => api.get('/notes'),
   getNote: (id) => api.get(`/notes/${id}`),
-  createNote: (noteData) => api.post('/notes', noteData),
+  createNote: async (noteData) => {
+    try {
+      // Check if noteData is FormData
+      if (noteData instanceof FormData) {
+        console.log('Submitting note with FormData');
+        
+        // Log the data being sent (for debugging)
+        if (process.env.NODE_ENV !== 'production') {
+          for (let [key, value] of noteData.entries()) {
+            if (key !== 'mediaFiles') { // Don't log file binary data
+              console.log(`FormData: ${key} => ${value instanceof File ? value.name : value}`);
+            } else {
+              console.log(`FormData: ${key} => [File: ${value.name}]`);
+            }
+          }
+        }
+        
+        return await api.post('/notes', noteData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          timeout: 60000 // Add a 60 second timeout
+        });
+      }
+      
+      console.log('Submitting note with JSON data');
+      return await api.post('/notes', noteData, {
+        timeout: 30000 // Add a 30 second timeout for JSON requests
+      });
+    } catch (error) {
+      console.error('API error creating note:', error);
+      
+      // Enhance error message with details
+      if (error.response) {
+        // The request was made and the server responded with a status code outside of 2xx
+        console.error('Response error:', error.response.data);
+        throw error;
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Network error - no response received');
+        throw new Error('Network error - server did not respond. Please check your connection.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Request setup error:', error.message);
+        throw error;
+      }
+    }
+  },
   updateNote: (id, noteData) => api.put(`/notes/${id}`, noteData),
   deleteNote: (id) => api.delete(`/notes/${id}`),
   shareNote: (id) => api.post(`/notes/${id}/share`),
-  getSharedNote: (id, accessKey) => api.get(`/notes/shared/${id}/${accessKey}`),
+  getSharedNote: (id, accessKey) => {
+    // Include the authorization token if available
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    return api.get(`/notes/shared/${id}/${accessKey}`, { headers });
+  },
 };
 
 export default api; 

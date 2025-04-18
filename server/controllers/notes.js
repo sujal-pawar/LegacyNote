@@ -53,63 +53,172 @@ exports.getNote = async (req, res, next) => {
   }
 };
 
-// @desc    Create new note
+// @desc    Create note
 // @route   POST /api/notes
 // @access  Private
 exports.createNote = async (req, res, next) => {
   try {
-    // Add user to req.body
-    req.body.user = req.user.id;
+    // Extract note data from request
+    const { title, content, deliveryDate, isPublic } = req.body;
     
-    // Add timezone info if not provided
-    if (!req.body.timezone) {
-      req.body.timezone = req.body.timezone || 'UTC';
+    // Handle recipients data - properly parse JSON string if it exists
+    let recipientsData = [];
+    let recipientData = {};
+    
+    // First try to parse recipients array from JSON string
+    if (req.body.recipients) {
+      try {
+        recipientsData = JSON.parse(req.body.recipients);
+        console.log('Successfully parsed recipients array:', recipientsData);
+      } catch (parseError) {
+        console.error('Error parsing recipients JSON:', parseError);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid recipients data format',
+          details: 'Recipients data could not be parsed properly'
+        });
+      }
+    }
+    
+    // Also handle single recipient for backward compatibility
+    if (req.body.recipient) {
+      try {
+        if (typeof req.body.recipient === 'string') {
+          recipientData = JSON.parse(req.body.recipient);
+        } else {
+          recipientData = req.body.recipient;
+        }
+      } catch (parseError) {
+        console.error('Error parsing recipient JSON:', parseError);
+        // Continue without recipient if parsing fails
+        recipientData = {};
+      }
+    }
+    
+    // Parse the exact delivery date and time
+    const parsedDeliveryDate = new Date(deliveryDate);
+    
+    // Create note with basic data
+    const noteData = {
+      title,
+      content,
+      deliveryDate: parsedDeliveryDate,
+      isPublic: isPublic === 'true' || isPublic === true,
+      user: req.user.id,
+      exactTimeDelivery: true // Flag to indicate this note should be delivered at exact time
+    };
+
+    // Flag to track if recipients are defined
+    let hasRecipients = false;
+    
+    // Handle multiple recipients if provided
+    if (recipientsData && Array.isArray(recipientsData) && recipientsData.length > 0) {
+      // Validate maximum number of recipients
+      if (recipientsData.length > 10) {
+        return res.status(400).json({
+          success: false,
+          error: 'Too many recipients',
+          details: 'Maximum of 10 recipients allowed'
+        });
+      }
+      
+      // Format and sanitize recipients data
+      noteData.recipients = recipientsData.map(recipient => ({
+        name: recipient.name,
+        email: recipient.email.toLowerCase()
+      }));
+      
+      // Check if any recipient is self (for self-message flag)
+      if (recipientsData.some(r => r.email.toLowerCase() === req.user.email.toLowerCase())) {
+        noteData.isSelfMessage = true;
+      }
+      
+      hasRecipients = true;
+      console.log(`Note will be created with ${noteData.recipients.length} recipients`);
+    }
+    // For backward compatibility, still handle single recipient
+    else if (recipientData && recipientData.email) {
+      noteData.recipient = {
+        name: recipientData.name,
+        email: recipientData.email.toLowerCase()
+      };
+      
+      // Check if this is a self-message (sent to self)
+      if (recipientData.email.toLowerCase() === req.user.email.toLowerCase()) {
+        noteData.isSelfMessage = true;
+      }
+      
+      hasRecipients = true;
+      console.log(`Note will be created with single recipient: ${noteData.recipient.email}`);
+    }
+    
+    // If no recipients are defined, make sure the note is public
+    if (!hasRecipients && !noteData.isPublic) {
+      noteData.isPublic = true;
+      console.log(`Note created without recipients - automatically marked as public`);
     }
 
+    // Add validation logging
+    console.log('Creating note with data:', {
+      title: noteData.title,
+      hasRecipients,
+      recipientCount: noteData.recipients ? noteData.recipients.length : 0,
+      isPublic: noteData.isPublic
+    });
+
     // Create the note
-    const note = await Note.create(req.body);
-    
-    // Get the user who created the note
-    const user = await User.findById(req.user.id);
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found',
-      });
-    }
-    
-    // Check if this is a self-message (recipient email matches user's email)
-    const isSelfMessage = req.body.recipient && 
-                         req.body.recipient.email && 
-                         req.body.recipient.email === user.email;
-    
-    // Update the note if it's a self-message
-    if (isSelfMessage) {
-      note.isSelfMessage = true;
-      await note.save({ validateBeforeSave: false });
-    }
-    
-    try {
-      // Send confirmation email to the user
-      await sendNoteCreationConfirmation({
-        email: user.email,
-        note: note,
-        user: user
-      });
+    const note = await Note.create(noteData);
+
+    // Handle file uploads if present
+    if (req.files && req.files.length > 0) {
+      noteData.mediaFiles = req.files.map(file => ({
+        fileName: file.originalname,
+        // For Cloudinary files, use secure_url if available
+        filePath: file.path || (file.secure_url ? file.secure_url : ''),
+        fileType: file.mimetype,
+        fileSize: file.size
+      }));
       
-      console.log(`Confirmation email sent to ${user.email} for note ${note._id}`);
+      // Update note with media files
+      await Note.findByIdAndUpdate(note._id, {
+        mediaFiles: noteData.mediaFiles
+      });
+    }
+
+    // Generate shareable link if the note is public
+    if (noteData.isPublic) {
+      note.generateShareableLink();
+      await note.save();
+    }
+
+    // Send confirmation email to the user
+    try {
+      await sendNoteCreationConfirmation({
+        email: req.user.email,
+        note: note,
+        user: req.user
+      });
     } catch (emailError) {
-      console.error('Error sending confirmation email:', emailError);
-      // Continue execution even if email fails - don't let this prevent note creation
+      console.error('Failed to send note creation confirmation email:', emailError);
     }
 
     res.status(201).json({
       success: true,
-      data: note,
+      data: note
     });
   } catch (err) {
-    console.error('Error creating note:', err);
+    console.error('Error in createNote:', err);
+    
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({
+        success: false,
+        error: 'Validation Error',
+        details: messages.join(', ')
+      });
+    }
+    
     next(err);
   }
 };
@@ -119,20 +228,64 @@ exports.createNote = async (req, res, next) => {
 // @access  Private
 exports.updateNote = async (req, res, next) => {
   try {
+    // Extract note data from request
+    const { title, content, deliveryDate, isPublic } = req.body;
+    
+    // Handle recipients data - properly parse JSON string if it exists
+    let recipientsData = [];
+    let recipientData = {};
+    
+    // First try to parse recipients array from JSON string
+    if (req.body.recipients) {
+      try {
+        if (typeof req.body.recipients === 'string') {
+          recipientsData = JSON.parse(req.body.recipients);
+          console.log('Successfully parsed recipients array for update:', recipientsData);
+        } else {
+          recipientsData = req.body.recipients;
+        }
+      } catch (parseError) {
+        console.error('Error parsing recipients JSON for update:', parseError);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid recipients data format',
+          details: 'Recipients data could not be parsed properly'
+        });
+      }
+    }
+    
+    // Also handle single recipient for backward compatibility
+    if (req.body.recipient) {
+      try {
+        if (typeof req.body.recipient === 'string') {
+          recipientData = JSON.parse(req.body.recipient);
+        } else {
+          recipientData = req.body.recipient;
+        }
+      } catch (parseError) {
+        console.error('Error parsing recipient JSON for update:', parseError);
+        // Continue without recipient if parsing fails
+        recipientData = {};
+      }
+    }
+    
+    // Find the note
     let note = await Note.findById(req.params.id);
 
     if (!note) {
       return res.status(404).json({
         success: false,
         error: 'Note not found',
+        details: 'The note you are trying to update does not exist'
       });
     }
 
-    // Make sure user owns the note
+    // Check if user owns the note
     if (note.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
-        error: 'Not authorized to update this note',
+        error: 'Not authorized',
+        details: 'You can only update notes that you created'
       });
     }
 
@@ -140,13 +293,117 @@ exports.updateNote = async (req, res, next) => {
     if (note.isDelivered) {
       return res.status(400).json({
         success: false,
-        error: 'Cannot update a note that has already been delivered',
+        error: 'Cannot update delivered note',
+        details: 'This note has already been delivered and cannot be modified'
       });
     }
 
-    note = await Note.findByIdAndUpdate(req.params.id, req.body, {
+    // Parse the exact delivery date and time
+    const parsedDeliveryDate = new Date(deliveryDate);
+
+    // Prepare update data
+    const updateData = {
+      title,
+      content,
+      deliveryDate: parsedDeliveryDate,
+      isPublic: isPublic === 'true' || isPublic === true,
+      exactTimeDelivery: true // Update flag for exact time delivery
+    };
+
+    // Track if recipients are defined for logging
+    let hasRecipients = false;
+
+    // Handle multiple recipients if provided
+    if (recipientsData && Array.isArray(recipientsData)) {
+      // Validate maximum number of recipients
+      if (recipientsData.length > 10) {
+        return res.status(400).json({
+          success: false,
+          error: 'Too many recipients',
+          details: 'Maximum of 10 recipients allowed'
+        });
+      }
+      
+      // If recipients array is empty, remove recipients field
+      if (recipientsData.length === 0) {
+        updateData.recipients = [];
+      } else {
+        // Format and sanitize recipients data
+        updateData.recipients = recipientsData.map(recipient => ({
+          name: recipient.name,
+          email: recipient.email.toLowerCase()
+        }));
+        hasRecipients = true;
+      }
+      
+      // Check if any recipient is self (for self-message flag)
+      updateData.isSelfMessage = recipientsData.some(
+        r => r.email?.toLowerCase() === req.user.email.toLowerCase()
+      );
+      
+      console.log(`Note will be updated with ${updateData.recipients?.length || 0} recipients`);
+    }
+    // For backward compatibility, still handle single recipient
+    else if (recipientData) {
+      if (recipientData.email) {
+        updateData.recipient = {
+          name: recipientData.name,
+          email: recipientData.email.toLowerCase()
+        };
+        
+        // Update self-message flag
+        updateData.isSelfMessage = recipientData.email.toLowerCase() === req.user.email.toLowerCase();
+        hasRecipients = true;
+        
+        console.log(`Note will be updated with single recipient: ${updateData.recipient.email}`);
+      } else {
+        // Remove recipient if empty
+        updateData.recipient = undefined;
+        updateData.isSelfMessage = false;
+      }
+    } else {
+      // Remove recipient if not provided
+      updateData.recipient = undefined;
+      updateData.recipients = [];
+      updateData.isSelfMessage = false;
+    }
+    
+    // If no recipients are defined, make sure the note is public
+    if (!hasRecipients && !updateData.isPublic) {
+      updateData.isPublic = true;
+      console.log(`Note updated without recipients - automatically marked as public`);
+    }
+
+    // Add validation logging
+    console.log('Updating note with data:', {
+      id: req.params.id,
+      title: updateData.title,
+      hasRecipients,
+      recipientCount: updateData.recipients ? updateData.recipients.length : 0,
+      isPublic: updateData.isPublic
+    });
+
+    // Process uploaded files if any
+    if (req.files && req.files.length > 0) {
+      const newMediaFiles = req.files.map(file => ({
+        fileName: file.originalname,
+        filePath: file.path || (file.secure_url ? file.secure_url : ''),
+        fileType: file.mimetype,
+        fileSize: file.size || file.bytes || 0
+      }));
+      
+      // Append new files to existing ones
+      if (note.mediaFiles && note.mediaFiles.length > 0) {
+        updateData.mediaFiles = [...note.mediaFiles, ...newMediaFiles];
+      } else {
+        updateData.mediaFiles = newMediaFiles;
+      }
+    }
+
+    // Update the note with new values
+    note = await Note.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
-      runValidators: true,
+      runValidators: true
     });
 
     res.status(200).json({
@@ -154,6 +411,27 @@ exports.updateNote = async (req, res, next) => {
       data: note,
     });
   } catch (err) {
+    console.error('Error in updateNote:', err);
+    
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({
+        success: false,
+        error: 'Validation Error',
+        details: messages.join(', ')
+      });
+    }
+    
+    // Handle cast errors (invalid ID)
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid note ID',
+        details: 'The note ID provided is not in a valid format'
+      });
+    }
+    
     next(err);
   }
 };
@@ -224,11 +502,11 @@ exports.shareNote = async (req, res, next) => {
     if (!note.shareableLink || req.body.regenerate === true) {
       // Generate shareable link
       shareableLink = note.generateShareableLink();
-      console.log(`Generated new shareable link for note ${note._id}`);
+      // console.log(`Generated new shareable link for note ${note._id}`);
     } else {
       // Use existing link
       shareableLink = note.shareableLink;
-      console.log(`Using existing shareable link for note ${note._id}`);
+      // console.log(`Using existing shareable link for note ${note._id}`);
     }
     
     // Set note to public
@@ -315,9 +593,12 @@ exports.getSharedNote = async (req, res, next) => {
       });
     }
 
-    // Check if time condition is met
+    // Check if the current user is the owner of the note
+    const isOwner = req.user && note.user && req.user.id === note.user.toString();
+
+    // Check if time condition is met (bypass for note owner)
     const currentDate = new Date();
-    if (currentDate < note.deliveryDate && !note.isDelivered) {
+    if (!isOwner && currentDate < note.deliveryDate && !note.isDelivered) {
       return res.status(403).json({
         success: false,
         error: 'This note is not yet available for viewing',
@@ -342,7 +623,10 @@ exports.getSharedNote = async (req, res, next) => {
     note.accessKey = undefined;
     note.encryptedContent = undefined;
 
-    console.log(`Shared note ${id} successfully accessed`);
+    // Add a flag to indicate this is the owner viewing their own note
+    if (isOwner) {
+      note.isOwner = true;
+    }
     
     res.status(200).json({
       success: true,

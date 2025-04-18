@@ -3,7 +3,32 @@ const errorHandler = (err, req, res, next) => {
   error.message = err.message;
 
   // Log to console for dev
-  console.error(err);
+  console.error('Error details:', err);
+
+  // Multer errors (file uploads)
+  if (err.name === 'MulterError') {
+    const message = err.message || 'File upload error';
+    let details = '';
+    
+    // Handle specific multer errors
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        details = 'File is too large. Maximum size is 15MB per file.';
+        break;
+      case 'LIMIT_FILE_COUNT':
+        details = 'Too many files. Maximum 5 files allowed.';
+        break;
+      case 'LIMIT_UNEXPECTED_FILE':
+        details = 'Unexpected file field. Files should be uploaded as mediaFiles.';
+        break;
+      default:
+        details = `Upload error: ${err.code}`;
+    }
+    
+    error = new Error(message);
+    error.statusCode = 400;
+    error.details = details;
+  }
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
@@ -26,9 +51,17 @@ const errorHandler = (err, req, res, next) => {
     error.statusCode = 400;
   }
 
+  // Check for payload too large error
+  if (err.type === 'entity.too.large') {
+    error = new Error('Request entity too large');
+    error.statusCode = 413;
+    error.details = 'The uploaded file is too large. Please reduce the file size.';
+  }
+
   res.status(error.statusCode || 500).json({
     success: false,
-    error: error.message || 'Server Error'
+    error: error.message || 'Server Error',
+    details: error.details || null
   });
 };
 

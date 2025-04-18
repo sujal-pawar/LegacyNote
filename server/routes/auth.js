@@ -24,6 +24,6 @@ router.post('/google', googleAuth);
 
 // Email verification
 router.post('/verify-email', verifyEmail);
-router.post('/send-verification-otp', sendVerificationOTP);
+router.post('/resend-verification', sendVerificationOTP);
 
 module.exports = router; 

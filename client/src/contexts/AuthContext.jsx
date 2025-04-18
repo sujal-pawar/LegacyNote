@@ -44,11 +44,11 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
-      toast.success('Registration successful!');
+      toast.success('Account created successfully! Welcome to LegacyNote.');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
-      toast.error(err.response?.data?.error || 'Registration failed');
+      toast.error(err.response?.data?.error || 'Registration failed. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -64,11 +64,25 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
-      toast.success('Login successful!');
+      toast.success(`Welcome back, ${res.data.user.name || 'User'}!`);
       return true;
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
-      toast.error(err.response?.data?.error || 'Login failed');
+      console.error('Login error:', err);
+      let errorMessage;
+      
+      if (err.response && err.response.data) {
+        // Server returned an error response
+        errorMessage = err.response.data.error || 'Invalid credentials';
+      } else if (err.request) {
+        // No response received
+        errorMessage = 'No response from server. Please try again later.';
+      } else {
+        // Request setup error
+        errorMessage = 'Login failed. Please try again.';
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
       return false;
     } finally {
       setLoading(false);
@@ -84,11 +98,11 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
-      toast.success('Google login successful!');
+      toast.success(`Welcome, ${res.data.user.name || 'User'}! Google login successful.`);
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Google login failed');
-      toast.error(err.response?.data?.error || 'Google login failed');
+      toast.error(err.response?.data?.error || 'Google login failed. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -101,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
-    toast.success('Logged out successfully');
+    toast.info('You have been logged out successfully.');
   };
 
   // Forgot password
@@ -109,11 +123,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await authAPI.forgotPassword({ email });
-      toast.success('Reset email sent. Please check your inbox.');
+      toast.success('Password reset email sent! Please check your inbox and follow the instructions.');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to send reset email');
-      toast.error(err.response?.data?.error || 'Failed to send reset email');
+      toast.error(err.response?.data?.error || 'Unable to send reset email. Please verify your email address.');
       return false;
     } finally {
       setLoading(false);
@@ -125,11 +139,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await authAPI.resetPassword(resetToken, password);
-      toast.success('Password reset successful. Please login with your new password.');
+      toast.success('Your password has been reset successfully! Please login with your new password.');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to reset password');
-      toast.error(err.response?.data?.error || 'Failed to reset password');
+      toast.error(err.response?.data?.error || 'Password reset failed. The link may have expired.');
       return false;
     } finally {
       setLoading(false);
@@ -142,11 +156,63 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const res = await authAPI.updateUser(userData);
       setUser(res.data.data);
-      toast.success('Profile updated successfully');
+      toast.success('Your profile has been updated successfully!');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update profile');
-      toast.error(err.response?.data?.error || 'Failed to update profile');
+      toast.error(err.response?.data?.error || 'Unable to update profile. Please try again.');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verify email with OTP
+  const verifyEmail = async (email, otp) => {
+    try {
+      setLoading(true);
+      const res = await authAPI.verifyEmail(email, otp);
+      
+      // Update user in state with verified email
+      if (user) {
+        setUser({
+          ...user,
+          isEmailVerified: true
+        });
+      }
+      
+      // Handle the response from server
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+        setToken(res.data.token);
+        
+        // Reload user data from server to ensure we have the latest state
+        try {
+          const userRes = await authAPI.getUser();
+          setUser(userRes.data.data);
+        } catch (userErr) {
+          console.error('Error refreshing user data:', userErr);
+        }
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('Email verification error:', err);
+      let errorMessage;
+      
+      if (err.response && err.response.data) {
+        // Server returned an error response
+        errorMessage = err.response.data.error || 'Invalid or expired verification code';
+      } else if (err.request) {
+        // No response received
+        errorMessage = 'No response from server. Please try again later.';
+      } else {
+        // Request setup error
+        errorMessage = 'Email verification failed. Please try again.';
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
       return false;
     } finally {
       setLoading(false);
@@ -156,6 +222,21 @@ export const AuthProvider = ({ children }) => {
   // Clear errors
   const clearErrors = () => {
     setError(null);
+  };
+
+  // Refresh user data from server
+  const refreshUser = async () => {
+    try {
+      setLoading(true);
+      const res = await authAPI.getUser();
+      setUser(res.data.data);
+      return true;
+    } catch (err) {
+      console.error('Error refreshing user data:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -172,6 +253,8 @@ export const AuthProvider = ({ children }) => {
         forgotPassword,
         resetPassword,
         updateProfile,
+        verifyEmail,
+        refreshUser,
         clearErrors,
         googleLogin,
       }}

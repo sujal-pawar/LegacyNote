@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { FaPaperPlane, FaEnvelope, FaHeading, FaAlignLeft, FaCalendarAlt } from 'react-icons/fa';
+import { FaPaperPlane, FaEnvelope, FaHeading, FaAlignLeft, FaCalendarAlt, FaFile, FaTimes, FaImage, FaVideo, FaMusic, FaFileAlt, FaPlus } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import DateTimePicker from './DateTimePicker';
 import { notesAPI } from '../api/api';
@@ -15,6 +15,26 @@ const SelfMessageForm = ({ onSuccess }) => {
   const { user } = useAuth();
   const [dateTimeValue, setDateTimeValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [fileErrors, setFileErrors] = useState('');
+  
+  // Max file size in bytes (5MB)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  
+  // Allowed file types
+  const ALLOWED_FILE_TYPES = [
+    // Images
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+    // Documents
+    'application/pdf', 'application/msword', 
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    // Audio
+    'audio/mpeg', 'audio/wav', 'audio/ogg',
+    // Video
+    'video/mp4', 'video/webm', 'video/quicktime'
+  ];
   
   // Validation schema for the form
   const validationSchema = Yup.object({
@@ -46,30 +66,104 @@ const SelfMessageForm = ({ onSuccess }) => {
     deliveryDateTime: '',
   };
 
+  // Handle file selection
+  const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files);
+    
+    // Validate files
+    let errors = '';
+    
+    // Check file size and type
+    const validFiles = files.filter(file => {
+      if (file.size > MAX_FILE_SIZE) {
+        errors = `${file.name} is too large. Maximum file size is 5MB.`;
+        return false;
+      }
+      
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        errors = `${file.name} has an unsupported file type.`;
+        return false;
+      }
+      
+      return true;
+    });
+    
+    if (errors) {
+      setFileErrors(errors);
+      return;
+    }
+    
+    // Check total number of files
+    if (selectedFiles.length + validFiles.length > 5) {
+      setFileErrors('Maximum 5 files can be uploaded.');
+      return;
+    }
+    
+    setFileErrors('');
+    setSelectedFiles([...selectedFiles, ...validFiles]);
+  };
+
+  // Remove a file from the selected files
+  const removeFile = (index) => {
+    const newFiles = [...selectedFiles];
+    newFiles.splice(index, 1);
+    setSelectedFiles(newFiles);
+  };
+
+  // Get file icon based on MIME type
+  const getFileIcon = (mimeType) => {
+    if (mimeType.startsWith('image/')) return <FaImage />;
+    if (mimeType.startsWith('video/')) return <FaVideo />;
+    if (mimeType.startsWith('audio/')) return <FaMusic />;
+    if (mimeType.startsWith('application/pdf')) return <FaFileAlt />;
+    return <FaFile />;
+  };
+
   // Handle form submission
   const handleSubmit = async (values, { resetForm }) => {
     try {
       setIsSubmitting(true);
       
-      // Create note data structure
-      const noteData = {
-        title: values.title,
-        content: values.content,
-        deliveryDate: values.deliveryDateTime,
-        isPublic: false,
-        // Add the user as recipient to receive the email
-        recipient: {
-          name: user?.name || 'Me',
-          email: user?.email
-        }
+      // Create FormData for file uploads
+      const formData = new FormData();
+      
+      // Add note data to FormData
+      formData.append('title', values.title);
+      formData.append('content', values.content);
+      formData.append('deliveryDate', values.deliveryDateTime);
+      formData.append('isPublic', false);
+      
+      // Add the user as recipient to receive the email
+      const recipientData = {
+        name: user?.name || 'Me',
+        email: user?.email
       };
+      formData.append('recipient', JSON.stringify(recipientData));
+      
+      // Add files to FormData
+      selectedFiles.forEach(file => {
+        formData.append('mediaFiles', file);
+      });
 
       // Call API to create the note
-      await notesAPI.createNote(noteData);
+      await notesAPI.createNote(formData);
       
-      toast.success('Message scheduled successfully!');
+      const deliveryDate = new Date(values.deliveryDateTime);
+      const formattedDate = deliveryDate.toLocaleDateString(undefined, { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      const formattedTime = deliveryDate.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      toast.success(`Message scheduled successfully! You'll receive it on ${formattedDate} at ${formattedTime}.`);
       resetForm();
       setDateTimeValue('');
+      setSelectedFiles([]);
       
       // Call onSuccess callback if provided
       if (onSuccess && typeof onSuccess === 'function') {
@@ -77,7 +171,15 @@ const SelfMessageForm = ({ onSuccess }) => {
       }
     } catch (error) {
       console.error('Error scheduling message:', error);
-      toast.error(error.response?.data?.error || 'Failed to schedule message');
+      const errorMessage = error.response?.data?.error;
+      
+      if (errorMessage && errorMessage.includes('delivery')) {
+        toast.error(errorMessage || 'Please check the delivery date and try again.');
+      } else if (errorMessage && errorMessage.includes('file')) {
+        toast.error(errorMessage || 'There was an issue with one or more of your attached files.');
+      } else {
+        toast.error(errorMessage || 'Unable to schedule your message. Please try again later.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -128,6 +230,78 @@ const SelfMessageForm = ({ onSuccess }) => {
                 placeholder="What would you like to tell your future self?"
               />
               <ErrorMessage name="content" component="div" className="text-sm text-red-500 dark:text-red-400 mt-1" />
+            </div>
+            
+            {/* File Upload Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Attach Files (Optional)
+              </label>
+              
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-100">
+                  <div className="flex flex-col items-center justify-center p-6">
+                    <FaFile className="w-8 h-8 text-gray-500 dark:text-gray-400 mb-2" />
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Images, documents, audio, or video (max 5MB each)
+                    </p>
+                  </div>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    onChange={handleFileSelect} 
+                    multiple 
+                    accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.mp3,.wav,.mp4,.mov,.webm"
+                  />
+                </label>
+              </div>
+              
+              {fileErrors && (
+                <p className="text-sm text-red-500 dark:text-red-400 mt-1">{fileErrors}</p>
+              )}
+              
+              {/* Selected files */}
+              {selectedFiles.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Selected Files ({selectedFiles.length})
+                  </h4>
+                  <ul className="space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <li 
+                        key={index} 
+                        className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                      >
+                        <div className="flex items-center">
+                          <span className="mr-2 text-gray-600 dark:text-gray-400">
+                            {getFileIcon(file.type)}
+                          </span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[240px]">
+                            {file.name}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                            ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                          <FaTimes />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                Total files: {selectedFiles.length}/5
+              </p>
             </div>
 
             <div>

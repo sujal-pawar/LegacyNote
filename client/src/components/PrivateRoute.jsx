@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const PrivateRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   // Show loading state while checking authentication
   if (loading) {
@@ -16,10 +16,18 @@ const PrivateRoute = ({ children }) => {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
+    console.log('User not authenticated, redirecting to login');
     return <Navigate to="/login" />;
   }
 
-  // If authenticated, render the children (protected component)
+  // Redirect to email verification page if email is not verified
+  if (user && !user.isEmailVerified) {
+    console.log('Email verification needed:', user);
+    return <Navigate to="/verify-email" />;
+  }
+
+  console.log('User authenticated and email verified:', user);
+  // If authenticated and email verified, render the children (protected component)
   return children;
 };
 

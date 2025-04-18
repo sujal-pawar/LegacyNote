@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaEnvelope, FaCalendarCheck, FaSpinner } from 'react-icons/fa';
+import { FaArrowLeft, FaEnvelope, FaCalendarCheck, FaSpinner, FaFile } from 'react-icons/fa';
 import SelfMessageForm from '../components/SelfMessageForm';
 import { notesAPI } from '../api/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -94,11 +94,12 @@ const SelfMessage = () => {
                 <SelfMessageForm onSuccess={handleSuccess} />
                 
                 {showSuccessMessage && (
-                  <div className="mt-4 bg-green-100 dark:bg-green-900/20 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg">
-                    <span className="flex items-center">
-                      <FaCalendarCheck className="mr-2" />
-                      Message scheduled successfully!
-                    </span>
+                  <div className="mt-4 bg-gradient-to-r from-green-500 to-green-600 text-white px-5 py-4 rounded-lg shadow-md flex items-center">
+                    <FaCalendarCheck className="mr-3 text-xl flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-white">Message scheduled successfully!</p>
+                      <p className="text-sm text-green-100">Your future self will be notified on the specified date.</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -142,6 +143,16 @@ const SelfMessage = () => {
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                           {message.content}
                         </p>
+                        
+                        {/* Display media files badge if present */}
+                        {message.mediaFiles && message.mediaFiles.length > 0 && (
+                          <div className="mt-2 flex items-center">
+                            <span className="inline-flex items-center text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+                              <FaFile className="mr-1" /> 
+                              {message.mediaFiles.length} {message.mediaFiles.length === 1 ? 'attachment' : 'attachments'}
+                            </span>
+                          </div>
+                        )}
                         
                         <div className="mt-3 text-xs text-gray-500 dark:text-gray-500 flex justify-between">
                           <span>

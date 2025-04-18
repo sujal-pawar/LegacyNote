@@ -8,7 +8,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
-  const { login, googleLogin } = useAuth();
+  const { login, googleLogin, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -29,7 +29,10 @@ const Login = () => {
     try {
       setShowError(false);
       const success = await login(values);
-      if (success) navigate('/dashboard');
+      if (success) {
+        await refreshUser();
+        navigate('/dashboard');
+      }
     } catch (error) {
       setErrorMessage(error.response?.data?.error || 'Login failed. Please try again.');
       setShowError(true);
@@ -46,7 +49,10 @@ const Login = () => {
         name: decoded.name,
         googleId: decoded.sub,
       });
-      if (success) navigate('/dashboard');
+      if (success) {
+        await refreshUser();
+        navigate('/dashboard');
+      }
     } catch (error) {
       setErrorMessage('Google login failed. Please try again.');
       setShowError(true);
@@ -113,7 +119,7 @@ const Login = () => {
               </div>
 
               {showError && (
-                <div className="p-3 text-sm bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg mb-6">
+                <div className="p-4 mb-6 text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800">
                   {errorMessage}
                 </div>
               )}
@@ -134,7 +140,11 @@ const Login = () => {
                         className="w-full px-3 py-2 border rounded-lg dark:border-gray-300 dark:bg-transparent dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="your@email.com"
                       />
-                      <ErrorMessage name="email" component="div" className="text-sm text-red-500 dark:text-red-400 mt-1" />
+                      <ErrorMessage 
+                        name="email" 
+                        component="div" 
+                        className="text-sm text-red-600 dark:text-red-300 mt-1 font-medium" 
+                      />
                     </div>
 
                     <div>
@@ -150,7 +160,11 @@ const Login = () => {
                         className="w-full px-3 py-2 border rounded-lg dark:border-gray-300 dark:bg-transparent dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="••••••••"
                       />
-                      <ErrorMessage name="password" component="div" className="text-sm text-red-500 dark:text-red-400 mt-1" />
+                      <ErrorMessage 
+                        name="password" 
+                        component="div" 
+                        className="text-sm text-red-600 dark:text-red-300 mt-1 font-medium" 
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">

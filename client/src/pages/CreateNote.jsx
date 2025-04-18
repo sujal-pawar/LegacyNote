@@ -1,68 +1,336 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
-import { FaCalendarAlt, FaEnvelope, FaUser, FaLock, FaArrowLeft } from 'react-icons/fa';
+import { FaCalendarAlt, FaEnvelope, FaUser, FaLock, FaArrowLeft, FaFile, FaTimes, FaImage, FaVideo, FaMusic, FaFileAlt, FaPlus, FaUserFriends } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { notesAPI } from '../api/api';
+import api from '../api/api';
 
 const CreateNote = () => {
   const navigate = useNavigate();
-  const [includeRecipient, setIncludeRecipient] = useState(false);
+  const [includeRecipients, setIncludeRecipients] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [fileErrors, setFileErrors] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Max file size in bytes (5MB)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  
+  // Allowed file types
+  const ALLOWED_FILE_TYPES = [
+    // Images
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+    // Documents
+    'application/pdf', 'application/msword', 
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    // Audio
+    'audio/mpeg', 'audio/wav', 'audio/ogg',
+    // Video
+    'video/mp4', 'video/webm', 'video/quicktime'
+  ];
 
-  // Validation schema
-  const validationSchema = Yup.object({
-    title: Yup.string()
-      .required('Title is required')
-      .max(100, 'Title must be less than 100 characters'),
-    content: Yup.string()
-      .required('Content is required'),
-    deliveryDate: Yup.date()
-      .required('Delivery date is required')
-      .min(new Date(), 'Delivery date must be in the future'),
-    isPublic: Yup.boolean(),
-    recipient: Yup.object().shape({
-      name: Yup.string()
-        .when('$includeRecipient', {
-          is: true,
-          then: Yup.string().required('Recipient name is required'),
-        }),
-      email: Yup.string()
-        .when('$includeRecipient', {
-          is: true,
-          then: Yup.string().email('Invalid email').required('Recipient email is required'),
-        }),
-    }),
-  });
+  // Wrap validation in try/catch to prevent crashes
+  let safeValidationSchema;
+  try {
+    safeValidationSchema = Yup.object({
+      title: Yup.string()
+        .required('Title is required')
+        .max(100, 'Title must be less than 100 characters'),
+      content: Yup.string()
+        .required('Content is required'),
+      deliveryDate: Yup.date()
+        .required('Delivery date is required')
+        .min(new Date(new Date().setHours(0, 0, 0, 0)), 'Delivery date cannot be in the past'),
+      deliveryTime: Yup.string()
+        .required('Delivery time is required')
+        .test(
+          'valid-time',
+          'Please enter a valid time',
+          value => Boolean(value && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value))
+        ),
+      isPublic: Yup.boolean(),
+      recipients: Yup.array().of(
+        Yup.object().shape({
+          name: Yup.string()
+            .required('Name is required'),
+          email: Yup.string()
+            .email('Invalid email')
+            .required('Email is required'),
+        })
+      )
+      .test(
+        'recipients-validation',
+        'At least one recipient is required when sending to recipients',
+        function(value, context) {
+          // Get includeRecipients from context
+          const { includeRecipients } = this.options.context || {};
+          
+          // If sending to recipients is enabled, require at least one valid recipient
+          if (includeRecipients) {
+            return value && value.length >= 1;
+          }
+          
+          // Otherwise, no validation needed
+          return true;
+        }
+      )
+      .test(
+        'max-recipients',
+        'Maximum of 10 recipients allowed',
+        function(value) {
+          return !value || value.length <= 10;
+        }
+      ),
+    })
+    .test(
+      'at-least-one-checkbox',
+      'Please select at least one: make public or send to someone',
+      function (values) {
+        const { isPublic } = values;
+        const { includeRecipients } = this.options.context || {};
+        return isPublic || includeRecipients;
+      }
+    )
+    .test(
+      'future-date-time',
+      'The combined date and time must be in the future',
+      function (values) {
+        const { deliveryDate, deliveryTime } = values;
+        if (!deliveryDate || !deliveryTime) return true;
+        
+        const now = new Date();
+        const selectedDateTime = new Date(deliveryDate);
+        
+        try {
+          const [hours, minutes] = deliveryTime.split(':');
+          selectedDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+          
+          // Allow up to 2 minutes leeway for form submission time
+          now.setMinutes(now.getMinutes() + 2);
+          return selectedDateTime >= now;
+        } catch (error) {
+          console.error('Time validation error:', error);
+          return true;
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error setting up validation schema:', error);
+    // Fallback to a basic schema if the main one fails
+    safeValidationSchema = Yup.object({
+      title: Yup.string().required('Title is required'),
+      content: Yup.string().required('Content is required'),
+      deliveryDate: Yup.date().required('Delivery date is required'),
+      deliveryTime: Yup.string().required('Delivery time is required')
+    });
+  }
+
+  // Get today's date in YYYY-MM-DD format for the date input min value
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Get current time in HH:MM format for initial value if user selects today
+  const getCurrentTime = () => {
+    const now = new Date();
+    // Add 5 minutes to current time to ensure we're in the future
+    now.setMinutes(now.getMinutes() + 5);
+    return now.toTimeString().substring(0, 5); // Extract HH:MM
+  };
 
   // Form initial values
   const initialValues = {
     title: '',
     content: '',
-    deliveryDate: '',
+    deliveryDate: today,
+    deliveryTime: getCurrentTime(),
     isPublic: false,
-    recipient: {
-      name: '',
-      email: '',
-    },
+    recipients: [{ name: '', email: '' }],
+  };
+
+  // Handle file selection
+  const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files);
+    
+    // Validate files
+    let errors = '';
+    let totalSize = 0;
+    
+    // Calculate current total size of already selected files
+    selectedFiles.forEach(file => {
+      totalSize += file.size;
+    });
+    
+    // Check file size and type
+    const validFiles = files.filter(file => {
+      // Add this file's size to total
+      totalSize += file.size;
+      
+      if (file.size > MAX_FILE_SIZE) {
+        errors = `${file.name} is too large. Maximum file size is 5MB.`;
+        return false;
+      }
+      
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        errors = `${file.name} has an unsupported file type.`;
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Check total size of all files (15MB max total)
+    if (totalSize > 15 * 1024 * 1024) {
+      errors = `Total file size exceeds 15MB. Please reduce the size or number of files.`;
+      return;
+    }
+    
+    if (errors) {
+      setFileErrors(errors);
+      return;
+    }
+    
+    // Check total number of files
+    if (selectedFiles.length + validFiles.length > 5) {
+      setFileErrors('Maximum 5 files can be uploaded.');
+      return;
+    }
+    
+    setFileErrors('');
+    setSelectedFiles([...selectedFiles, ...validFiles]);
+  };
+
+  // Remove a file from the selected files
+  const removeFile = (index) => {
+    const newFiles = [...selectedFiles];
+    newFiles.splice(index, 1);
+    setSelectedFiles(newFiles);
+  };
+
+  // Get file icon based on MIME type
+  const getFileIcon = (mimeType) => {
+    if (mimeType.startsWith('image/')) return <FaImage />;
+    if (mimeType.startsWith('video/')) return <FaVideo />;
+    if (mimeType.startsWith('audio/')) return <FaMusic />;
+    if (mimeType.startsWith('application/pdf')) return <FaFileAlt />;
+    return <FaFile />;
   };
 
   // Handle form submission
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting: formikSetSubmitting }) => {
+    // Set our local submitting state
+    setSubmitting(true);
+    setSubmitError('');
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Validate the delivery time is in the future for same-day deliveries
+    const deliveryDateTime = new Date(values.deliveryDate);
+    const [hours, minutes] = values.deliveryTime.split(':');
+    deliveryDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    
+    const now = new Date();
+    if (deliveryDateTime <= now) {
+      setSubmitError('The delivery time must be at least a few minutes in the future. Please adjust your time.');
+      setSubmitting(false);
+      formikSetSubmitting(false);
+      setIsUploading(false);
+      return;
+    }
+
+    // Create a timeout to prevent the form from being stuck if there's a network issue
+    const timeoutId = setTimeout(() => {
+      setSubmitError('The request is taking longer than expected. You can try again or check your network connection.');
+      setSubmitting(false);
+      formikSetSubmitting(false);
+      setIsUploading(false);
+    }, 60000); // 60 seconds timeout
+
     try {
-      // If no recipient is included, remove the recipient field
-      const noteData = { ...values };
-      if (!includeRecipient) {
-        delete noteData.recipient;
+      // Create FormData for file uploads
+      const formData = new FormData();
+      
+      // Add note data to FormData
+      formData.append('title', values.title);
+      formData.append('content', values.content);
+      formData.append('deliveryDate', deliveryDateTime.toISOString());
+      formData.append('isPublic', values.isPublic);
+      formData.append('exactTimeDelivery', 'true'); // Always enable exact time delivery
+      
+      // Add recipients if they're included
+      if (includeRecipients && values.recipients.length > 0) {
+        formData.append('recipients', JSON.stringify(values.recipients));
+      }
+      
+      // Add files to FormData - limit to smaller chunks if many files
+      if (selectedFiles.length > 0) {
+        // Process files in smaller batches if needed
+        selectedFiles.forEach((file, index) => {
+          formData.append('mediaFiles', file);
+          // Update progress as files are added
+          setUploadProgress(Math.round((index + 1) / selectedFiles.length * 50)); // First 50% is prep
+        });
       }
 
-      await notesAPI.createNote(noteData);
+      console.log('Submitting note creation form...');
+      
+      // Use the API directly with detailed error handling
+      const response = await api.post(
+        '/notes', 
+        formData, 
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 50) / progressEvent.total
+            ) + 50; // Last 50% is upload
+            setUploadProgress(percentCompleted);
+            console.log(`Upload progress: ${percentCompleted}%`);
+          },
+          timeout: 60000 // 60 second timeout
+        }
+      );
+      
+      console.log('Note creation successful:', response.data);
+      clearTimeout(timeoutId);
+      setUploadProgress(100);
+      
       toast.success('Note created successfully');
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to create note');
+      clearTimeout(timeoutId);
+      console.error('Note creation error details:', err);
+      
+      let errorMessage = 'Failed to create note';
+      
+      if (err.response) {
+        // Server responded with an error
+        errorMessage = err.response.data?.error || err.response.data?.message || 'Server error';
+        console.error('Server error response:', err.response.data);
+      } else if (err.request) {
+        // Request was made but no response
+        errorMessage = 'Network error - no response from server';
+        console.error('Network error - no response received');
+      } else {
+        // Error in request setup
+        errorMessage = err.message || 'Error preparing request';
+        console.error('Request error:', err.message);
+      }
+      
+      setSubmitError(errorMessage);
+      toast.error(errorMessage);
     } finally {
+      clearTimeout(timeoutId);
       setSubmitting(false);
+      formikSetSubmitting(false);
+      setIsUploading(false);
     }
   };
 
@@ -85,14 +353,20 @@ const CreateNote = () => {
 
           <Formik
             initialValues={initialValues}
-            validationSchema={validationSchema}
+            validationSchema={safeValidationSchema}
             onSubmit={handleSubmit}
             validateOnChange={false}
             validateOnBlur={true}
-            validationContext={{ includeRecipient }}
+            validationContext={{ includeRecipients }}
           >
-            {({ isSubmitting }) => (
-              <Form className="space-y-6">
+            {({ isSubmitting, errors, values, touched, handleSubmit: formikHandleSubmit }) => (
+              <Form className="space-y-6" onSubmit={(e) => {
+                // Add extra validation logging to help debug validation issues
+                if (Object.keys(errors).length > 0) {
+                  console.log('Form validation errors:', errors);
+                }
+                formikHandleSubmit(e);
+              }}>
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Title
@@ -129,29 +403,121 @@ const CreateNote = () => {
                   />
                 </div>
 
+                {/* File Upload Section */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Media Attachments (max 5 files, 5MB each)
+                  </label>
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center p-6">
+                        <FaFile className="w-8 h-8 text-gray-500 dark:text-gray-400 mb-2" />
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Images, documents, audio, or video (max 5MB each)
+                        </p>
+                      </div>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        onChange={handleFileSelect} 
+                        multiple 
+                        accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.mp3,.wav,.mp4,.mov,.webm"
+                      />
+                    </label>
+                  </div>
+                  {fileErrors && (
+                    <p className="text-sm text-red-500 dark:text-red-400 mt-1">{fileErrors}</p>
+                  )}
+                  {selectedFiles.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Selected Files ({selectedFiles.length}/5)
+                      </h4>
+                      <ul className="space-y-2">
+                        {selectedFiles.map((file, index) => (
+                          <li 
+                            key={index} 
+                            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                          >
+                            <div className="flex items-center">
+                              <span className="mr-2 text-gray-600 dark:text-gray-400">
+                                {getFileIcon(file.type)}
+                              </span>
+                              <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[240px]">
+                                {file.name}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                                ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFile(index)}
+                              className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              <FaTimes />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label htmlFor="deliveryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     <div className="flex items-center">
-                      <FaCalendarAlt className="w-4 h-4 mr-2" /> Delivery Date
+                      <FaCalendarAlt className="w-4 h-4 mr-2" /> Delivery Date and Time
                     </div>
                   </label>
-                  <Field
-                    type="date"
-                    name="deliveryDate"
-                    id="deliveryDate"
-                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    min={new Date().toISOString().split('T')[0]}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Field
+                        type="date"
+                        name="deliveryDate"
+                        id="deliveryDate"
+                        className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        min={today}
+                      />
+                      <ErrorMessage 
+                        name="deliveryDate" 
+                        component="div" 
+                        className="text-sm text-red-500 dark:text-red-400 mt-1" 
+                      />
+                    </div>
+                    <div>
+                      <Field
+                        type="time"
+                        name="deliveryTime"
+                        id="deliveryTime"
+                        className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                      <ErrorMessage 
+                        name="deliveryTime" 
+                        component="div" 
+                        className="text-sm text-red-500 dark:text-red-400 mt-1" 
+                      />
+                    </div>
+                  </div>
                   <ErrorMessage 
-                    name="deliveryDate" 
+                    name="future-date-time" 
                     component="div" 
                     className="text-sm text-red-500 dark:text-red-400 mt-1" 
                   />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    This note will be available on or after this date.
-                  </p>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 space-y-1">
+                    <p>
+                      <span className="font-medium text-indigo-600 dark:text-indigo-400">✓</span> Same-day delivery is available! Just select today's date and a time at least 5 minutes in the future.
+                    </p>
+                    <p>
+                      Your note will be delivered exactly at the specified time, and a confirmation email will be sent.
+                    </p>
+                  </div>
                 </div>
 
+                {/* Checkbox for public */}
                 <div>
                   <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
                     <Field
@@ -163,61 +529,125 @@ const CreateNote = () => {
                   </label>
                 </div>
 
+                {/* Checkbox for recipients */}
                 <div>
                   <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
                     <input
                       type="checkbox"
-                      checked={includeRecipient}
-                      onChange={(e) => setIncludeRecipient(e.target.checked)}
+                      checked={includeRecipients}
+                      onChange={() => setIncludeRecipients(!includeRecipients)}
                       className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mr-2"
                     />
-                    <span>Send this note to someone else</span>
+                    <span>Send this note to recipients</span>
                   </label>
+                  {errors['at-least-one-checkbox'] && !includeRecipients && !values.isPublic && (
+                  <div className="text-sm text-red-500 dark:text-red-400 mt-1">
+                    {errors['at-least-one-checkbox']}
+                  </div>
+                )}
                 </div>
 
-                {includeRecipient && (
+                {includeRecipients && (
                   <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Recipient Information</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                        <FaUserFriends className="mr-2" /> Recipients ({values.recipients.length}/10)
+                      </h3>
+                    </div>
+                    
+                    <FieldArray name="recipients">
+                      {({ remove, push }) => (
                     <div className="space-y-4">
+                          {values.recipients.map((recipient, index) => (
+                            <div key={index} className="p-4 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600">
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Recipient #{index + 1}</span>
+                                {values.recipients.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => remove(index)}
+                                    className="text-red-500 dark:text-red-400 hover:text-red-700 text-sm flex items-center"
+                                  >
+                                    <FaTimes className="mr-1" /> Remove
+                                  </button>
+                                )}
+                              </div>
+                              
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="recipient.name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                  <label htmlFor={`recipients.${index}.name`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           <div className="flex items-center">
-                            <FaUser className="w-4 h-4 mr-2" /> Recipient Name
+                                      <FaUser className="w-4 h-4 mr-2" /> Name
                           </div>
                         </label>
                         <Field
                           type="text"
-                          name="recipient.name"
-                          id="recipient.name"
+                                    name={`recipients.${index}.name`}
+                                    id={`recipients.${index}.name`}
                           className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Enter recipient's name"
-                        />
-                        <ErrorMessage 
-                          name="recipient.name" 
-                          component="div" 
-                          className="text-sm text-red-500 dark:text-red-400 mt-1" 
-                        />
+                                    placeholder="Enter name"
+                                  />
+                                  {touched.recipients && 
+                                   touched.recipients[index] && 
+                                   errors.recipients && 
+                                   errors.recipients[index] && 
+                                   errors.recipients[index].name && (
+                                    <div className="text-sm text-red-500 dark:text-red-400 mt-1">
+                                      {errors.recipients[index].name}
+                                    </div>
+                                  )}
                       </div>
 
                       <div>
-                        <label htmlFor="recipient.email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                  <label htmlFor={`recipients.${index}.email`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           <div className="flex items-center">
-                            <FaEnvelope className="w-4 h-4 mr-2" /> Recipient Email
+                                      <FaEnvelope className="w-4 h-4 mr-2" /> Email
                           </div>
                         </label>
                         <Field
                           type="email"
-                          name="recipient.email"
-                          id="recipient.email"
+                                    name={`recipients.${index}.email`}
+                                    id={`recipients.${index}.email`}
                           className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Enter recipient's email"
-                        />
-                        <ErrorMessage 
-                          name="recipient.email" 
-                          component="div" 
-                          className="text-sm text-red-500 dark:text-red-400 mt-1" 
-                        />
+                                    placeholder="Enter email"
+                                  />
+                                  {touched.recipients && 
+                                   touched.recipients[index] && 
+                                   errors.recipients && 
+                                   errors.recipients[index] && 
+                                   errors.recipients[index].email && (
+                                    <div className="text-sm text-red-500 dark:text-red-400 mt-1">
+                                      {errors.recipients[index].email}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {values.recipients.length < 10 && (
+                            <div className="pt-2">
+                              <button
+                                type="button"
+                                onClick={() => push({ name: '', email: '' })}
+                                className="w-full py-2 px-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-800/40 transition-colors flex justify-center items-center"
+                              >
+                                <FaPlus className="mr-2" /> Add Another Recipient
+                              </button>
+                            </div>
+                          )}
+                          
+                          {errors.recipients && typeof errors.recipients === 'string' && (
+                            <div className="text-sm text-red-500 dark:text-red-400 mt-2">
+                              {errors.recipients}
+                            </div>
+                          )}
                       </div>
+                      )}
+                    </FieldArray>
+                    
+                    <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                      <p>The note will be sent to all recipients on the scheduled delivery date.</p>
                     </div>
                   </div>
                 )}
@@ -234,10 +664,10 @@ const CreateNote = () => {
                 <div className="flex gap-4">
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || submitting}
                     className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
                   >
-                    {isSubmitting ? 'Creating Note...' : 'Create Note'}
+                    {isSubmitting || submitting ? 'Creating Note...' : 'Create Note'}
                   </button>
                   <button
                     type="button"
@@ -247,6 +677,29 @@ const CreateNote = () => {
                     Cancel
                   </button>
                 </div>
+                
+                {(isSubmitting || submitting) && isUploading && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {uploadProgress < 50 ? 'Preparing files...' : 'Uploading files...'}
+                      {uploadProgress === 100 ? ' Complete!' : ''}
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div 
+                        className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-in-out" 
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                
+                {submitError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                    <p className="font-medium">Error creating note:</p>
+                    <p>{submitError}</p>
+                    <p className="text-sm mt-1">Try again or contact support if the problem persists.</p>
+                  </div>
+                )}
               </Form>
             )}
           </Formik>

@@ -6,7 +6,7 @@ import { FaUser, FaEnvelope, FaLock, FaCheck, FaClock, FaShieldAlt, FaGlobe } fr
 import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
-  const { register } = useAuth();
+  const { register, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -41,7 +41,10 @@ const Register = () => {
       setShowError(false);
       const { confirmPassword, ...userData } = values;
       const success = await register(userData);
-      if (success) navigate('/dashboard');
+      if (success) {
+        await refreshUser();
+        navigate('/verify-email');
+      }
     } catch (error) {
       setErrorMessage(error.response?.data?.error || 'Registration failed. Please try again.');
       setShowError(true);
@@ -118,7 +121,7 @@ const Register = () => {
               </div>
 
               {showError && (
-                <div className="p-3 mb-6 text-sm bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg">
+                <div className="p-4 mb-6 text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800">
                   {errorMessage}
                 </div>
               )}
@@ -146,7 +149,7 @@ const Register = () => {
                       <ErrorMessage
                         name="name"
                         component="div"
-                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                        className="text-sm text-red-600 dark:text-red-300 mt-1 font-medium"
                       />
                     </div>
 
@@ -166,7 +169,7 @@ const Register = () => {
                       <ErrorMessage
                         name="email"
                         component="div"
-                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                        className="text-sm text-red-600 dark:text-red-300 mt-1 font-medium"
                       />
                     </div>
 
@@ -186,7 +189,7 @@ const Register = () => {
                       <ErrorMessage
                         name="password"
                         component="div"
-                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                        className="text-sm text-red-600 dark:text-red-300 mt-1 font-medium"
                       />
                     </div>
 
@@ -206,7 +209,7 @@ const Register = () => {
                       <ErrorMessage
                         name="confirmPassword"
                         component="div"
-                        className="text-sm text-red-500 dark:text-red-400 mt-1"
+                        className="text-sm text-red-600 dark:text-red-300 mt-1 font-medium"
                       />
                     </div>
 

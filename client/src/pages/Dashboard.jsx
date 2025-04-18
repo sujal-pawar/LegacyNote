@@ -95,28 +95,53 @@ const Dashboard = () => {
     }
   };
 
-  // Function to determine delivery status
+  // Get delivery status for a note
   const getDeliveryStatus = (note) => {
     const now = new Date();
     const deliveryDate = new Date(note.deliveryDate);
+    const isDelivered = note.isDelivered;
     
-    if (note.isDelivered) {
-      return { 
-        status: 'delivered', 
-        label: 'Delivered', 
-        badgeClass: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+    // Calculate time difference for display
+    const timeRemaining = deliveryDate - now;
+    const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+    const minutesRemaining = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    
+    // For indicating very close delivery times
+    const isWithinHour = hoursRemaining < 1 && hoursRemaining >= 0 && minutesRemaining >= 0;
+    
+    if (isDelivered) {
+      return {
+        status: 'delivered',
+        label: 'Delivered',
+        badgeClass: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
       };
     } else if (deliveryDate > now) {
-      return { 
-        status: 'pending', 
-        label: 'Pending', 
-        badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' 
+      // Show detailed time for notes with exact time delivery that are coming up soon
+      if (note.exactTimeDelivery && hoursRemaining < 24 && hoursRemaining >= 0) {
+        let timeLabel = 'Pending';
+        if (isWithinHour) {
+          timeLabel = `In ${minutesRemaining} min${minutesRemaining !== 1 ? 's' : ''}`;
+        } else {
+          timeLabel = `In ${hoursRemaining} hr${hoursRemaining !== 1 ? 's' : ''}`;
+        }
+        
+        return {
+          status: 'pending',
+          label: timeLabel,
+          badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+        };
+      }
+      
+      return {
+        status: 'pending',
+        label: 'Pending',
+        badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
       };
     } else {
-      return { 
-        status: 'processing', 
-        label: 'Processing', 
-        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
+      return {
+        status: 'processing',
+        label: 'Processing',
+        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
       };
     }
   };
@@ -270,11 +295,18 @@ const Dashboard = () => {
                   key={note._id}
                   variants={itemVariants}
                   whileHover={{ y: -5 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200 border border-gray-100 dark:border-gray-700"
+                  className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200 border ${note.exactTimeDelivery ? 'border-indigo-200 dark:border-indigo-800' : 'border-gray-100 dark:border-gray-700'}`}
                 >
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">{note.title}</h3>
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                        {note.title}
+                        {note.exactTimeDelivery && (
+                          <span className="ml-2 text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 px-2 py-1 rounded-full">
+                            Exact Time
+                          </span>
+                        )}
+                      </h3>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${badgeClass}`}>{label}</span>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
@@ -283,7 +315,11 @@ const Dashboard = () => {
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
                       <FaCalendarAlt className="mr-1" />
                       <span>
-                        Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')}
+                        {note.exactTimeDelivery ? (
+                          <>Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')} at {format(new Date(note.deliveryDate), 'h:mm a')}</>
+                        ) : (
+                          <>Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')}</>
+                        )}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">

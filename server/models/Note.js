@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const CryptoJS = require('crypto-js');
+const crypto = require('crypto');
 
 const NoteSchema = new mongoose.Schema(
   {
@@ -18,6 +19,26 @@ const NoteSchema = new mongoose.Schema(
       type: String,
       select: false,
     },
+    mediaFiles: [
+      {
+        fileName: {
+          type: String,
+          required: true
+        },
+        filePath: {
+          type: String,
+          required: true
+        },
+        fileType: {
+          type: String,
+          required: true
+        },
+        fileSize: {
+          type: Number,
+          required: true
+        }
+      }
+    ],
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -37,11 +58,31 @@ const NoteSchema = new mongoose.Schema(
         ],
       },
     },
+    recipients: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        email: {
+          type: String,
+          required: true,
+          match: [
+            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+            'Please add a valid email',
+          ],
+        },
+      }
+    ],
     deliveryDate: {
       type: Date,
       required: [true, 'Delivery date is required'],
     },
-    // Store the timezone offset for accurate time delivery
+    exactTimeDelivery: {
+      type: Boolean,
+      default: false,
+      description: 'If true, the note will be delivered at the exact time specified, not just the date'
+    },
     timezone: {
       type: String,
       default: 'UTC'
@@ -64,7 +105,6 @@ const NoteSchema = new mongoose.Schema(
       type: String,
       select: false,
     },
-    // Add a flag to indicate messages scheduled to self
     isSelfMessage: {
       type: Boolean,
       default: false
@@ -100,12 +140,6 @@ NoteSchema.pre('save', function (next) {
     this.timezone = 'UTC';
   }
 
-  // If the recipient email matches the user's email, mark as self-message
-  if (this.recipient && this.recipient.email) {
-    // We'll need to populate the user later to compare emails
-    // This is handled in the controllers
-  }
-
   next();
 });
 
@@ -120,17 +154,17 @@ NoteSchema.methods.decryptContent = function () {
 
 // Generate shareable link
 NoteSchema.methods.generateShareableLink = function () {
-  const accessKey = Math.random().toString(36).slice(2) + 
-                   Math.random().toString(36).slice(2);
+  // Generate a cryptographically secure random access key (40 hex chars = 160 bits)
+  const accessKey = crypto.randomBytes(20).toString('hex');
   this.accessKey = accessKey;
-  
+
   // Get the frontend URL with a fallback
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  
+
   // Generate the full shareable link
   this.shareableLink = `${frontendUrl}/shared-note/${this._id}/${accessKey}`;
-  
-  console.log(`Generated link: ${this.shareableLink}`);
+
+  // console.log(`Generated link: ${this.shareableLink}`);
   return this.shareableLink;
 };
 
@@ -141,10 +175,19 @@ NoteSchema.methods.isScheduledToSelf = async function() {
     await this.populate('user', 'email');
   }
   
-  return this.recipient && 
-         this.recipient.email && 
-         this.user && 
-         this.user.email === this.recipient.email;
+  // Legacy single recipient check
+  if (this.recipient && this.recipient.email && this.user && this.user.email === this.recipient.email) {
+    return true;
+  }
+  
+  // Check in recipients array
+  if (this.recipients && this.recipients.length > 0) {
+    return this.recipients.some(recipient => 
+      recipient.email && this.user && this.user.email === recipient.email
+    );
+  }
+  
+  return false;
 };
 
 module.exports = mongoose.model('Note', NoteSchema); 

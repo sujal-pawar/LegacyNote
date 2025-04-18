@@ -43,7 +43,7 @@ exports.register = async (req, res, next) => {
         userName: user.name
       });
       
-      // Return success response with token and verification needed flag
+      // Return response with verification needed flag but without full account creation message
       sendTokenResponse(user, 201, res, true);
     } catch (err) {
       console.error('Error sending verification email:', err);
@@ -55,10 +55,11 @@ exports.register = async (req, res, next) => {
       
       return res.status(500).json({
         success: false,
-        error: 'Registration successful but verification email could not be sent. Please request a new OTP.'
+        error: 'Registration initiated but verification email could not be sent. Please try again or contact support.'
       });
     }
   } catch (err) {
+    console.error('Registration error:', err);
     next(err);
   }
 };
@@ -318,9 +319,19 @@ exports.verifyEmail = async (req, res, next) => {
 
     await user.save({ validateBeforeSave: false });
 
-    // Send token response
-    sendTokenResponse(user, 200, res);
+    // Send token response with account creation message
+    res.status(200).json({
+      success: true,
+      message: 'Account created successfully! Email verified.',
+      token: user.getSignedJwtToken(),
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }
+    });
   } catch (err) {
+    console.error('Email verification error:', err);
     next(err);
   }
 };
@@ -332,6 +343,8 @@ exports.sendVerificationOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
 
+    console.log('Request to send verification OTP received for email:', email);
+    
     if (!email) {
       return res.status(400).json({
         success: false,
@@ -343,6 +356,7 @@ exports.sendVerificationOTP = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(404).json({
         success: false,
         error: 'User not found',
@@ -351,20 +365,24 @@ exports.sendVerificationOTP = async (req, res, next) => {
 
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    console.log('Generated OTP for user:', otp);
     
     // Set OTP and expiry (10 minutes)
     user.emailVerificationOTP = otp;
     user.emailVerificationExpire = Date.now() + 10 * 60 * 1000;
 
     await user.save({ validateBeforeSave: false });
+    console.log('Saved OTP to user document');
 
     // Send OTP via email with enhanced template
     try {
+      console.log('Attempting to send verification email...');
       await sendVerificationOTP({
         email: user.email,
         otp: otp,
         userName: user.name
       });
+      console.log('Verification email sent successfully');
 
       res.status(200).json({
         success: true,
@@ -372,6 +390,12 @@ exports.sendVerificationOTP = async (req, res, next) => {
       });
     } catch (err) {
       console.error('Error sending verification email:', err);
+      console.error('Email provider details:', {
+        service: process.env.EMAIL_SERVICE,
+        username: process.env.EMAIL_USERNAME,
+        hasPassword: !!process.env.EMAIL_PASSWORD
+      });
+      
       user.emailVerificationOTP = undefined;
       user.emailVerificationExpire = undefined;
 
@@ -379,10 +403,11 @@ exports.sendVerificationOTP = async (req, res, next) => {
 
       return res.status(500).json({
         success: false,
-        error: 'Email could not be sent',
+        error: 'Email could not be sent. Please check server logs.',
       });
     }
   } catch (err) {
+    console.error('General error in sendVerificationOTP:', err);
     next(err);
   }
 };

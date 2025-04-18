@@ -43,148 +43,195 @@ exports.sendEmail = async (options) => {
  * @param {String} options.senderName - Name of the person who sent the note
  */
 exports.sendNoteEmail = async (options) => {
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+  try {
+    // Validate required parameters
+    if (!options.email) {
+      throw new Error('Recipient email is required for sending note email');
+    }
+    
+    if (!options.note) {
+      throw new Error('Note object is required for sending note email');
+    }
+    
+    if (!options.accessUrl) {
+      throw new Error('Access URL is required for sending note email');
+    }
+    
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // use SSL
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
 
-  // Include sender name in the subject if provided
-  const senderName = options.senderName || 'Someone';
-  const subject = options.subject || `A LegacyNote from ${senderName} has been delivered to you`;
+    // Check if email credentials are set
+    if (!process.env.EMAIL_USERNAME || !process.env.EMAIL_PASSWORD) {
+      throw new Error('Email credentials are not configured properly in .env file');
+    }
 
-  // Ensure we have a valid URL, check if the accessUrl already contains the frontend URL
-  let accessUrl = options.accessUrl;
-  if (accessUrl && !accessUrl.startsWith('http')) {
-    // If it's a relative path, prepend the frontend URL
-    const frontendUrl = getFrontendUrl();
-    accessUrl = `${frontendUrl}${accessUrl.startsWith('/') ? '' : '/'}${accessUrl}`;
+    // Include sender name in the subject if provided
+    const senderName = options.senderName || 'Someone';
+    const subject = options.subject || `A LegacyNote from ${senderName} has been delivered to you`;
+
+    // Format delivery time message
+    let deliveryTimeMessage = '';
+    if (options.note.exactTimeDelivery) {
+      const deliveryDate = new Date(options.note.deliveryDate);
+      const formattedTime = deliveryDate.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      deliveryTimeMessage = `<p>This note was scheduled to be delivered to you exactly at ${formattedTime}.</p>`;
+    }
+
+    // Ensure we have a valid URL, check if the accessUrl already contains the frontend URL
+    let accessUrl = options.accessUrl;
+    if (accessUrl && !accessUrl.startsWith('http')) {
+      // If it's a relative path, prepend the frontend URL
+      const frontendUrl = getFrontendUrl();
+      accessUrl = `${frontendUrl}${accessUrl.startsWith('/') ? '' : '/'}${accessUrl}`;
+    }
+
+    const message = {
+      from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
+      to: options.email,
+      subject: subject,
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Your LegacyNote Has Arrived</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333333;
+              max-width: 650px;
+              margin: 0 auto;
+              padding: 0;
+              background-color: #f9fafb;
+            }
+            .container {
+              background-color: #ffffff;
+              border-radius: 12px;
+              padding: 20px;
+              margin: 20px 0;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              padding-bottom: 20px;
+              border-bottom: 1px solid #e5e7eb;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #4f46e5;
+              margin-bottom: 10px;
+            }
+            h1 {
+              color: #1f2937;
+              font-size: 32px;
+              margin-bottom: 25px;
+              text-align: center;
+              line-height: 1.3;
+            }
+            p {
+              font-size: 18px;
+              margin-bottom: 20px;
+              color: #4b5563;
+            }
+            .note-title {
+              font-weight: bold;
+              color: #4f46e5;
+            }
+            .sender-name {
+              font-weight: bold;
+              color: #4f46e5;
+            }
+            .button-container {
+              text-align: center;
+              margin: 35px 0;
+            }
+            .button {
+              display: inline-block;
+              background-color: #4f46e5;
+              color: white !important;
+              padding: 15px 30px;
+              text-align: center;
+              text-decoration: none;
+              font-size: 20px;
+              font-weight: 600;
+              border-radius: 8px;
+              transition: background-color 0.3s;
+            }
+            .button:hover {
+              background-color: #4338ca;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              font-size: 16px;
+              color: #6b7280;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">LegacyNote</div>
+            </div>
+            
+            <h1>Your LegacyNote has arrived!</h1>
+            
+            <p>Hello,</p>
+            
+            <p>A special message from <span class="sender-name">${senderName}</span> titled "<span class="note-title">${options.note.title}</span>" has been delivered to you today.</p>
+            
+            <p>This moment was planned by ${senderName} in advance, and now the time has come for you to receive this message.</p>
+            
+            ${deliveryTimeMessage}
+            
+            <div class="button-container">
+              <a href="${accessUrl}" class="button">View Your LegacyNote</a>
+            </div>
+            
+            <p>This secure link will take you directly to your note. Take a moment to reflect on the thoughts ${senderName} wanted to share with you today.</p>
+            
+            <div class="footer">
+              <p>Thank you for using LegacyNote!</p>
+              <p>Connecting people through time.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+    
+    console.log(`Attempting to send email to ${options.email} with subject: ${subject}`);
+    const info = await transporter.sendMail(message);
+    console.log(`Email sent successfully: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`Failed to send email to ${options.email}:`, error.message);
+    if (error.code === 'EAUTH') {
+      console.error('Authentication error: Please check your EMAIL_USERNAME and EMAIL_PASSWORD in .env');
+    } else if (error.code === 'ESOCKET') {
+      console.error('Socket error: Cannot connect to email server. Check your network connection.');
+    } else if (error.code === 'EENVELOPE') {
+      console.error('Envelope error: Invalid recipient email address or sender address.');
+    }
+    // Re-throw the error to be handled by the caller
+    throw error;
   }
-
-  const message = {
-    from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
-    to: options.email,
-    subject: subject,
-    html: `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your LegacyNote Has Arrived</title>
-        <style>
-          body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 650px;
-            margin: 0 auto;
-            padding: 0;
-            background-color: #f9fafb;
-          }
-          .container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-          }
-          .header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 30px;
-          }
-          .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4f46e5;
-            margin-bottom: 10px;
-          }
-          h1 {
-            color: #1f2937;
-            font-size: 32px;
-            margin-bottom: 25px;
-            text-align: center;
-            line-height: 1.3;
-          }
-          p {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #4b5563;
-          }
-          .note-title {
-            font-weight: bold;
-            color: #4f46e5;
-          }
-          .sender-name {
-            font-weight: bold;
-            color: #4f46e5;
-          }
-          .button-container {
-            text-align: center;
-            margin: 35px 0;
-          }
-          .button {
-            display: inline-block;
-            background-color: #4f46e5;
-            color: white !important;
-            padding: 15px 30px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 20px;
-            font-weight: 600;
-            border-radius: 8px;
-            transition: background-color 0.3s;
-          }
-          .button:hover {
-            background-color: #4338ca;
-          }
-          .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            font-size: 16px;
-            color: #6b7280;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo">LegacyNote</div>
-          </div>
-          
-          <h1>Your LegacyNote has arrived!</h1>
-          
-          <p>Hello,</p>
-          
-          <p>A special message from <span class="sender-name">${senderName}</span> titled "<span class="note-title">${options.note.title}</span>" has been delivered to you today.</p>
-          
-          <p>This moment was planned by ${senderName} in advance, and now the time has come for you to receive this message.</p>
-          
-          <div class="button-container">
-            <a href="${accessUrl}" class="button">View Your LegacyNote</a>
-          </div>
-          
-          <p>This secure link will take you directly to your note. Take a moment to reflect on the thoughts ${senderName} wanted to share with you today.</p>
-          
-          <div class="footer">
-            <p>Thank you for using LegacyNote!</p>
-            <p>Connecting people through time.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `,
-  };
-  
-  await transporter.sendMail(message);
 };
 
 /**
@@ -207,12 +254,27 @@ exports.sendNoteCreationConfirmation = async (options) => {
 
   // Format the delivery date for display
   const deliveryDate = new Date(options.note.deliveryDate);
-  const formattedDate = deliveryDate.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  let formattedDate;
+  
+  if (options.note.exactTimeDelivery) {
+    // For exact time delivery, include the time
+    formattedDate = deliveryDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } else {
+    // For regular delivery, just show the date
+    formattedDate = deliveryDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
 
   // Get frontend URL with fallback
   const frontendUrl = getFrontendUrl();
@@ -328,13 +390,13 @@ exports.sendNoteCreationConfirmation = async (options) => {
           <p>Your LegacyNote titled "<span class="highlight">${options.note.title}</span>" has been successfully created and scheduled for delivery.</p>
           
           <div class="date-box">
-            <p>Scheduled Delivery Date:</p>
+            <p>Scheduled Delivery${options.note.exactTimeDelivery ? ' Date and Time' : ' Date'}:</p>
             <p class="date">${formattedDate}</p>
           </div>
           
           ${options.note.recipient && options.note.recipient.email ? 
-            `<p>This note will be delivered to <span class="highlight">${options.note.recipient.name || options.note.recipient.email}</span> on the scheduled date.</p>` : 
-            `<p>This note will be available to you on the scheduled date.</p>`
+            `<p>This note will be delivered to <span class="highlight">${options.note.recipient.name || options.note.recipient.email}</span> ${options.note.exactTimeDelivery ? 'exactly at' : 'on'} the scheduled ${options.note.exactTimeDelivery ? 'time' : 'date'}.</p>` : 
+            `<p>This note will be available to you ${options.note.exactTimeDelivery ? 'exactly at' : 'on'} the scheduled ${options.note.exactTimeDelivery ? 'time' : 'date'}.</p>`
           }
           
           <p>Your note content has been securely encrypted and stored in our system. The content of your note is not included in this email for security reasons.</p>
@@ -532,137 +594,168 @@ exports.sendPasswordResetEmail = async (options) => {
  * @param {String} options.userName - User's name (optional)
  */
 exports.sendVerificationOTP = async (options) => {
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+  try {
+    console.log('Setting up email transport with nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // use SSL
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
 
-  // Format the OTP with spaces for better readability
-  const formattedOTP = options.otp.toString().split('').join(' ');
+    // Format the OTP with spaces for better readability
+    const formattedOTP = options.otp.toString().split('').join(' ');
+    console.log(`Preparing email to ${options.email} with OTP: ${options.otp}`);
 
-  const message = {
-    from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
-    to: options.email,
-    subject: 'Verify Your Email for LegacyNote',
-    html: `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Email Verification</title>
-        <style>
-          body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 650px;
-            margin: 0 auto;
-            padding: 0;
-            background-color: #f9fafb;
-          }
-          .container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-          }
-          .header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 30px;
-          }
-          .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4f46e5;
-            margin-bottom: 10px;
-          }
-          h1 {
-            color: #1f2937;
-            font-size: 28px;
-            margin-bottom: 25px;
-            text-align: center;
-            line-height: 1.3;
-          }
-          p {
-            font-size: 16px;
-            margin-bottom: 20px;
-            color: #4b5563;
-          }
-          .highlight {
-            font-weight: bold;
-            color: #4f46e5;
-          }
-          .otp-container {
-            text-align: center;
-            margin: 30px 0;
-            background-color: #f3f4f6;
-            border-radius: 8px;
-            padding: 20px;
-          }
-          .otp {
-            font-size: 32px;
-            font-weight: bold;
-            color: #4f46e5;
-            letter-spacing: 5px;
-          }
-          .warning {
-            background-color: #fff0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 25px 0;
-            border-left: 4px solid #ff9800;
-            font-size: 14px;
-          }
-          .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            font-size: 14px;
-            color: #6b7280;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo">LegacyNote</div>
+    const message = {
+      from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
+      to: options.email,
+      subject: 'Verify Your Email for LegacyNote',
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Email Verification</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333333;
+              max-width: 650px;
+              margin: 0 auto;
+              padding: 0;
+              background-color: #f9fafb;
+            }
+            .container {
+              background-color: #ffffff;
+              border-radius: 12px;
+              padding: 20px;
+              margin: 20px 0;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              padding-bottom: 20px;
+              border-bottom: 1px solid #e5e7eb;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #4f46e5;
+              margin-bottom: 10px;
+            }
+            h1 {
+              color: #1f2937;
+              font-size: 28px;
+              margin-bottom: 25px;
+              text-align: center;
+              line-height: 1.3;
+            }
+            p {
+              font-size: 16px;
+              margin-bottom: 20px;
+              color: #4b5563;
+            }
+            .highlight {
+              font-weight: bold;
+              color: #4f46e5;
+            }
+            .otp-container {
+              text-align: center;
+              margin: 30px 0;
+              background-color: #f3f4f6;
+              border-radius: 8px;
+              padding: 20px;
+            }
+            .otp {
+              font-size: 32px;
+              font-weight: bold;
+              color: #4f46e5;
+              letter-spacing: 5px;
+            }
+            .warning {
+              background-color: #fff0e0;
+              border-radius: 8px;
+              padding: 15px;
+              margin: 25px 0;
+              border-left: 4px solid #ff9800;
+              font-size: 14px;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              font-size: 14px;
+              color: #6b7280;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">LegacyNote</div>
+            </div>
+            
+            <h1>Verify Your Email</h1>
+            
+            <p>Hello ${options.userName || "there"},</p>
+            
+            <p>Thank you for signing up for LegacyNote. To complete your registration, please enter the verification code below in the app:</p>
+            
+            <div class="otp-container">
+              <div class="otp">${formattedOTP}</div>
+            </div>
+            
+            <p>This code will expire in 10 minutes. If you didn't request this code, you can safely ignore this email.</p>
+            
+            <div class="warning">
+              <p><strong>Security Notice:</strong> Never share this code with anyone. LegacyNote will never ask for this code via phone or email.</p>
+            </div>
+            
+            <div class="footer">
+              <p>Thank you for using LegacyNote!</p>
+              <p>Connecting people through time.</p>
+            </div>
           </div>
-          
-          <h1>Verify Your Email</h1>
-          
-          <p>Hello ${options.userName || "there"},</p>
-          
-          <p>Thank you for signing up for LegacyNote. To complete your registration, please enter the verification code below in the app:</p>
-          
-          <div class="otp-container">
-            <div class="otp">${formattedOTP}</div>
-          </div>
-          
-          <p>This code will expire in 10 minutes. If you didn't request this code, you can safely ignore this email.</p>
-          
-          <div class="warning">
-            <p><strong>Security Notice:</strong> Never share this code with anyone. LegacyNote will never ask for this code via phone or email.</p>
-          </div>
-          
-          <div class="footer">
-            <p>Thank you for using LegacyNote!</p>
-            <p>Connecting people through time.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `,
-  };
+        </body>
+        </html>
+      `,
+    };
 
-  await transporter.sendMail(message);
+    console.log('Attempting to send email now...');
+    try {
+      // Verify connection configuration
+      console.log('Verifying connection to SMTP server...');
+      await transporter.verify();
+      console.log('SMTP connection verified successfully');
+      
+      // Send the mail
+      const info = await transporter.sendMail(message);
+      console.log('Email sent successfully:', info.messageId);
+      return info;
+    } catch (err) {
+      console.error('Error in nodemailer operation:', err);
+      
+      // Log specific error types
+      if (err.code === 'EAUTH') {
+        console.error('Authentication error: Check EMAIL_USERNAME and EMAIL_PASSWORD');
+      } else if (err.code === 'ESOCKET') {
+        console.error('Socket error: Cannot connect to email server');
+      } else if (err.code === 'EENVELOPE') {
+        console.error('Envelope error: Invalid recipient or sender address');
+      }
+      
+      throw err; // Re-throw to be handled by the caller
+    }
+  } catch (err) {
+    console.error('General error in sendVerificationOTP utility:', err);
+    throw err;
+  }
 }; 

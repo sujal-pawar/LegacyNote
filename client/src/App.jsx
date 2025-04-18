@@ -25,7 +25,26 @@ function AppContent() {
         <AppRoutes />
       </main>
       <Footer />
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        limit={3}
+        toastClassName="toast-custom-container"
+        bodyClassName="toast-custom-body"
+        style={{
+          top: '20px',
+          width: 'auto',
+          maxWidth: '420px',
+        }}
+      />
     </div>
   );
 }
