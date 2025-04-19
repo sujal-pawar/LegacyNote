@@ -177,13 +177,7 @@ const defineJobs = () => {
         return note.isReadyForDelivery();
       });
 
-      logScheduler(`${readyNotes.length} notes are ready for delivery`);
-
-      // Add more informative logs throughout the function
-      if (readyNotes.length === 0) {
-        logScheduler('No notes ready for delivery in this cycle');
-        return;
-      }
+      // logScheduler(`${readyNotes.length} notes are ready for delivery`);
 
       // Process each note
       for (const note of readyNotes) {
@@ -350,7 +344,7 @@ exports.startScheduler = async () => {
     
     // Schedule the job to run every minute
     await agenda.every('1 minute', 'check-notes-for-delivery');
-    logScheduler('Scheduled note delivery checks every minute for efficient delivery timing');
+    // logScheduler('Scheduled note delivery checks every minute for efficient delivery timing');
     
     // Schedule an immediate check as well to handle any pending deliveries
     await agenda.now('check-notes-for-delivery');

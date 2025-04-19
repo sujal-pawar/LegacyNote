@@ -1,392 +1,286 @@
-# LegacyNote - Secure Digital Time Capsule Platform
+# LegacyNote - Digital Time Capsule Platform
 
-LegacyNote is a full-stack web application that allows users to create, store, protect, and schedule delivery of long-term notes, messages, and documents. It's designed to serve as a digital time capsule, ensuring your words stand the test of time and are delivered precisely when you intend.
+<div align="center">
+  <img src="client/src/assets/logo.png" alt="LegacyNote Logo" width="180" />
+  <p><strong>Create digital time capsules that deliver your messages exactly when you want them to.</strong></p>
+</div>
 
-## 🚀 Features
+## 📋 Contents
 
-- **Time Capsule Notes**: Create and schedule notes that will be delivered at specific dates in the future
-- **Recipient Management**: Send notes to multiple recipients with email notification
-- **Media Support**: Attach images and files to your notes
-- **Image Optimization**: Automatic image optimization via Cloudinary to reduce file size by up to 90% without quality loss
-- **Secure Email Verification**: OTP-based email verification system
-- **Rich Text Editing**: Format your notes with a comprehensive editor
-- **Mobile Responsive**: Fully responsive design that works on all devices
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Deployment](#deployment)
+- [Environment Variables](#environment-variables)
+- [Security Features](#security-features)
+- [Contributors](#contributors)
+- [License](#license)
+
+## 🔍 Overview
+
+LegacyNote is a sophisticated full-stack application that allows users to create encrypted time capsule messages with scheduled delivery dates. Whether it's a future birthday message, personal milestone, or legacy message, LegacyNote ensures your words are preserved and delivered exactly when intended.
+
+## ✨ Key Features
+
+- **Scheduled Message Delivery**: Set specific dates and times for message delivery
+- **End-to-End Encryption**: All message content is encrypted using AES-256 for privacy and security
+- **Media Attachments**: Include images, videos, documents, and audio files with your messages
+- **Multiple Recipients**: Send to one or multiple email recipients 
+- **Recipient Notifications**: Automatic email notifications when messages are delivered
+- **Self-Messages**: Schedule messages to yourself as future reminders or reflections
+- **Public/Private Toggle**: Choose to make messages shareable or private
+- **Email Verification**: OTP verification system for account security
+- **Google Authentication**: Single-sign on with Google account
+- **Responsive Design**: Fully optimized for all device sizes from mobile to desktop
 - **Dark Mode Support**: Toggle between light and dark themes
-- **Secure Authentication**: JWT-based authentication with Google OAuth integration
-- **User Dashboard**: Manage all your notes from a central dashboard
-- **Sharing Functionality**: Generate shareable links for your notes
 
-## 🛠️ Tech Stack
+## 💻 Technology Stack
 
 ### Frontend
-- React 19
-- React Router v6
+- React 19.0.0
+- React Router DOM 6.30.0
+- Tailwind CSS 3.3.3
+- React Toastify 11.0.5
+- @react-oauth/google for Google authentication
 - Formik & Yup for form validation
-- Tailwind CSS for styling
-- React Toastify for notifications
-- Google OAuth integration
+- Date-fns 4.1.0 for date manipulation
+- Framer Motion 12.6.5 for animations
+- Vite 6.2.0 for development and building
 
 ### Backend
-- Node.js with Express
-- MongoDB with Mongoose
-- JWT for authentication
-- Nodemailer for email services
-- Cloudinary for media storage and image optimization
-- Agenda.js for scheduled tasks
+- Node.js
+- Express.js 4.18.2
+- MongoDB 8.13.2 with Mongoose ODM
+- JWT Authentication (jsonwebtoken 9.0.2)
+- Nodemailer 6.10.1 for email services
+- Cloudinary for media storage
+- Crypto-js 4.2.0 for encryption
+- Agenda.js 5.0.0 for task scheduling
+- Helmet 8.1.0 for security headers
 
-## 📁 Project Structure
+## 🏗️ Architecture
 
-```
-legacynote/
-├── client/                      
-│   ├── public/                  
-│   └── src/
-│       ├── api/                 
-│       ├── assets/              
-│       ├── components/          
-│       │   ├── Navbar.jsx       
-│       │   ├── Footer.jsx       
-│       │   ├── PrivateRoute.jsx 
-│       │   └── ...
-│       ├── contexts/            
-│       │   ├── AuthContext.jsx  
-│       │   └── ThemeContext.jsx 
-│       ├── pages/               
-│       │   ├── Dashboard.jsx    
-│       │   ├── Login.jsx        
-│       │   ├── Register.jsx     
-│       │   ├── CreateNote.jsx   
-│       │   ├── ViewNote.jsx     
-│       │   ├── EditNote.jsx     
-│       │   ├── VerifyEmail.jsx  
-│       │   └── ...
-│       ├── routes/              
-│       ├── utils/               
-│       ├── App.jsx              
-│       └── main.jsx             
-│
-├── server/                      
-│   ├── config/                  
-│   ├── controllers/             
-│   ├── middleware/              
-│   ├── models/                  
-│   ├── routes/                  
-│   ├── services/                
-│   ├── utils/                   
-│   ├── .env                     
-│   ├── .env.example             
-│   └── index.js                 
-│
-└── package.json                 
-```
+LegacyNote employs a modern, decoupled architecture:
 
-## 🔧 Setup and Installation
+### Client Application
+- Single-page React application with component-based architecture
+- Context API for global state management
+- Custom hooks for reusable logic
+- Responsive design with Tailwind CSS
+
+### Server API
+- RESTful API built with Express
+- MVC architecture with controllers, models, and routes
+- Middleware for authentication, error handling, and request validation
+- Robust error handling and logging
+
+### Data Flow
+1. User interactions trigger API requests from the client
+2. Server authenticates and validates requests
+3. Controllers process business logic and interact with database models
+4. Responses are formatted and returned to the client
+5. Task scheduler monitors for notes due for delivery
+6. Email service sends notifications when notes are delivered
+
+## 🚀 Installation
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB (local installation or MongoDB Atlas account)
+- Node.js (v16+)
+- MongoDB (Atlas account)
 - npm or yarn
+- Google OAuth API credentials (for Google authentication)
+- Cloudinary account (for media storage)
 
-### Setting Up the Project
+### Setup Steps
 
-#### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/legacynote.git
-cd legacynote
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/legacynote.git
+   cd legacynote
+   ```
 
-#### 2. Install Root Dependencies for Combined Start Command
-```bash
-# From the root directory
-npm install
-```
+2. **Server Setup**
+   ```bash
+   cd server
+   npm install
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
-#### 3. Set Up the Backend Server
-```bash
-cd server
+3. **Client Setup**
+   ```bash
+   cd ../client
+   npm install
+   ```
 
-# Install dependencies
-npm install
+4. **Database Setup**
+   - Create a MongoDB Atlas account and cluster
+   - Update MONGODB_URI in server/.env with your connection string
 
-# Create .env file from example
-cp .env.example .env
-```
+5. **Start Development Environment**
+   ```bash
+   # Start the server (from server directory)
+   npm run dev
+   
+   # Start the client (from client directory)
+   npm run dev
+   ```
 
-Edit the `.env` file with your specific configuration:
-```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/legacynote
-JWT_SECRET=your_jwt_secret_key_change_in_production
-JWT_EXPIRE=30d
-EMAIL_SERVICE=gmail
-EMAIL_USERNAME=your_email@gmail.com
-EMAIL_PASSWORD=your_email_app_password
-EMAIL_FROM=noreply@legacynote.com
+## 📝 Usage
 
-# Cloudinary Configuration
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-CLOUDINARY_URL=cloudinary://your_api_key:your_api_secret@your_cloud_name
+### Development Environment
 
-# Client URL
-FRONTEND_URL=http://localhost:5173
-```
-
-#### 4. Set Up Cloudinary for Image Optimization
-
-1. Sign up for a free Cloudinary account at [https://cloudinary.com/signup](https://cloudinary.com/signup)
-2. After signing up, go to your Cloudinary Dashboard to find your cloud name, API key, and API secret
-3. Add these credentials to your `.env` file
-4. For optimal image optimization, configure your upload presets:
-   - Go to Settings > Upload in your Cloudinary dashboard
-   - Create a new upload preset with the following settings:
-     - Delivery type: Auto
-     - Quality: Auto
-     - Format: Auto
-     - Responsive breakpoints: Enabled
-   - Note the preset name and add it to your code configuration
-
-```javascript
-// Example configuration in your server code
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
-});
-```
-
-#### 5. Set Up the Frontend
-```bash
-cd ../client
-
-# Install dependencies
-npm install
-```
-
-#### 6. Install All Dependencies at Once (Alternative)
-```bash
-# From the root directory
-npm run install-all
-```
-
-### 7. Running the Application
-
-#### One-Command Startup (Start both client and server)
-```bash
-# From the root directory
-npm start
-```
-
-This will concurrently start:
-- The backend server on http://localhost:5000
-- The frontend development server on http://localhost:5173
-
-#### Start Backend Only
+**Run Backend Only**
 ```bash
 cd server
 npm run dev
 ```
+The server will start on http://localhost:5000 with nodemon for auto-reloading.
 
-#### Start Frontend Only
+**Run Frontend Only**
 ```bash
 cd client
 npm run dev
 ```
+The development server will start on http://localhost:5173 with hot module replacement.
 
-## 📱 Mobile-First Approach
+### Scheduler Status
 
-LegacyNote is designed with a mobile-first approach:
-- Responsive design for all screen sizes
-- Different navigation behavior for mobile vs desktop
-- Touch-friendly controls and interactions
-- Conditional navbar rendering based on device size
-
-## 🔒 Security Features
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- HTTP-only cookies for token storage
-- CORS protection
-- Email verification for new accounts
-- OAuth integration for secure third-party login
-- Encrypted note content
-
-## 🧩 Key Components
-
-### Authentication Flow
-- User registration with email verification
-- Secure login with JWT tokens
-- Password reset functionality
-- Google OAuth integration
-
-### Note Management
-- Creation, editing, and deletion of notes
-- Future delivery scheduling
-- Media file attachments
-- Recipient management
-
-### User Interface
-- Responsive design across devices
-- Dark/light theme toggle
-- Toast notifications for user feedback
-- Loading states and error handling
-
-## 📸 Media Management & Optimization
-
-LegacyNote uses Cloudinary for advanced media management, providing:
-
-### Image Optimization
-- **Automatic Format Selection**: Converts images to WebP, JPEG, AVIF based on browser support
-- **Responsive Sizing**: Automatically resizes images based on device screen size
-- **Quality Optimization**: Intelligently adjusts image quality to reduce file size (up to 90%)
-- **Lazy Loading**: Images load only when they enter the viewport for faster page loads
-
-### Implementation
-Images uploaded through the application are processed with Cloudinary's optimization pipeline:
-
-```javascript
-// Example of how images are optimized in the application
-new CloudinaryImage("user_uploaded_image.jpg")
-  .resize(scale().width(1000))    // Resize to appropriate dimensions
-  .delivery(quality(auto()))      // Auto-select optimal quality
-  .delivery(format(auto()));      // Auto-select optimal format (WebP/AVIF/JPEG)
+When the server starts, the note delivery scheduler will initialize and display:
+```
+[SCHEDULER] INFO: Note Delivery Scheduler running...
+[SCHEDULER] INFO: Scheduled note delivery checks every minute
 ```
 
-#### Server Implementation
-```javascript
-// Example upload middleware with optimization settings
-const upload = multer({
-  storage: cloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'legacynote_uploads',
-      resource_type: 'auto',
-      transformation: [
-        { width: 2000, crop: "limit" },  // Limit maximum width while preserving aspect ratio
-        { quality: "auto" },             // Auto-optimize quality
-        { fetch_format: "auto" }         // Auto-select best format
-      ]
-    }
-  })
-});
+This indicates the background process is properly monitoring the database for notes that need to be delivered.
 
-// In your route handler
-router.post('/upload', upload.single('media'), (req, res) => {
-  // Image is automatically optimized and uploaded to Cloudinary
-  // req.file.path contains the optimized image URL
-  res.json({ 
-    url: req.file.path,
-    publicId: req.file.filename
-  });
-});
-```
+### Key Application Workflows
 
-#### Client Implementation
-```jsx
-// In your React component
-import React, { useState } from 'react';
-import { Image } from 'cloudinary-react';
+1. **User Registration & Authentication**
+   - Register with email and password or Google OAuth
+   - Verify email with OTP
+   - Login to access dashboard
 
-const OptimizedImage = ({ publicId }) => {
-  return (
-    <Image
-      cloudName={process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}
-      publicId={publicId}
-      width="auto"
-      responsive
-      dpr="auto"
-      crop="scale"
-      responsiveUseBreakpoints="true"
-      loading="lazy"
-    />
-  );
-};
+2. **Creating a Time Capsule Note**
+   - Fill in recipient details, delivery date, and content
+   - Attach media files if desired
+   - Select public/private status
+   - Submit and confirm scheduling
 
-const MediaUpload = () => {
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [publicId, setPublicId] = useState('');
+3. **Managing Notes**
+   - View all notes from dashboard
+   - Edit or delete notes before delivery date
+   - Generate shareable links for public notes
+   - Track delivery status
 
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('media', file);
-    
-    const response = await fetch('/api/notes/upload', {
-      method: 'POST',
-      body: formData
-    });
-    
-    const data = await response.json();
-    setMediaUrl(data.url);
-    setPublicId(data.publicId);
-  };
-
-  return (
-    <div>
-      <input type="file" onChange={handleUpload} />
-      {publicId && <OptimizedImage publicId={publicId} />}
-    </div>
-  );
-};
-```
-
-### Benefits
-- **Faster Loading**: Optimized images load significantly faster, improving user experience
-- **Lower Bandwidth**: Reduced file sizes mean less data transfer for users
-- **Storage Efficiency**: Original files are preserved while serving optimized versions
-- **Adaptive Delivery**: Different devices receive appropriately sized images
-
-### Media Storage
-- Secure, cloud-based storage for all attached files
-- CDN delivery for fast global access to media files
-- Automatic backup and redundancy for uploaded content
+4. **Note Delivery Process**
+   - System monitors for notes reaching delivery date
+   - Recipient receives email notification
+   - Recipient can access note via secure link
+   - Original creator can see delivery confirmation
 
 ## 🌐 Deployment
 
-### Deploying the Backend
-The backend can be deployed to services like:
-- Heroku
-- Digital Ocean
-- AWS
-- Railway
+### Current Deployment Configuration
 
-### Deploying the Frontend
-The frontend can be deployed to:
-- Vercel
-- Netlify
-- Firebase Hosting
+Our application is hosted using the following services:
 
-## 🤝 Contributing
+1. **MongoDB Atlas** for database hosting
+   - Provides robust cloud database storage
+   - Automatic backups and scaling
+   - Global distribution for reduced latency
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+2. **Backend Hosting on Render**
+   - Node.js application hosted on Render's web service
+   - Automatic deployments from GitHub repository
+   - Built-in SSL/TLS certificates and HTTPS support
+   - Horizontal scaling capabilities as needed
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. **Frontend Hosting on Vercel**
+   - React application deployed on Vercel's platform
+   - Automatic deployments from GitHub repository
+   - Global CDN for fast content delivery
+   - Built-in analytics and performance monitoring
+
+### Environment Configuration
+- Set NODE_ENV=production in Render environment settings
+- Configure all environment variables in Render dashboard
+- Set secure MongoDB connection string with network restrictions
+- Add CORS configuration to allow requests from Vercel domain
+
+### Build & Deploy
+
+#### Render Backend Deployment
+- Connect your GitHub repository to Render
+- Configure as a Web Service with Node.js runtime
+- Set build command: `npm install`
+- Set start command: `npm start`
+- Add all environment variables in the Render dashboard
+
+#### Vercel Frontend Deployment
+- Connect your GitHub repository to Vercel
+- Configure as a Vite/React project
+- Add `vercel.json` to handle client-side routing:
+  ```json
+  {
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/index.html" }
+    ]
+  }
+  ```
+- Add environment variables in the Vercel dashboard
+
+## ⚙️ Environment Variables
+
+### Server Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| PORT | Server port | 5000 |
+| NODE_ENV | Environment | production |
+| MONGODB_URI | MongoDB connection | mongodb+srv://user:pass@cluster.mongodb.net/legacynote |
+| JWT_SECRET | JWT signing secret | your-secret-key |
+| JWT_EXPIRE | JWT expiration | 30d |
+| EMAIL_USERNAME | SMTP email | your-email@gmail.com |
+| EMAIL_PASSWORD | SMTP password | your-app-password |
+| FRONTEND_URL | Client URL | https://yourdomain.com |
+| ENCRYPTION_KEY | Encryption key | your-encryption-key |
+| CLOUDINARY_CLOUD_NAME | Cloudinary name | your-cloud-name |
+| CLOUDINARY_API_KEY | Cloudinary key | your-api-key |
+| CLOUDINARY_API_SECRET | Cloudinary secret | your-api-secret |
+| CLOUDINARY_UPLOAD_FOLDER | Cloudinary folder | legacy_note_uploads |
+
+### Client Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| VITE_API_URL | Backend API URL | https://api.yourdomain.com/api |
+| VITE_GOOGLE_CLIENT_ID | Google OAuth ID | your-google-client-id.apps.googleusercontent.com |
+
+## 🔒 Security Features
+
+- **Data Encryption**: All note content is encrypted with AES-256
+- **Password Hashing**: bcrypt with salt rounds for secure password storage
+- **JWT Authentication**: Short-lived tokens with refresh mechanism
+- **CSRF Protection**: Token validation for cross-site request forgery protection
+- **XSS Prevention**: Content Security Policy via Helmet
+- **Email Verification**: Required for account security
+- **Secure File Handling**: Validation and sanitization of uploaded files
+- **Cloudinary Secure URLs**: HTTPS-only media delivery
+
+## 👥 Contributors
+
+This project is maintained by the LegacyNote Team. Special thanks to all our contributors and supporters who have helped make this project possible.
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgements
-
-- [React.js](https://reactjs.org/)
-- [Node.js](https://nodejs.org/)
-- [Express.js](https://expressjs.com/)
-- [MongoDB](https://www.mongodb.com/)
-- [Mongoose](https://mongoosejs.com/)
-- [Agenda.js](https://github.com/agenda/agenda)
-- [JWT](https://jwt.io/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Formik](https://formik.org/)
-- [React Toastify](https://fkhadra.github.io/react-toastify/)
-- [Cloudinary](https://cloudinary.com/) - For media optimization and storage
-- [Multer](https://github.com/expressjs/multer) - For file uploads
-
 ---
 
-Made with ❤️ by Your Team
+<p align="center">
+  Made with ❤️ by the LegacyNote Team
+</p>
