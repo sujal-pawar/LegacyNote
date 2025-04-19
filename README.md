@@ -271,10 +271,6 @@ Our application is hosted using the following services:
 - **Secure File Handling**: Validation and sanitization of uploaded files
 - **Cloudinary Secure URLs**: HTTPS-only media delivery
 
-## 👥 Contributors
-
-This project is maintained by the LegacyNote Team. Special thanks to all our contributors and supporters who have helped make this project possible.
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
