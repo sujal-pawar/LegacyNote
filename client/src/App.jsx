@@ -37,7 +37,15 @@ function AppContent() {
         pauseOnHover={true}
         theme="light"
         limit={3}
-        toastClassName="toast-custom-container"
+        toastClassName={(context) => {
+          const { type = 'default' } = context || {};
+          return `toast-custom-container ${
+            type === 'success' ? 'success-toast' : 
+            type === 'warning' ? 'warning-toast' : 
+            type === 'info' ? 'info-toast' : 
+            type === 'error' ? 'auth-error-toast' : ''
+          }`;
+        }}
         bodyClassName="toast-custom-body"
         style={{
           top: '20px',
@@ -53,8 +61,19 @@ function App() {
   // Use environment variable for Google Client ID
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "787325832354-unsvscijr5q46ll3omrbdd0gbcrvdnhi.apps.googleusercontent.com";
 
+  // Handle Google OAuth script loading errors
+  const handleGoogleScriptLoadError = () => {
+    console.error("Google OAuth script failed to load");
+    // You could also log this to an error monitoring service
+  };
+
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider 
+      clientId={GOOGLE_CLIENT_ID}
+      onScriptLoadError={handleGoogleScriptLoadError}
+      nonce="abcdefg123456" // Add a nonce for better security
+      flow="implicit" // Explicit setting of the flow
+    >
       <Router>
         <ThemeProvider>
           <AuthProvider>

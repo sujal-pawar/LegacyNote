@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { FaPaperPlane, FaEnvelope, FaHeading, FaAlignLeft, FaCalendarAlt, FaFile, FaTimes, FaImage, FaVideo, FaMusic, FaFileAlt, FaPlus } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 import DateTimePicker from './DateTimePicker';
 import { notesAPI } from '../api/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -160,7 +160,7 @@ const SelfMessageForm = ({ onSuccess }) => {
         minute: '2-digit'
       });
 
-      toast.success(`Message scheduled successfully! You'll receive it on ${formattedDate} at ${formattedTime}.`);
+      showSuccessToast(`Message scheduled successfully! You'll receive it on ${formattedDate} at ${formattedTime}.`);
       resetForm();
       setDateTimeValue('');
       setSelectedFiles([]);
@@ -169,17 +169,8 @@ const SelfMessageForm = ({ onSuccess }) => {
       if (onSuccess && typeof onSuccess === 'function') {
         onSuccess();
       }
-    } catch (error) {
-      console.error('Error scheduling message:', error);
-      const errorMessage = error.response?.data?.error;
-      
-      if (errorMessage && errorMessage.includes('delivery')) {
-        toast.error(errorMessage || 'Please check the delivery date and try again.');
-      } else if (errorMessage && errorMessage.includes('file')) {
-        toast.error(errorMessage || 'There was an issue with one or more of your attached files.');
-      } else {
-        toast.error(errorMessage || 'Unable to schedule your message. Please try again later.');
-      }
+    } catch (err) {
+      showErrorToast(err.message || 'Failed to schedule message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

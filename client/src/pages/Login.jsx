@@ -6,7 +6,7 @@ import { FaLock, FaEnvelope, FaClock, FaShieldAlt, FaGlobe, FaExclamationTriangl
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast, showInfoToast, showAuthErrorToast } from '../utils/toast';
 
 const Login = () => {
   const { login, googleLogin, refreshUser, error: authError } = useAuth();
@@ -59,10 +59,7 @@ const Login = () => {
       setShowError(true);
       
       // Custom toast for longer display
-      toast.error(message, {
-        autoClose: 8000,
-        hideProgressBar: false,
-      });
+      showAuthErrorToast(message, 8000);
       
       // Force error to persist
       setTimeout(() => {
@@ -77,12 +74,29 @@ const Login = () => {
   const handleGoogleLogin = async (credentialResponse) => {
     try {
       setLoginAttempted(true);
+      
+      if (!credentialResponse || !credentialResponse.credential) {
+        console.error('Invalid credential response:', credentialResponse);
+        setErrorMessage('Google login failed. Please try again with email and password instead.');
+        setShowError(true);
+        return;
+      }
+      
       const decoded = jwtDecode(credentialResponse.credential);
+      
+      if (!decoded || !decoded.email) {
+        console.error('Invalid decoded token:', decoded);
+        setErrorMessage('Could not verify Google credentials. Please try again.');
+        setShowError(true);
+        return;
+      }
+      
       const success = await googleLogin({
         email: decoded.email,
-        name: decoded.name,
+        name: decoded.name || decoded.email.split('@')[0],
         googleId: decoded.sub,
       });
+      
       if (success) {
         await refreshUser();
         navigate('/dashboard');
@@ -91,14 +105,17 @@ const Login = () => {
         setShowError(true);
       }
     } catch (error) {
-      setErrorMessage('Google login failed. Please try again or use email and password.');
-      setShowError(true);
+      console.error('Google login error:', error);
       
-      // Custom toast for longer display
-      toast.error('Google login failed. Please try again or use email and password.', {
-        autoClose: 8000,
-        hideProgressBar: false,
-      });
+      // Check for AbortError specifically
+      if (error.name === 'AbortError') {
+        setErrorMessage('Google login was interrupted. Please try again.');
+      } else {
+        setErrorMessage('Google login failed. Please try again or use email and password.');
+      }
+      
+      setShowError(true);
+      showAuthErrorToast('Google login failed. Please try again or use email and password.', 8000);
     }
   };
 
@@ -260,14 +277,18 @@ const Login = () => {
                     <div className="flex justify-center">
                       <GoogleLogin
                         onSuccess={handleGoogleLogin}
-                        onError={() => {
-                          setErrorMessage('Google login failed. Please try again.');
+                        onError={(error) => {
+                          console.error('Google login error:', error);
+                          setErrorMessage('Google login failed. Please try again with email and password.');
                           setShowError(true);
+                          showAuthErrorToast('Google login failed. Please try again with email and password.');
                         }}
-                        useOneTap
+                        useOneTap={false}
                         shape="circle"
                         text="signin_with"
                         theme="outline"
+                        context="signin"
+                        ux_mode="popup"
                       />
                     </div>
 

@@ -45,7 +45,27 @@ export const authAPI = {
   forgotPassword: (email) => api.post('/auth/forgotpassword', email),
   resetPassword: (resetToken, password) => 
     api.put(`/auth/resetpassword/${resetToken}`, { password }),
-  googleAuth: (userData) => api.post('/auth/google', userData),
+  googleAuth: (userData) => {
+    // Add specific timeout and error handling for Google auth
+    return api.post('/auth/google', userData, {
+      timeout: 15000, // 15 second timeout for Google auth requests
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Type': 'Google' // Custom header to identify Google auth requests
+      }
+    }).catch(error => {
+      // Enhanced error logging for Google auth issues
+      if (error.code === 'ECONNABORTED') {
+        console.error('Google auth timeout:', error);
+        throw new Error('Google authentication timed out. Please try again.');
+      }
+      if (error.name === 'AbortError') {
+        console.error('Google auth aborted:', error);
+        throw new Error('Google authentication was interrupted. Please try again.');
+      }
+      throw error; // Re-throw other errors
+    });
+  },
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
   verifyEmail: (email, otp) => api.post('/auth/verify-email', { email, otp }),
 };

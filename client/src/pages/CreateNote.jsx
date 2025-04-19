@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
 import { FaCalendarAlt, FaEnvelope, FaUser, FaLock, FaArrowLeft, FaFile, FaTimes, FaImage, FaVideo, FaMusic, FaFileAlt, FaPlus, FaUserFriends } from 'react-icons/fa';
-import { toast } from 'react-toastify';
 import { notesAPI } from '../api/api';
 import api from '../api/api';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 
 const CreateNote = () => {
   const navigate = useNavigate();
@@ -265,16 +265,7 @@ const CreateNote = () => {
       const response = await notesAPI.createNote(formData, config);
       
       // Show success toast
-      toast.success('Note created successfully!', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      showSuccessToast('Note created successfully!');
       navigate('/dashboard');
     } catch (err) {
       console.error('Note creation error details:', err);
@@ -296,7 +287,7 @@ const CreateNote = () => {
       }
       
       setSubmitError(errorMessage);
-      toast.error(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setSubmitting(false);
       setIsUploading(false);

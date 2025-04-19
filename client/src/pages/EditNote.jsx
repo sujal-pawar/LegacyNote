@@ -3,8 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
 import { FaCalendarAlt, FaEnvelope, FaUser, FaLock, FaSpinner, FaArrowLeft, FaFile, FaTimes, FaImage, FaVideo, FaMusic, FaFileAlt, FaPlus, FaUserFriends } from 'react-icons/fa';
-import { toast } from 'react-toastify';
 import { notesAPI } from '../api/api';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 
 const EditNote = () => {
   const { id } = useParams();
@@ -60,7 +60,7 @@ const EditNote = () => {
         setError(null);
       } catch (err) {
         setError('Failed to fetch note. It may have been deleted or you may not have permission to edit it.');
-        toast.error('Failed to fetch note');
+        showErrorToast('Failed to fetch note');
       } finally {
         setLoading(false);
       }
@@ -206,10 +206,10 @@ const EditNote = () => {
         throw new Error(data.error || 'Failed to update note');
       }
 
-      toast.success('Note updated successfully');
+      showSuccessToast('Note updated successfully');
       navigate(`/view-note/${id}`);
     } catch (err) {
-      toast.error(err.message || 'Failed to update note');
+      showErrorToast(err.message || 'Failed to update note');
     } finally {
       setSubmitting(false);
     }

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { FaLock, FaCheck, FaMoon, FaSun } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { useAuth } from '../contexts/AuthContext';
 
 const ResetPassword = () => {
@@ -68,7 +68,7 @@ const ResetPassword = () => {
         }, 3000);
       }
     } catch (error) {
-      toast.error('Failed to reset password. The reset token may have expired.');
+      showErrorToast('Failed to reset password. The reset token may have expired.');
     } finally {
       setSubmitting(false);
     }

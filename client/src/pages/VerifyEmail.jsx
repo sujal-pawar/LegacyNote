@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaCheckCircle, FaExclamationTriangle, FaArrowLeft, FaSpinner } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { authAPI } from '../api/api';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast, showAuthErrorToast } from '../utils/toast';
 
 const VerifyEmail = () => {
   const { user, verifyEmail, refreshUser } = useAuth();
@@ -16,7 +16,7 @@ const VerifyEmail = () => {
 
   const handleResendVerification = async () => {
     if (!user || !user.email) {
-      toast.error('User information not available. Please log in again.');
+      showErrorToast('User information not available. Please log in again.');
       return;
     }
 
@@ -24,7 +24,7 @@ const VerifyEmail = () => {
       setLoading(true);
       const response = await authAPI.resendVerification(user.email);
       setResendSuccess(true);
-      toast.success('Verification email sent successfully! Please check your inbox.');
+      showSuccessToast('Verification email sent successfully! Please check your inbox.');
     } catch (error) {
       console.error('Error sending verification email:', error);
       let errorMessage;
@@ -37,7 +37,7 @@ const VerifyEmail = () => {
         errorMessage = 'Network error. Please check your connection.';
       }
       
-      toast.error(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,12 +48,12 @@ const VerifyEmail = () => {
     const otpCode = otp.join('');
     
     if (otpCode.length !== 6 || !/^\d+$/.test(otpCode)) {
-      toast.error('Please enter a valid 6-digit code');
+      showErrorToast('Please enter a valid 6-digit code');
       return;
     }
 
     if (!user?.email) {
-      toast.error('User email not available. Please log in again.');
+      showErrorToast('User email not available. Please log in again.');
       return;
     }
 
@@ -64,12 +64,12 @@ const VerifyEmail = () => {
       if (success) {
         await refreshUser();
         setVerificationSuccess(true);
-        toast.success('Email verification successful! Redirecting to dashboard...');
+        showSuccessToast('Email verification successful! Redirecting to dashboard...');
         setTimeout(() => {
           navigate('/dashboard');
         }, 2000);
       } else {
-        toast.error('Verification failed. Please check the code and try again.');
+        showErrorToast('Verification failed. Please check the code and try again.');
       }
     } catch (error) {
       console.error('Error in verification process:', error);

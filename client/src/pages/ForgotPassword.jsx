@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { useAuth } from '../contexts/AuthContext';
 
 const ForgotPassword = () => {
@@ -29,10 +29,10 @@ const ForgotPassword = () => {
 
       if (success) {
         setEmailSent(true);
-        toast.success('Password reset instructions sent to your email.');
+        showSuccessToast('Password reset instructions sent to your email.');
       }
     } catch (error) {
-      toast.error('Failed to send password reset email. Please try again.');
+      showErrorToast('Failed to send password reset email. Please try again.');
     } finally {
       setSubmitting(false);
     }

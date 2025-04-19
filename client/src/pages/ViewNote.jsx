@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { FaCalendarAlt, FaEdit, FaEnvelope, FaShare, FaTrash, FaSpinner, FaArrowLeft, FaLock, FaImage, FaVideo, FaMusic, FaFileAlt, FaFile, FaUserFriends, FaClock, FaDownload } from 'react-icons/fa';
-import { toast } from 'react-toastify';
 import { notesAPI } from '../api/api';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 
 const ViewNote = () => {
   const { id } = useParams();
@@ -21,7 +21,7 @@ const ViewNote = () => {
         setError(null);
       } catch (err) {
         setError('Failed to fetch note. It may have been deleted or you may not have permission to view it.');
-        toast.error('Failed to fetch note');
+        showErrorToast('Failed to fetch note');
       } finally {
         setLoading(false);
       }
@@ -34,10 +34,10 @@ const ViewNote = () => {
     if (window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
       try {
         await notesAPI.deleteNote(id);
-        toast.success('Note deleted successfully');
+        showSuccessToast('Note deleted successfully');
         navigate('/dashboard');
       } catch (err) {
-        toast.error('Failed to delete note');
+        showErrorToast('Failed to delete note');
       }
     }
   };
@@ -50,12 +50,12 @@ const ViewNote = () => {
       // Copy to clipboard
       navigator.clipboard.writeText(shareableLink);
       
-      toast.success('Shareable link copied to clipboard');
+      showSuccessToast('Shareable link copied to clipboard');
       
       // Update the note in the state to reflect it's now shared
       setNote({ ...note, isPublic: true, shareableLink });
     } catch (err) {
-      toast.error('Failed to share note');
+      showErrorToast('Failed to share note');
     }
   };
 
@@ -484,7 +484,7 @@ const ViewNote = () => {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(note.shareableLink);
-                    toast.success('Link copied to clipboard');
+                    showSuccessToast('Link copied to clipboard');
                   }}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors whitespace-nowrap"
                 >

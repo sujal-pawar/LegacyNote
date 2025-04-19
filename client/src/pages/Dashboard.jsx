@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { FaPlus, FaEdit, FaTrash, FaShare, FaCalendarAlt, FaSpinner, FaClock, FaEnvelope, FaFilter, FaSearch } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { notesAPI } from '../api/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -55,7 +55,7 @@ const Dashboard = () => {
         setError(null);
       } catch (err) {
         setError('Failed to fetch notes. Please try again later.');
-        toast.error('Failed to fetch notes');
+        showErrorToast('Failed to fetch notes');
       } finally {
         setLoading(false);
       }
@@ -69,9 +69,9 @@ const Dashboard = () => {
       try {
         await notesAPI.deleteNote(id);
         setNotes(notes.filter(note => note._id !== id));
-        toast.success('Note deleted successfully');
+        showSuccessToast('Note deleted successfully');
       } catch (err) {
-        toast.error('Failed to delete note');
+        showErrorToast('Failed to delete note');
       }
     }
   };
@@ -84,14 +84,14 @@ const Dashboard = () => {
       // Copy to clipboard
       navigator.clipboard.writeText(shareableLink);
       
-      toast.success('Shareable link copied to clipboard');
+      showSuccessToast('Shareable link copied to clipboard');
       
       // Update the note in the state to reflect it's now shared
       setNotes(notes.map(note => 
         note._id === id ? { ...note, isPublic: true, shareableLink } : note
       ));
     } catch (err) {
-      toast.error('Failed to share note');
+      showErrorToast('Failed to share note');
     }
   };
 

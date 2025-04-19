@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { authAPI } from '../api/api';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast, showAuthErrorToast, showInfoToast } from '../utils/toast';
 
 // Create context
 const AuthContext = createContext();
@@ -35,48 +35,6 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, [token]);
 
-  // Display error message with longer duration 
-  const showErrorToast = (message) => {
-    toast.error(message, {
-      autoClose: 10000, // 10 seconds
-      hideProgressBar: false,
-      closeOnClick: false,  // Don't close on click
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      position: "top-center",
-      className: "auth-error-toast persistent-error-toast",
-      style: { 
-        borderLeft: '6px solid #ef4444',
-        fontWeight: 'bold'
-      }
-    });
-  };
-
-  // Custom toast for success messages
-  const showSuccessToast = (message) => {
-    toast.success(message, {
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      position: "top-center",
-    });
-  };
-
-  // Custom toast for info messages
-  const showInfoToast = (message) => {
-    toast.info(message, {
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      position: "top-center",
-    });
-  };
-
   // Register user
   const register = async (userData) => {
     try {
@@ -90,7 +48,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
-      showErrorToast(err.response?.data?.error || 'Registration failed. Please try again.');
+      showAuthErrorToast(err.response?.data?.error || 'Registration failed. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -124,7 +82,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       setError(errorMessage);
-      showErrorToast(errorMessage); // Use custom error toast with longer duration
+      showAuthErrorToast(errorMessage); 
       return false;
     } finally {
       setLoading(false);
@@ -135,7 +93,22 @@ export const AuthProvider = ({ children }) => {
   const googleLogin = async (userData) => {
     try {
       setLoading(true);
+      
+      // Validate input data
+      if (!userData || !userData.email) {
+        setError('Invalid Google authentication data');
+        showAuthErrorToast('Invalid Google authentication data. Please try again.');
+        return false;
+      }
+      
       const res = await authAPI.googleAuth(userData);
+      
+      if (!res || !res.data || !res.data.token) {
+        setError('Invalid response from server during Google authentication');
+        showAuthErrorToast('Something went wrong with Google authentication. Please try again.');
+        return false;
+      }
+      
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
       setUser(res.data.user);
@@ -143,8 +116,21 @@ export const AuthProvider = ({ children }) => {
       showSuccessToast(`Welcome, ${res.data.user.name || 'User'}! Google login successful.`);
       return true;
     } catch (err) {
-      setError(err.response?.data?.error || 'Google login failed');
-      showErrorToast(err.response?.data?.error || 'Google login failed. Please try again.');
+      console.error('Google authentication error:', err);
+      
+      let errorMessage = 'Google login failed';
+      
+      // More detailed error handling
+      if (err.name === 'AbortError') {
+        errorMessage = 'Google login was interrupted. Please try again.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      showAuthErrorToast(errorMessage || 'Google login failed. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -243,25 +229,21 @@ export const AuthProvider = ({ children }) => {
       let errorMessage;
       
       if (err.response && err.response.data) {
-        // Server returned an error response
         errorMessage = err.response.data.error || 'Invalid or expired verification code';
       } else if (err.request) {
-        // No response received
         errorMessage = 'No response from server. Please try again later.';
       } else {
-        // Request setup error
-        errorMessage = 'Email verification failed. Please try again.';
+        errorMessage = 'An error occurred during verification.';
       }
       
       setError(errorMessage);
-      showErrorToast(errorMessage);
+      showAuthErrorToast(errorMessage);
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  // Clear errors
   const clearErrors = () => {
     setError(null);
   };

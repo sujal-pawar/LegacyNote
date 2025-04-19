@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { FaCalendarAlt, FaSpinner, FaArrowLeft, FaLock, FaExclamationTriangle, FaExclamationCircle, FaShare, FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaImage, FaVideo, FaMusic, FaFileAlt, FaFile, FaDownload } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../utils/toast';
 import { notesAPI } from '../api/api';
 import { motion } from 'framer-motion';
 
