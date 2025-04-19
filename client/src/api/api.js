@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -80,7 +80,7 @@ export const notesAPI = {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-          timeout: 60000 // Add a 60 second timeout
+          timeout: 180000 // Increase timeout to 3 minutes for Render free tier
         });
       }
       

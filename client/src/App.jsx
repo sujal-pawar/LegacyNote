@@ -50,8 +50,8 @@ function AppContent() {
 }
 
 function App() {
-  // Replace with your actual Google Client ID
-  const GOOGLE_CLIENT_ID = "787325832354-unsvscijr5q46ll3omrbdd0gbcrvdnhi.apps.googleusercontent.com";
+  // Use environment variable for Google Client ID
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "787325832354-unsvscijr5q46ll3omrbdd0gbcrvdnhi.apps.googleusercontent.com";
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>

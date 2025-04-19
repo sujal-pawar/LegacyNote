@@ -222,11 +222,11 @@ const CreateNote = () => {
 
   // Handle form submission
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    if (isSubmitting) {
+    if (submitting) {
       return;
     }
     
-    setIsSubmitting(true);
+    setSubmitting(true);
     
     try {
       // Create FormData for file uploads
@@ -377,6 +377,9 @@ const CreateNote = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Media Attachments (max 5 files, 5MB each)
                   </label>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
+                    Note: File uploads may take a bit longer on our deployed server. Please be patient and don't refresh the page.
+                  </p>
                   <div className="flex items-center justify-center w-full">
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-100">
                       <div className="flex flex-col items-center justify-center p-6">

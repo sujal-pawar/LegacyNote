@@ -192,7 +192,7 @@ const EditNote = () => {
       });
 
       // Custom API call with FormData
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notes/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'}/api/notes/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

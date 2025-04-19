@@ -88,7 +88,7 @@ const SharedNote = () => {
     // For Cloudinary URLs, use the URL directly, otherwise build a path with the API base URL
     fileUrl = isCloudinaryUrl
       ? file.filePath
-      : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${file.filePath}`;
+      : `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'}/${file.filePath}`;
 
     // For images
     if (fileType === 'image') {
