@@ -20,9 +20,9 @@ const isSameOrBefore = (date1, date2, exactTime = false) => {
     const date1Time = d1.getTime();
     const date2Time = d2.getTime();
     
-    // Only consider "on time" if current time has passed the scheduled time
-    // This ensures notes aren't delivered early
-    return date1Time <= date2Time;
+    // Only deliver when current time is GREATER THAN the scheduled time
+    // This was causing notes to be delivered immediately - strict inequality is required
+    return date1Time < date2Time ? false : true;
   } else {
     // For regular notes, just compare dates (legacy behavior)
     // Set hours, minutes, seconds and milliseconds to 0 for comparing only the dates
@@ -149,29 +149,32 @@ const defineJobs = () => {
         return;
       }
 
-      logScheduler(`Found ${notesToDeliver.length} undelivered notes to check`);
+      // logScheduler(`Found ${notesToDeliver.length} undelivered notes to check`);
 
       // Filter notes that are ready for delivery based on precise time
       const readyNotes = notesToDeliver.filter(note => {
-        // Use the new method for consistent delivery timing checks
-        const isReady = note.isReadyForDelivery();
-        
-        // Log for debugging
+        // CRITICAL FIX: Ensure we use strict time comparison for exact time delivery
         if (note.exactTimeDelivery) {
-          const currentDate = new Date();
           const deliveryDate = new Date(note.deliveryDate);
-          const timeDiff = (currentDate.getTime() - deliveryDate.getTime()) / 1000 / 60; // minutes
+          const currentTime = currentDate.getTime();
+          const deliveryTime = deliveryDate.getTime();
           
+          // Log timing details for debugging
+          const timeDiff = (currentTime - deliveryTime) / 1000 / 60; // minutes
           logScheduler(
             `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
             `Current time: ${currentDate.toISOString()}, ` +
             `Time difference: ${timeDiff.toFixed(2)} minutes, ` +
-            `Ready: ${isReady ? 'YES' : 'NO'}`, 
-            isReady ? 'info' : 'warning'
+            `Ready: ${currentTime > deliveryTime ? 'YES' : 'NO'}`, 
+            currentTime > deliveryTime ? 'info' : 'warning'
           );
+          
+          // Only deliver when the current time has PASSED the delivery time (greater than, not equal)
+          return currentTime > deliveryTime;
         }
         
-        return isReady;
+        // For non-exact time delivery, use the existing method
+        return note.isReadyForDelivery();
       });
 
       logScheduler(`${readyNotes.length} notes are ready for delivery`);
