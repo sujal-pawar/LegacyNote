@@ -45,11 +45,35 @@ export const AuthProvider = ({ children }) => {
       draggable: true,
       progress: undefined,
       position: "top-center",
-      className: "persistent-error-toast",
+      className: "auth-error-toast persistent-error-toast",
       style: { 
         borderLeft: '6px solid #ef4444',
         fontWeight: 'bold'
       }
+    });
+  };
+
+  // Custom toast for success messages
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      position: "top-center",
+    });
+  };
+
+  // Custom toast for info messages
+  const showInfoToast = (message) => {
+    toast.info(message, {
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      position: "top-center",
     });
   };
 
@@ -62,11 +86,11 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
-      toast.success('Account created successfully! Welcome to LegacyNote.');
+      showSuccessToast('Account created successfully! Welcome to LegacyNote.');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
-      toast.error(err.response?.data?.error || 'Registration failed. Please try again.');
+      showErrorToast(err.response?.data?.error || 'Registration failed. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -82,7 +106,7 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
-      toast.success(`Welcome back, ${res.data.user.name || 'User'}!`);
+      showSuccessToast(`Welcome back, ${res.data.user.name || 'User'}!`);
       return true;
     } catch (err) {
       console.error('Login error:', err);
@@ -116,7 +140,7 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
-      toast.success(`Welcome, ${res.data.user.name || 'User'}! Google login successful.`);
+      showSuccessToast(`Welcome, ${res.data.user.name || 'User'}! Google login successful.`);
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Google login failed');
@@ -133,7 +157,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
-    toast.info('You have been logged out successfully.');
+    showInfoToast('You have been logged out successfully.');
   };
 
   // Forgot password
@@ -141,11 +165,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await authAPI.forgotPassword({ email });
-      toast.success('Password reset email sent! Please check your inbox and follow the instructions.');
+      showSuccessToast('Password reset email sent! Please check your inbox and follow the instructions.');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to send reset email');
-      toast.error(err.response?.data?.error || 'Unable to send reset email. Please verify your email address.');
+      showErrorToast(err.response?.data?.error || 'Unable to send reset email. Please verify your email address.');
       return false;
     } finally {
       setLoading(false);
@@ -157,11 +181,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await authAPI.resetPassword(resetToken, password);
-      toast.success('Your password has been reset successfully! Please login with your new password.');
+      showSuccessToast('Your password has been reset successfully! Please login with your new password.');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to reset password');
-      toast.error(err.response?.data?.error || 'Password reset failed. The link may have expired.');
+      showErrorToast(err.response?.data?.error || 'Password reset failed. The link may have expired.');
       return false;
     } finally {
       setLoading(false);
@@ -174,11 +198,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const res = await authAPI.updateUser(userData);
       setUser(res.data.data);
-      toast.success('Your profile has been updated successfully!');
+      showSuccessToast('Your profile has been updated successfully!');
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update profile');
-      toast.error(err.response?.data?.error || 'Unable to update profile. Please try again.');
+      showErrorToast(err.response?.data?.error || 'Unable to update profile. Please try again.');
       return false;
     } finally {
       setLoading(false);

@@ -29,24 +29,20 @@ function AppContent() {
         position="top-center"
         autoClose={5000}
         hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
+        newestOnTop={true}
+        closeOnClick={true}
         rtl={false}
         pauseOnFocusLoss={false}
-        draggable
-        pauseOnHover
-        theme="colored"
+        draggable={true}
+        pauseOnHover={true}
+        theme="light"
         limit={3}
-        toastClassName={(context) => 
-          context?.type === 'error' 
-            ? 'toast-custom-container persistent-error-toast'
-            : 'toast-custom-container'
-        }
+        toastClassName="toast-custom-container"
         bodyClassName="toast-custom-body"
         style={{
           top: '20px',
           width: 'auto',
-          maxWidth: '420px',
+          maxWidth: '400px',
         }}
       />
     </div>
