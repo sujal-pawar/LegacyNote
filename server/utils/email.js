@@ -84,7 +84,22 @@ exports.sendNoteEmail = async (options) => {
         hour: '2-digit', 
         minute: '2-digit' 
       });
-      deliveryTimeMessage = `<p>This note was scheduled to be delivered to you exactly at ${formattedTime}.</p>`;
+      const formattedDate = deliveryDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      deliveryTimeMessage = `<p>This note was scheduled to be delivered to you exactly at <strong>${formattedTime}</strong> on <strong>${formattedDate}</strong>.</p>`;
+    } else {
+      const deliveryDate = new Date(options.note.deliveryDate);
+      const formattedDate = deliveryDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      deliveryTimeMessage = `<p>This note was scheduled to be delivered to you on <strong>${formattedDate}</strong>.</p>`;
     }
 
     // Ensure we have a valid URL, check if the accessUrl already contains the frontend URL

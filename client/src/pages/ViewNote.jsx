@@ -236,62 +236,79 @@ const ViewNote = () => {
   const isPending = new Date(note.deliveryDate) > new Date();
   const hasRecipient = note.recipient && note.recipient.email;
 
-  // Determine note status
+  // Get note status (for display in UI)
   const getNoteStatus = () => {
+    if (!note) return null;
+
     const now = new Date();
     const deliveryDate = new Date(note.deliveryDate);
-    
-    // Calculate time difference for display
+    const isPending = new Date(note.deliveryDate) > new Date();
+
+    // Calculate time remaining
     const timeRemaining = deliveryDate - now;
-    const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+    const daysRemaining = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+    const hoursRemaining = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutesRemaining = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-    
+    const secondsRemaining = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
     // For indicating very close delivery times
     const isWithinHour = hoursRemaining < 1 && hoursRemaining >= 0 && minutesRemaining >= 0;
-    
+    const isWithinMinute = minutesRemaining < 1 && minutesRemaining >= 0 && secondsRemaining >= 0;
+
     if (note.isDelivered) {
-      // Check if delivered less than 30 min ago, as email may still be processing
-      const deliveredRecently = note.deliveredAt && 
-        ((new Date() - new Date(note.deliveredAt)) < 30 * 60 * 1000);
-      
       return {
-        label: deliveredRecently ? 'Delivered (Email processing)' : 'Delivered',
-        color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+        status: 'delivered',
+        label: 'Delivered',
+        badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+        message: note.deliveredAt 
+          ? `This note was successfully delivered on ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at ${format(new Date(note.deliveredAt), 'h:mm a')}.`
+          : 'This note has been successfully delivered.'
       };
     } else if (deliveryDate > now) {
-      // Show detailed time for notes with exact time delivery that are coming up soon
-      if (note.exactTimeDelivery && hoursRemaining < 24 && hoursRemaining >= 0) {
-        let timeLabel = 'Pending';
-        if (isWithinHour) {
-          timeLabel = `Delivery in ${minutesRemaining} min${minutesRemaining !== 1 ? 's' : ''}`;
+      // Show detailed time for notes with exact time delivery
+      if (note.exactTimeDelivery) {
+        let timeLabel = 'Pending Delivery';
+        let message = '';
+        
+        if (isWithinMinute) {
+          timeLabel = `Delivery in ${secondsRemaining} second${secondsRemaining !== 1 ? 's' : ''}`;
+          message = `This note will be delivered in less than a minute.`;
+        } else if (isWithinHour) {
+          timeLabel = `Delivery in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}`;
+          message = `This note will be delivered in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.`;
+        } else if (daysRemaining < 1) {
+          timeLabel = `Delivery in ${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''}`;
+          message = `This note will be delivered in ${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} and ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.`;
         } else {
-          timeLabel = `Delivery in ${hoursRemaining} hr${hoursRemaining !== 1 ? 's' : ''}`;
+          timeLabel = `Delivery in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}`;
+          message = `This note will be delivered on ${format(deliveryDate, 'MMMM d, yyyy')} at ${format(deliveryDate, 'h:mm a')}.`;
         }
         
         return {
+          status: 'pending',
           label: timeLabel,
-          color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+          badgeColor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+          message: message
         };
       }
       
       return {
+        status: 'pending',
         label: 'Pending Delivery',
-        color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+        badgeColor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+        message: `This note will be delivered on ${format(deliveryDate, 'MMMM d, yyyy')}.`
       };
     } else {
-      // Delivery date has passed but not marked as delivered yet
+      // If past delivery date but not marked as delivered yet
       const processingTime = Math.abs(Math.floor((now - deliveryDate) / (1000 * 60)));
       
-      if (processingTime < 60) { // Less than 1 hour since delivery time
-        return {
-          label: `Processing (${processingTime} min)`,
-          color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-        };
-      }
-      
       return {
+        status: 'processing',
         label: 'Processing',
-        color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+        badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+        message: processingTime < 10 
+          ? `This note is being processed for delivery now.` 
+          : `This note is taking longer than expected to deliver. It was scheduled for ${format(deliveryDate, 'h:mm a')}.`
       };
     }
   };
@@ -321,7 +338,7 @@ const ViewNote = () => {
               )}
             </h1>
             <div>
-              <span className={`${statusInfo.color} px-2 py-1 rounded-full text-xs font-medium`}>
+              <span className={`${statusInfo.badgeColor} px-2 py-1 rounded-full text-xs font-medium`}>
                 {statusInfo.label}
               </span>
             </div>

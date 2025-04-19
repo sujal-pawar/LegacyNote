@@ -325,6 +325,9 @@ const SelfMessageForm = ({ onSuccess }) => {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Your message will be delivered to <span className="font-medium">{user?.email}</span> at the specified date and time.
               </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <span className="font-medium text-indigo-600 dark:text-indigo-400">⏰</span> <strong>Precise timing:</strong> Your message will be delivered exactly at the specified time - not a minute earlier!
+              </p>
             </div>
 
             <button

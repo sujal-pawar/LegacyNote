@@ -20,8 +20,8 @@ const isSameOrBefore = (date1, date2, exactTime = false) => {
     const date1Time = d1.getTime();
     const date2Time = d2.getTime();
     
-    // Consider "on time" if current time is within 30 seconds after scheduled time
-    // or any time after the scheduled time
+    // Only consider "on time" if current time has passed the scheduled time
+    // This ensures notes aren't delivered early
     return date1Time <= date2Time;
   } else {
     // For regular notes, just compare dates (legacy behavior)
@@ -153,8 +153,25 @@ const defineJobs = () => {
 
       // Filter notes that are ready for delivery based on precise time
       const readyNotes = notesToDeliver.filter(note => {
-        const deliveryDate = new Date(note.deliveryDate);
-        return isSameOrBefore(deliveryDate, currentDate, note.exactTimeDelivery);
+        // Use the new method for consistent delivery timing checks
+        const isReady = note.isReadyForDelivery();
+        
+        // Log for debugging
+        if (note.exactTimeDelivery) {
+          const currentDate = new Date();
+          const deliveryDate = new Date(note.deliveryDate);
+          const timeDiff = (currentDate.getTime() - deliveryDate.getTime()) / 1000 / 60; // minutes
+          
+          logScheduler(
+            `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
+            `Current time: ${currentDate.toISOString()}, ` +
+            `Time difference: ${timeDiff.toFixed(2)} minutes, ` +
+            `Ready: ${isReady ? 'YES' : 'NO'}`, 
+            isReady ? 'info' : 'warning'
+          );
+        }
+        
+        return isReady;
       });
 
       logScheduler(`${readyNotes.length} notes are ready for delivery`);

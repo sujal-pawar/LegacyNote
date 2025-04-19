@@ -103,11 +103,14 @@ const Dashboard = () => {
     
     // Calculate time difference for display
     const timeRemaining = deliveryDate - now;
-    const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+    const daysRemaining = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+    const hoursRemaining = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutesRemaining = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    const secondsRemaining = Math.floor((timeRemaining % (1000 * 60)) / 1000);
     
     // For indicating very close delivery times
     const isWithinHour = hoursRemaining < 1 && hoursRemaining >= 0 && minutesRemaining >= 0;
+    const isWithinMinute = minutesRemaining < 1 && minutesRemaining >= 0 && secondsRemaining >= 0;
     
     if (isDelivered) {
       return {
@@ -117,12 +120,17 @@ const Dashboard = () => {
       };
     } else if (deliveryDate > now) {
       // Show detailed time for notes with exact time delivery that are coming up soon
-      if (note.exactTimeDelivery && hoursRemaining < 24 && hoursRemaining >= 0) {
+      if (note.exactTimeDelivery) {
         let timeLabel = 'Pending';
-        if (isWithinHour) {
-          timeLabel = `In ${minutesRemaining} min${minutesRemaining !== 1 ? 's' : ''}`;
+        
+        if (isWithinMinute) {
+          timeLabel = `${secondsRemaining}s`;
+        } else if (isWithinHour) {
+          timeLabel = `${minutesRemaining}m`;
+        } else if (daysRemaining < 1) {
+          timeLabel = `${hoursRemaining}h ${minutesRemaining}m`;
         } else {
-          timeLabel = `In ${hoursRemaining} hr${hoursRemaining !== 1 ? 's' : ''}`;
+          timeLabel = `${daysRemaining}d ${hoursRemaining}h`;
         }
         
         return {

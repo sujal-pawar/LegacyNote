@@ -152,6 +152,26 @@ NoteSchema.methods.decryptContent = function () {
   return bytes.toString(CryptoJS.enc.Utf8);
 };
 
+// Method to check if a note is ready for delivery
+NoteSchema.methods.isReadyForDelivery = function() {
+  const currentDate = new Date();
+  const deliveryDate = new Date(this.deliveryDate);
+  
+  // For exact time delivery, compare timestamps
+  if (this.exactTimeDelivery) {
+    return currentDate.getTime() >= deliveryDate.getTime();
+  }
+  
+  // For date-only delivery, compare dates without time
+  const currentDay = new Date(currentDate);
+  currentDay.setHours(0, 0, 0, 0);
+  
+  const deliveryDay = new Date(deliveryDate);
+  deliveryDay.setHours(0, 0, 0, 0);
+  
+  return currentDay.getTime() >= deliveryDay.getTime();
+};
+
 // Generate shareable link
 NoteSchema.methods.generateShareableLink = function () {
   // Generate a cryptographically secure random access key (40 hex chars = 160 bits)

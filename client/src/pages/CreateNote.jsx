@@ -475,7 +475,10 @@ const CreateNote = () => {
                       <span className="font-medium text-indigo-600 dark:text-indigo-400">✓</span> Same-day delivery is available! Just select today's date and a time at least 5 minutes in the future.
                     </p>
                     <p>
-                      Your note will be delivered exactly at the specified time, and a confirmation email will be sent.
+                      <span className="font-medium text-indigo-600 dark:text-indigo-400">⏰</span> <strong>Precise timing:</strong> Your note will be delivered exactly at the specified time - not a minute earlier!
+                    </p>
+                    <p>
+                      A delivery confirmation email will be sent once your note is delivered.
                     </p>
                   </div>
                 </div>
