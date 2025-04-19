@@ -30,7 +30,15 @@ const Home = () => {
       title: 'New Parent Encouragement',
       quote: "The day our first child was born was overwhelming with joy and anxiety. Amidst the chaos, we received a message we had written to ourselves on our wedding day, envisioning our future family. Reading our past hopes and dreams while holding our newborn brought everything full circle. It was a poignant reminder of our journey and the love that had grown between us.",
       author: '— Michael, 34',
-    }, {
+    },
+    {
+      src: image5,
+      alt: 'Health milestone',
+      title: 'Health Milestone Message',
+      quote: "After a grueling battle with cancer, I found a letter I had written to myself before treatment began. It spoke of hope, strength, and the will to fight. Reading it post-recovery was an emotional release, acknowledging the pain endured and the victory achieved. It was a testament to my journey and the power of self-belief.",
+      author: '— Priya, 42',
+    },
+    {
       src: image1,
       alt: 'Graduation celebration',
       title: 'Graduation Day Surprise',
@@ -50,13 +58,6 @@ const Home = () => {
       title: 'First Job Pep Talk',
       quote: "Starting my first job was nerve-wracking. As I sat at my new desk, a scheduled email popped up—a note from my college self. It was filled with dreams, aspirations, and a reminder of my resilience. Reading it reignited my confidence and reminded me of the passion that led me here. It was the pep talk I didn't know I needed.",
       author: '— Ayesha, 27',
-    },
-    {
-      src: image5,
-      alt: 'Health milestone',
-      title: 'Health Milestone Message',
-      quote: "After a grueling battle with cancer, I found a letter I had written to myself before treatment began. It spoke of hope, strength, and the will to fight. Reading it post-recovery was an emotional release, acknowledging the pain endured and the victory achieved. It was a testament to my journey and the power of self-belief.",
-      author: '— Priya, 42',
     },
     {
       src: image6,

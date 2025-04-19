@@ -369,29 +369,29 @@ const ViewNote = () => {
   const statusInfo = getNoteStatus();
 
   return (
-    <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
-          <div className="mb-6">
+    <div className="min-h-screen py-10 max-sm:py-5 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-lg">
+          <div className="mb-4 sm:mb-6">
             <Link 
               to="/dashboard" 
-              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center w-auto inline-flex"
+              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center w-auto inline-flex text-sm sm:text-base"
             >
               <FaArrowLeft className="mr-2" /> Back to Dashboard
             </Link>
           </div>
 
-          <div className="flex justify-between items-start mb-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 sm:mb-6 gap-2 sm:gap-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-200 break-words pr-2">
               {note.title}
               {note.exactTimeDelivery && (
-                <span className="ml-3 text-sm bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 px-3 py-1 rounded-full inline-flex items-center">
-                  <FaClock className="mr-1" /> Exact Time Delivery
+                <span className="mt-2 ml-0 sm:ml-3 text-xs sm:text-sm bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 px-2 py-1 rounded-full inline-flex items-center">
+                  <FaClock className="mr-1" /> Exact Time
                 </span>
               )}
             </h1>
-            <div>
-              <span className={`${statusInfo.badgeColor} px-2 py-1 rounded-full text-xs font-medium`}>
+            <div className="mt-2 sm:mt-0">
+              <span className={`${statusInfo.badgeColor} px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap`}>
                 {statusInfo.label}
               </span>
             </div>
@@ -401,21 +401,21 @@ const ViewNote = () => {
           {!note.isDelivered && new Date(note.deliveryDate) > new Date() && countdown && (
             <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-center">
               <div className="text-sm font-medium text-indigo-800 dark:text-indigo-300">Countdown to delivery:</div>
-              <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums">
+              <div className="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums">
                 {countdown}
               </div>
             </div>
           )}
 
-          <div className="mb-6 flex items-center text-gray-600 dark:text-gray-400">
-            <FaCalendarAlt className="mr-2" />
-            <span>
+          <div className="mb-4 sm:mb-6 flex flex-wrap items-start text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+            <FaCalendarAlt className="mr-2 mt-1 flex-shrink-0" />
+            <span className="flex-1">
               {note.exactTimeDelivery ? (
                 <>
-                  Delivery Date/Time: {format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at exactly {format(new Date(note.deliveryDate), 'h:mm:ss a')}
+                  Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')} at {format(new Date(note.deliveryDate), 'h:mm a')}
                   {isDelivered && note.deliveredAt && (
-                    <span className="ml-2 text-green-600 dark:text-green-400">
-                      (Delivered on {format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm:ss a')})
+                    <span className="block sm:inline sm:ml-2 text-green-600 dark:text-green-400 mt-1 sm:mt-0">
+                      (Delivered: {format(new Date(note.deliveredAt), 'MMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm a')})
                     </span>
                   )}
                 </>
@@ -423,8 +423,8 @@ const ViewNote = () => {
                 <>
                   Delivery Date: {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
                   {isDelivered && note.deliveredAt && (
-                    <span className="ml-2 text-green-600 dark:text-green-400">
-                      (Delivered on {format(new Date(note.deliveredAt), 'MMMM d, yyyy')})
+                    <span className="block sm:inline sm:ml-2 text-green-600 dark:text-green-400 mt-1 sm:mt-0">
+                      (Delivered: {format(new Date(note.deliveredAt), 'MMM d, yyyy')})
                     </span>
                   )}
                 </>
@@ -434,11 +434,11 @@ const ViewNote = () => {
 
           {/* Display legacy single recipient */}
           {!note.recipients && note.recipient && note.recipient.email && (
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Recipient</h3>
-              <div className="flex items-center text-gray-700 dark:text-gray-300">
-                <FaEnvelope className="mr-2 text-gray-600 dark:text-gray-400" />
-                <span>
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Recipient</h3>
+              <div className="flex items-center text-sm sm:text-base text-gray-700 dark:text-gray-300">
+                <FaEnvelope className="mr-2 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                <span className="break-words">
                   {note.recipient.name} ({note.recipient.email})
                 </span>
               </div>
@@ -447,18 +447,18 @@ const ViewNote = () => {
 
           {/* Display multiple recipients if available */}
           {note.recipients && note.recipients.length > 0 && (
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center mb-3">
-                <FaUserFriends className="mr-2 text-gray-600 dark:text-gray-400" />
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                <FaUserFriends className="mr-2 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">
                   Recipients ({note.recipients.length})
                 </h3>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-40 overflow-y-auto">
                 {note.recipients.map((recipient, index) => (
-                  <div key={index} className="flex items-center text-gray-700 dark:text-gray-300 p-2 bg-white dark:bg-gray-800 rounded-lg">
-                    <FaEnvelope className="mr-2 text-gray-600 dark:text-gray-400" />
-                    <span>
+                  <div key={index} className="flex items-start sm:items-center text-sm sm:text-base text-gray-700 dark:text-gray-300 p-2 bg-white dark:bg-gray-800 rounded-lg">
+                    <FaEnvelope className="mr-2 mt-1 sm:mt-0 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                    <span className="break-words">
                       {recipient.name} ({recipient.email})
                     </span>
                   </div>
@@ -467,58 +467,58 @@ const ViewNote = () => {
             </div>
           )}
 
-          <div className="mb-6">
-            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-2 flex items-center">
-              <FaLock className="mr-2 text-gray-600 dark:text-gray-400" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-2 flex items-center">
+              <FaLock className="mr-2 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 This note is {note.isPublic ? 'public and can be shared' : 'private'} and is encrypted for security.
               </span>
             </div>
             
             {/* Add delivery status info when processing */}
             {!note.isDelivered && new Date(note.deliveryDate) <= new Date() && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-2 flex items-center">
-                <FaSpinner className="animate-spin mr-2 text-blue-600 dark:text-blue-400" />
-                <div className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-2 flex items-start sm:items-center">
+                <FaSpinner className="animate-spin mr-2 mt-1 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">
                   <p className="font-medium">Note is being processed for delivery</p>
-                  <p>The exact delivery time has passed. The note is being processed for delivery, which typically takes 2-5 minutes. 
-                  This delay is normal as the system prepares and sends out email notifications securely.</p>
-                  <p className="mt-1">You can refresh this page in a few minutes to see updated delivery status. 
-                  Media files will be accessible once processing is complete.</p>
+                  <p>The scheduled delivery time has passed. The note is being processed, which typically takes 2-5 minutes. 
+                  This delay is normal as the system prepares and sends notifications securely.</p>
+                  <p className="mt-1">You can refresh this page in a few minutes to see updated status.</p>
                 </div>
               </div>
             )}
             
             {/* Add delivery confirmation message */}
             {note.isDelivered ? (
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg mb-2 flex items-center">
-                <FaClock className="mr-2 text-green-600 dark:text-green-400" />
-                <div className="text-sm text-green-700 dark:text-green-300">
+              <div className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg mb-2 flex items-start sm:items-center">
+                <FaClock className="mr-2 mt-1 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <div className="text-xs sm:text-sm text-green-700 dark:text-green-300">
                   <p className="font-medium">Note successfully delivered!</p>
                   <p>
-                    This note was delivered on {format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm:ss a')}.
+                    This note was delivered on {format(new Date(note.deliveredAt || note.deliveryDate), 'MMM d, yyyy')} at {format(new Date(note.deliveredAt || note.deliveryDate), 'h:mm a')}.
                     {note.recipients && note.recipients.length > 0 ? 
                       ' Email notifications have been sent to all recipients.' : 
-                      ' All specified delivery actions have been completed.'}
+                      ' All delivery actions have been completed.'}
                   </p>
                 </div>
               </div>
             ) : new Date(note.deliveryDate) <= new Date() ? (
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-2 flex items-center">
-                <FaSpinner className="animate-spin mr-2 text-blue-600 dark:text-blue-400" />
-                <div className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-2 flex items-start sm:items-center">
+                <FaSpinner className="animate-spin mr-2 mt-1 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">
                   <p className="font-medium">Note is being processed for delivery</p>
-                  <p>The note was scheduled for {format(new Date(note.deliveryDate), 'h:mm:ss a')} and is being processed for delivery. 
-                  This typically takes 2-5 minutes. You can refresh this page to check delivery status.</p>
+                  <p>The note was scheduled for {format(new Date(note.deliveryDate), 'h:mm a')} and is being processed. 
+                  This typically takes 2-5 minutes. Refresh this page to check delivery status.</p>
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-2 flex items-center">
-                <FaClock className="mr-2 text-yellow-600 dark:text-yellow-400" />
-                <div className="text-sm text-yellow-700 dark:text-yellow-300">
+              <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-2 flex items-start sm:items-center">
+                <FaClock className="mr-2 mt-1 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+                <div className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
                   <p className="font-medium">Scheduled for future delivery</p>
-                  <p>
-                    This note is scheduled to be delivered on {format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at exactly {format(new Date(note.deliveryDate), 'h:mm:ss a')}.
+                  <p className="break-words">
+                    This note is scheduled for {format(new Date(note.deliveryDate), 'MMM d, yyyy')} 
+                    {note.exactTimeDelivery ? ` at ${format(new Date(note.deliveryDate), 'h:mm a')}` : ''}.
                     {statusInfo.status === 'pending' && ` (${statusInfo.label})`}
                   </p>
                 </div>
@@ -526,23 +526,23 @@ const ViewNote = () => {
             )}
           </div>
 
-          <div className="mb-8 p-6 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+          <div className="mb-6 p-4 sm:p-6 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg whitespace-pre-wrap text-gray-800 dark:text-gray-200 text-sm sm:text-base overflow-auto">
             {note.content}
           </div>
 
-          {/* After note content section, before actions */}
+          {/* Media files section */}
           {note.mediaFiles && note.mediaFiles.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Attachments ({note.mediaFiles.length})</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                If any media doesn't display correctly, you can use the download buttons to access files directly. For shared notes, you may need to wait until processing completes.
+            <div className="mb-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Attachments ({note.mediaFiles.length})</h3>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
+                If any media doesn't display correctly, you can use the download buttons to access files directly.
               </p>
               <div className="grid grid-cols-1 gap-4">
                 {note.mediaFiles.map((file, index) => (
-                  <div key={index} className="p-4 border rounded-lg dark:border-gray-600">
+                  <div key={index} className="p-3 sm:p-4 border rounded-lg dark:border-gray-600">
                     {file && file.filePath ? renderMediaPreview(file) : (
-                      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                        <p className="text-yellow-700 dark:text-yellow-400 mb-2">
+                      <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
+                        <p className="text-yellow-700 dark:text-yellow-400 mb-2 text-sm">
                           File information is incomplete or missing
                         </p>
                       </div>
@@ -553,55 +553,41 @@ const ViewNote = () => {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3">
-            {!isDelivered && (
+          {/* Actions Button Group - Keep these at bottom for mobile friendly access */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-start items-stretch sm:items-center mt-6">
+            {/* Edit button - only for undelivered notes */}
+            {!isDelivered && isPending && (
               <Link
                 to={`/edit-note/${note._id}`}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center"
+                className="btn btn-primary flex items-center justify-center"
               >
                 <FaEdit className="mr-2" /> Edit Note
               </Link>
             )}
             
+            {/* Share button - can be disabled based on status */}
             <button
               onClick={handleShareNote}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 disabled:opacity-50 dark:bg-green-700 dark:hover:bg-green-600 transition-colors flex items-center"
+              disabled={!note.isPublic && isDelivered}
+              className={`btn ${
+                note.isPublic ? 'btn-secondary' : 'btn-outline'
+              } flex items-center justify-center ${
+                !note.isPublic && isDelivered ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              <FaShare className="mr-2" /> Share Note
+              <FaShare className="mr-2" /> {note.isPublic ? 'Copy Share Link' : 'Make Shareable'}
             </button>
             
-            {!note.isDelivered && !(note.deliveryDate && new Date() > new Date(note.deliveryDate)) && (
+            {/* Delete button - only for undelivered notes */}
+            {!isDelivered && (
               <button
                 onClick={handleDeleteNote}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 disabled:opacity-50 dark:bg-red-700 dark:hover:bg-red-600 transition-colors flex items-center"
+                className="btn btn-danger flex items-center justify-center"
               >
                 <FaTrash className="mr-2" /> Delete Note
               </button>
             )}
           </div>
-
-          {note.shareableLink && (
-            <div className="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Shareable Link</h3>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <input
-                  type="text"
-                  value={note.shareableLink}
-                  className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  readOnly
-                />
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(note.shareableLink);
-                    showSuccessToast('Link copied to clipboard');
-                  }}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors whitespace-nowrap"
-                >
-                  Copy Link
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

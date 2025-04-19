@@ -443,162 +443,206 @@ exports.sendNoteCreationConfirmation = async (options) => {
  * @param {String} options.userName - User's name (optional)
  */
 exports.sendPasswordResetEmail = async (options) => {
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+  try {
+    console.log(`Starting password reset email process for: ${options.email}`);
+    
+    // Create transporter with optimized settings
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // use SSL
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+      // Add connection pool settings
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      // Add timeout settings
+      connectionTimeout: 10000, // 10 seconds
+      socketTimeout: 20000, // 20 seconds
+      // Add rate limiting
+      rateLimit: {
+        maxMessages: 10,
+        rateDelta: 5000, // 5 seconds
+      }
+    });
 
-  // Format expiry time (30 minutes from now)
-  const expiryDate = new Date(Date.now() + 30 * 60 * 1000);
-  const formattedExpiry = expiryDate.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true
-  });
+    // Verify connection
+    await transporter.verify();
+    console.log('SMTP connection verified for password reset email');
 
-  const message = {
-    from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
-    to: options.email,
-    subject: 'LegacyNote Password Reset',
-    html: `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Password Reset Request</title>
-        <style>
-          body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 650px;
-            margin: 0 auto;
-            padding: 0;
-            background-color: #f9fafb;
-          }
-          .container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-          }
-          .header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 30px;
-          }
-          .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4f46e5;
-            margin-bottom: 10px;
-          }
-          h1 {
-            color: #1f2937;
-            font-size: 28px;
-            margin-bottom: 25px;
-            text-align: center;
-            line-height: 1.3;
-          }
-          p {
-            font-size: 16px;
-            margin-bottom: 20px;
-            color: #4b5563;
-          }
-          .highlight {
-            font-weight: bold;
-            color: #4f46e5;
-          }
-          .warning {
-            background-color: #fff0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 25px 0;
-            border-left: 4px solid #ff9800;
-          }
-          .button-container {
-            text-align: center;
-            margin: 35px 0;
-          }
-          .button {
-            display: inline-block;
-            background-color: #4f46e5;
-            color: white !important;
-            padding: 15px 30px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: 600;
-            border-radius: 8px;
-            transition: background-color 0.3s;
-          }
-          .button:hover {
-            background-color: #4338ca;
-          }
-          .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            font-size: 14px;
-            color: #6b7280;
-          }
-          .link-display {
-            background-color: #f3f4f6;
-            border-radius: 4px;
-            padding: 12px;
-            word-break: break-all;
-            margin: 15px 0;
-            font-size: 14px;
-            color: #4f46e5;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo">LegacyNote</div>
+    // Format expiry time (30 minutes from now)
+    const expiryDate = new Date(Date.now() + 30 * 60 * 1000);
+    const formattedExpiry = expiryDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    });
+
+    const message = {
+      from: `LegacyNote <${process.env.EMAIL_USERNAME}>`,
+      to: options.email,
+      subject: 'LegacyNote Password Reset',
+      priority: 'high', // Mark as high priority
+      headers: {
+        'X-Priority': '1',
+        'X-MSMail-Priority': 'High',
+        'Importance': 'High'
+      },
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Password Reset Request</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333333;
+              max-width: 650px;
+              margin: 0 auto;
+              padding: 0;
+              background-color: #f9fafb;
+            }
+            .container {
+              background-color: #ffffff;
+              border-radius: 12px;
+              padding: 20px;
+              margin: 20px 0;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              padding-bottom: 20px;
+              border-bottom: 1px solid #e5e7eb;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #4f46e5;
+              margin-bottom: 10px;
+            }
+            h1 {
+              color: #1f2937;
+              font-size: 28px;
+              margin-bottom: 25px;
+              text-align: center;
+              line-height: 1.3;
+            }
+            p {
+              font-size: 16px;
+              margin-bottom: 20px;
+              color: #4b5563;
+            }
+            .highlight {
+              font-weight: bold;
+              color: #4f46e5;
+            }
+            .warning {
+              background-color: #fff0e0;
+              border-radius: 8px;
+              padding: 15px;
+              margin: 25px 0;
+              border-left: 4px solid #ff9800;
+            }
+            .button-container {
+              text-align: center;
+              margin: 35px 0;
+            }
+            .button {
+              display: inline-block;
+              background-color: #4f46e5;
+              color: white !important;
+              padding: 15px 30px;
+              text-align: center;
+              text-decoration: none;
+              font-size: 18px;
+              font-weight: 600;
+              border-radius: 8px;
+              transition: background-color 0.3s;
+            }
+            .button:hover {
+              background-color: #4338ca;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              font-size: 14px;
+              color: #6b7280;
+            }
+            .link-display {
+              background-color: #f3f4f6;
+              border-radius: 4px;
+              padding: 12px;
+              word-break: break-all;
+              margin: 15px 0;
+              font-size: 14px;
+              color: #4f46e5;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">LegacyNote</div>
+            </div>
+            
+            <h1>Password Reset Request</h1>
+            
+            <p>Hello ${options.userName || "there"},</p>
+            
+            <p>We received a request to reset your password for your LegacyNote account. To complete the password reset process, please click the button below:</p>
+            
+            <div class="button-container">
+              <a href="${options.resetUrl}" class="button">Reset Your Password</a>
+            </div>
+            
+            <p>If you can't click the button, you can also use the link below:</p>
+            <div class="link-display">${options.resetUrl}</div>
+            
+            <div class="warning">
+              <p><strong>Important:</strong> This link will expire at ${formattedExpiry} (valid for 30 minutes).</p>
+              <p>If you didn't request this password reset, please ignore this email or contact support if you have concerns about your account security.</p>
+            </div>
+            
+            <p>For security reasons, this password reset link can only be used once. Once your password has been changed, you'll be able to log in with your new password.</p>
+            
+            <div class="footer">
+              <p>Thank you for using LegacyNote!</p>
+              <p>Connecting people through time.</p>
+            </div>
           </div>
-          
-          <h1>Password Reset Request</h1>
-          
-          <p>Hello ${options.userName || "there"},</p>
-          
-          <p>We received a request to reset your password for your LegacyNote account. To complete the password reset process, please click the button below:</p>
-          
-          <div class="button-container">
-            <a href="${options.resetUrl}" class="button">Reset Your Password</a>
-          </div>
-          
-          <p>If you can't click the button, you can also use the link below:</p>
-          <div class="link-display">${options.resetUrl}</div>
-          
-          <div class="warning">
-            <p><strong>Important:</strong> This link will expire at ${formattedExpiry} (valid for 30 minutes).</p>
-            <p>If you didn't request this password reset, please ignore this email or contact support if you have concerns about your account security.</p>
-          </div>
-          
-          <p>For security reasons, this password reset link can only be used once. Once your password has been changed, you'll be able to log in with your new password.</p>
-          
-          <div class="footer">
-            <p>Thank you for using LegacyNote!</p>
-            <p>Connecting people through time.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `,
-  };
+        </body>
+        </html>
+      `,
+    };
   
-  await transporter.sendMail(message);
+    // Send email and log result
+    const info = await transporter.sendMail(message);
+    console.log(`Password reset email sent successfully to ${options.email}, messageId: ${info.messageId}`);
+    return info;
+  } catch (err) {
+    console.error(`Failed to send password reset email to ${options.email}:`, err);
+    
+    // Log specific error types for better debugging
+    if (err.code === 'EAUTH') {
+      console.error('Authentication error: Please check your EMAIL_USERNAME and EMAIL_PASSWORD in .env');
+    } else if (err.code === 'ESOCKET' || err.code === 'ETIMEDOUT') {
+      console.error('Connection error: Cannot connect to email server or connection timed out.');
+    } else if (err.code === 'EENVELOPE') {
+      console.error('Envelope error: Invalid recipient email address or sender address.');
+    }
+    
+    // Re-throw the error to be handled by the caller
+    throw err;
+  }
 };
 
 /**
