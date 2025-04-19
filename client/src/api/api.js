@@ -65,15 +65,13 @@ export const notesAPI = {
     try {
       // Check if noteData is FormData
       if (noteData instanceof FormData) {
-        // console.log('Submitting note with FormData');
-        
         // Log the data being sent (for debugging)
         if (process.env.NODE_ENV !== 'production') {
           for (let [key, value] of noteData.entries()) {
             if (key !== 'mediaFiles') { // Don't log file binary data
-              // console.log(`FormData: ${key} => ${value instanceof File ? value.name : value}`);
+              // Remove commented console.log statements
             } else {
-              // console.log(`FormData: ${key} => [File: ${value.name}]`);
+              // Remove commented console.log statements
             }
           }
         }
@@ -86,7 +84,6 @@ export const notesAPI = {
         });
       }
       
-      console.log('Submitting note with JSON data');
       return await api.post('/notes', noteData, {
         timeout: 30000 // Add a 30 second timeout for JSON requests
       });

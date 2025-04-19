@@ -33,6 +33,54 @@ const isSameOrBefore = (date1, date2, exactTime = false) => {
   }
 };
 
+// Add these utility functions at the top after imports
+const logScheduler = (message, type = 'info') => {
+  const timestamp = new Date().toISOString();
+  const prefix = `[SCHEDULER ${timestamp}]`;
+  
+  if (process.env.NODE_ENV === 'production') {
+    // In production, use more concise logging
+    switch(type) {
+      case 'error':
+        console.error(`${prefix} ERROR: ${message}`);
+        break;
+      case 'warning':
+        console.warn(`${prefix} WARNING: ${message}`);
+        break;
+      case 'success':
+        console.log(`${prefix} SUCCESS: ${message}`);
+        break;
+      default:
+        console.log(`${prefix} INFO: ${message}`);
+    }
+  } else {
+    // In development, we can be more verbose
+    switch(type) {
+      case 'error':
+        console.error(`${prefix} ERROR: ${message}`);
+        break;
+      case 'warning':
+        console.warn(`${prefix} WARNING: ${message}`);
+        break;
+      case 'success':
+        console.log(`${prefix} SUCCESS: ${message}`);
+        break;
+      default:
+        console.log(`${prefix} INFO: ${message}`);
+    }
+  }
+};
+
+// Function to handle connection logging
+const logConnection = (uri) => {
+  // Create a masked URI that doesn't show credentials
+  const maskedUri = uri.replace(
+    /(mongodb(\+srv)?:\/\/)([^:]+):([^@]+)@/,
+    '$1****:****@'
+  );
+  logScheduler(`Connecting to MongoDB: ${maskedUri}`);
+};
+
 // Initialize Agenda with improved error handling
 let agenda = null;
 const initializeAgenda = () => {
@@ -82,9 +130,9 @@ const initializeAgenda = () => {
 const defineJobs = () => {
   if (!agenda) return;
 
-  agenda.define('check notes for delivery', async (job) => {
+  agenda.define('check-notes-for-delivery', async (job) => {
     try {
-      // console.log('Running note delivery check...');
+      logScheduler('Running note delivery check...');
       
       // Find notes that should be delivered and haven't been delivered yet
       const currentDate = new Date();
@@ -101,7 +149,7 @@ const defineJobs = () => {
         return;
       }
 
-      // console.log(`Found ${notesToDeliver.length} undelivered notes to check`);
+      logScheduler(`Found ${notesToDeliver.length} undelivered notes to check`);
 
       // Filter notes that are ready for delivery based on precise time
       const readyNotes = notesToDeliver.filter(note => {
@@ -109,7 +157,13 @@ const defineJobs = () => {
         return isSameOrBefore(deliveryDate, currentDate, note.exactTimeDelivery);
       });
 
-      // console.log(`${readyNotes.length} notes are ready for delivery`);
+      logScheduler(`${readyNotes.length} notes are ready for delivery`);
+
+      // Add more informative logs throughout the function
+      if (readyNotes.length === 0) {
+        logScheduler('No notes ready for delivery in this cycle');
+        return;
+      }
 
       // Process each note
       for (const note of readyNotes) {
@@ -129,7 +183,7 @@ const defineJobs = () => {
             const accessKey = note.accessKey || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
             note.accessKey = accessKey;
             note.shareableLink = `${frontendUrl}/shared-note/${note._id}/${accessKey}`;
-            // console.log(`Fixed invalid shareable link for note ${note._id}: ${note.shareableLink}`);
+            logScheduler(`Fixed invalid shareable link for note ${note._id}: ${note.shareableLink}`, 'warning');
           }
           
           // Get sender name for the email
@@ -137,7 +191,7 @@ const defineJobs = () => {
           
           // Check if note has multiple recipients
           if (note.recipients && note.recipients.length > 0) {
-            // console.log(`Processing ${note.recipients.length} recipients for note ${note._id}`);
+            logScheduler(`Processing ${note.recipients.length} recipients for note ${note._id}`);
             
             // Track if any emails were attempted (to handle empty recipient lists)
             let emailsAttempted = false;
@@ -162,7 +216,7 @@ const defineJobs = () => {
                     subject: emailSubject
                   });
                   
-                  // console.log(`Email sent to recipient ${recipient.email} for note ${note._id} from ${senderName}`);
+                  logScheduler(`Email sent to recipient ${recipient.email} for note ${note._id}`, 'success');
                 } catch (emailError) {
                   console.error(`Failed to send email to ${recipient.email} for note ${note._id}:`, emailError);
                   allEmailsSent = false;
@@ -237,8 +291,15 @@ const defineJobs = () => {
           console.error(`Error processing note ${note._id}:`, noteError);
         }
       }
-    } catch (err) {
-      console.error('Error in note delivery job:', err);
+      
+      // Process non-recipient public notes
+      // ... existing code ...
+      
+      // Final result logging
+      logScheduler(`Delivered ${readyNotes.length} notes successfully`, 'success');
+    } catch (error) {
+      logScheduler(`Error in note delivery job: ${error.message}`, 'error');
+      logScheduler(`Stack trace: ${error.stack}`, 'error');
     }
   });
 };
@@ -247,32 +308,45 @@ const defineJobs = () => {
 exports.startScheduler = async () => {
   try {
     // Initialize the agenda instance
-    const instance = initializeAgenda();
-    if (!instance) {
-      console.error('Failed to initialize agenda');
-      return;
-    }
+    agenda = new Agenda({
+      db: { address: process.env.MONGODB_URI, collection: 'scheduledJobs' },
+      processEvery: '1 minute',
+      maxConcurrency: 20
+    });
     
-    // Define the jobs
+    // Setup task definitions
     defineJobs();
+    
+    // Add logging for connection
+    logConnection(process.env.MONGODB_URI);
+    
+    // Add logging for agenda events
+    agenda.on('ready', () => logScheduler('Scheduler connected to MongoDB and is ready'));
+    agenda.on('error', (err) => logScheduler(`Scheduler error: ${err.message}`, 'error'));
     
     // Start agenda
     await agenda.start();
-    // console.log('Note delivery scheduler started');
+    logScheduler('Note delivery scheduler started');
     
-    // Schedule the job to run every 30 seconds
-    await agenda.every('30 seconds', 'check notes for delivery');
-    // console.log('Scheduled note delivery checks every 30 seconds for precise delivery timing');
+    // Schedule the job to run every minute
+    await agenda.every('1 minute', 'check-notes-for-delivery');
+    logScheduler('Scheduled note delivery checks every minute for efficient delivery timing');
     
     // Schedule an immediate check as well to handle any pending deliveries
-    await agenda.now('check notes for delivery');
-    // console.log('Scheduled immediate note delivery check');
-  } catch (err) {
-    console.error('Error starting scheduler:', err);
+    await agenda.now('check-notes-for-delivery');
+    logScheduler('Scheduled immediate note delivery check');
     
-    // Try to restart after a delay if there was an error
-    // console.log('Will attempt to restart scheduler in 60 seconds...');
-    setTimeout(exports.startScheduler, 60000);
+    // Add error handling and auto-restart
+    process.on('uncaughtException', (error) => {
+      logScheduler(`Uncaught exception in scheduler: ${error.message}`, 'error');
+      logScheduler('Will attempt to restart scheduler in 60 seconds...');
+      setTimeout(() => exports.startScheduler(), 60000);
+    });
+    
+    return agenda;
+  } catch (error) {
+    logScheduler(`Failed to start scheduler: ${error.message}`, 'error');
+    throw error;
   }
 };
 
@@ -281,7 +355,7 @@ process.on('SIGTERM', async () => {
   if (agenda) {
     try {
       await agenda.stop();
-      console.log('Scheduler stopped gracefully');
+      logScheduler('Scheduler stopped gracefully');
     } catch (err) {
       console.error('Error stopping scheduler:', err);
     }

@@ -76,18 +76,22 @@ const SharedNote = () => {
 
   // Render media preview based on type
   const renderMediaPreview = (file) => {
+    // Create a proper URL for the file
+    let fileUrl = file.path;
+    
+    // Extract file type from MIME type
+    const fileType = file.mimeType ? file.mimeType.split('/')[0] : 'unknown';
+    
     // Check if the file path is already a complete URL (Cloudinary)
     const isCloudinaryUrl = file.filePath && (file.filePath.startsWith('http://') || file.filePath.startsWith('https://'));
 
     // For Cloudinary URLs, use the URL directly, otherwise build a path with the API base URL
-    const fileUrl = isCloudinaryUrl
+    fileUrl = isCloudinaryUrl
       ? file.filePath
       : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${file.filePath}`;
 
-    console.log('File URL for preview:', fileUrl); // For debugging
-
     // For images
-    if (file.fileType.startsWith('image/')) {
+    if (fileType === 'image') {
       return (
         <div className="relative">
           <img
@@ -115,7 +119,7 @@ const SharedNote = () => {
     }
 
     // For video
-    if (file.fileType.startsWith('video/')) {
+    if (fileType === 'video') {
       return (
         <div className="relative">
           <video
@@ -151,7 +155,7 @@ const SharedNote = () => {
     }
 
     // For audio
-    if (file.fileType.startsWith('audio/')) {
+    if (fileType === 'audio') {
       return (
         <div>
           <audio

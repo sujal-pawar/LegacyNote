@@ -14,20 +14,17 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // Redirect to login if not authenticated
+  // If not authenticated, redirect to login
   if (!isAuthenticated) {
-    console.log('User not authenticated, redirecting to login');
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  // Redirect to email verification page if email is not verified
+  // Check if email is verified (only if required)
   if (user && !user.isEmailVerified) {
-    console.log('Email verification needed:', user);
-    return <Navigate to="/verify-email" />;
+    return <Navigate to="/verify-email" replace />;
   }
 
-  console.log('User authenticated and email verified:', user);
-  // If authenticated and email verified, render the children (protected component)
+  // User is authenticated and email is verified if required
   return children;
 };
 

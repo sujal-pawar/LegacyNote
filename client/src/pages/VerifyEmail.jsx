@@ -63,10 +63,8 @@ const VerifyEmail = () => {
       
       if (success) {
         await refreshUser();
-        console.log('User data refreshed after verification');
-        
         setVerificationSuccess(true);
-        toast.success('Account created successfully! Email verified.');
+        toast.success('Email verification successful! Redirecting to dashboard...');
         setTimeout(() => {
           navigate('/dashboard');
         }, 2000);

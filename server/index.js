@@ -31,7 +31,15 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(cors());
+
+// Configure CORS properly for production
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
 app.use(morgan('dev'));
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
@@ -79,7 +87,12 @@ connectDB()
     
     // Start the server
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      // For production, log minimal information
+      if (process.env.NODE_ENV === 'production') {
+        console.log(`Server started on port ${PORT}`);
+      } else {
+        console.log(`Server running on port ${PORT}`);
+      }
     });
   })
   .catch((err) => {

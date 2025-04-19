@@ -221,35 +221,13 @@ const CreateNote = () => {
   };
 
   // Handle form submission
-  const handleSubmit = async (values, { setSubmitting: formikSetSubmitting }) => {
-    // Set our local submitting state
-    setSubmitting(true);
-    setSubmitError('');
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    // Validate the delivery time is in the future for same-day deliveries
-    const deliveryDateTime = new Date(values.deliveryDate);
-    const [hours, minutes] = values.deliveryTime.split(':');
-    deliveryDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-    
-    const now = new Date();
-    if (deliveryDateTime <= now) {
-      setSubmitError('The delivery time must be at least a few minutes in the future. Please adjust your time.');
-      setSubmitting(false);
-      formikSetSubmitting(false);
-      setIsUploading(false);
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    if (isSubmitting) {
       return;
     }
-
-    // Create a timeout to prevent the form from being stuck if there's a network issue
-    const timeoutId = setTimeout(() => {
-      setSubmitError('The request is taking longer than expected. You can try again or check your network connection.');
-      setSubmitting(false);
-      formikSetSubmitting(false);
-      setIsUploading(false);
-    }, 60000); // 60 seconds timeout
-
+    
+    setIsSubmitting(true);
+    
     try {
       // Create FormData for file uploads
       const formData = new FormData();
@@ -257,7 +235,7 @@ const CreateNote = () => {
       // Add note data to FormData
       formData.append('title', values.title);
       formData.append('content', values.content);
-      formData.append('deliveryDate', deliveryDateTime.toISOString());
+      formData.append('deliveryDate', new Date(values.deliveryDate).toISOString());
       formData.append('isPublic', values.isPublic);
       formData.append('exactTimeDelivery', 'true'); // Always enable exact time delivery
       
@@ -276,36 +254,29 @@ const CreateNote = () => {
         });
       }
 
-      console.log('Submitting note creation form...');
-      
-      // Use the API directly with detailed error handling
-      const response = await api.post(
-        '/notes', 
-        formData, 
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 50) / progressEvent.total
-            ) + 50; // Last 50% is upload
-            setUploadProgress(percentCompleted);
-            console.log(`Upload progress: ${percentCompleted}%`);
-          },
-          timeout: 60000 // 60 second timeout
+      // Add upload progress tracking
+      const config = {
+        onUploadProgress: progressEvent => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
         }
-      );
+      };
+
+      const response = await notesAPI.createNote(formData, config);
       
-      console.log('Note creation successful:', response.data);
-      clearTimeout(timeoutId);
-      setUploadProgress(100);
-      
-      toast.success('Note created successfully');
+      // Show success toast
+      toast.success('Note created successfully!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
       navigate('/dashboard');
     } catch (err) {
-      clearTimeout(timeoutId);
       console.error('Note creation error details:', err);
       
       let errorMessage = 'Failed to create note';
@@ -327,9 +298,7 @@ const CreateNote = () => {
       setSubmitError(errorMessage);
       toast.error(errorMessage);
     } finally {
-      clearTimeout(timeoutId);
       setSubmitting(false);
-      formikSetSubmitting(false);
       setIsUploading(false);
     }
   };
@@ -363,7 +332,7 @@ const CreateNote = () => {
               <Form className="space-y-6" onSubmit={(e) => {
                 // Add extra validation logging to help debug validation issues
                 if (Object.keys(errors).length > 0) {
-                  console.log('Form validation errors:', errors);
+                  // console.log('Form validation errors:', errors);
                 }
                 formikHandleSubmit(e);
               }}>
