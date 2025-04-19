@@ -1,11 +1,69 @@
 import axios from 'axios';
 
+// Determine the appropriate API URL with fallbacks
+const determineApiUrl = () => {
+  // First try environment variable
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) return envUrl;
+  
+  // Try production URL first (for deployed apps)
+  const prodUrl = 'https://legacy-note-backend.onrender.com/api';
+  
+  // Fallback to local development URL
+  const localUrl = 'http://localhost:5000/api';
+  
+  // If we're on a deployed frontend (checking if URL is not localhost)
+  if (typeof window !== 'undefined' && 
+      !window.location.hostname.includes('localhost') &&
+      !window.location.hostname.includes('127.0.0.1')) {
+    return prodUrl;
+  }
+  
+  return localUrl;
+};
+
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: determineApiUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second default timeout
+});
+
+// Log the API URL being used
+console.log('API URL being used:', api.defaults.baseURL);
+
+// Add retry functionality
+api.interceptors.response.use(undefined, async (err) => {
+  const { config, message } = err;
+  
+  // If there's no config, or we've already retried, just reject
+  if (!config || config.__isRetry) {
+    return Promise.reject(err);
+  }
+  
+  // Network error or timeout - retry once (unless it's an abort)
+  if (message.includes('Network Error') || message.includes('timeout') || err.code === 'ECONNABORTED') {
+    console.log('Network issue detected, retrying request...');
+    
+    // Mark as retried to prevent infinite loops
+    config.__isRetry = true;
+    
+    // Wait 1.5 seconds before retry
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // If we're in a deployed environment, try the production URL on retry
+    if (typeof window !== 'undefined' && 
+        !window.location.hostname.includes('localhost') &&
+        !window.location.hostname.includes('127.0.0.1')) {
+      config.baseURL = 'https://legacy-note-backend.onrender.com/api';
+    }
+    
+    return api(config);
+  }
+  
+  return Promise.reject(err);
 });
 
 // Add a request interceptor to add auth token to requests
@@ -33,6 +91,19 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+    
+    // Create a more user-friendly error message
+    if (!error.response && error.message && error.message.includes('Network Error')) {
+      console.error('Network error detected:', error);
+      // Create a more helpful error object
+      const enhancedError = new Error(
+        'Unable to connect to the server. Please check your internet connection and try again.'
+      );
+      enhancedError.originalError = error;
+      enhancedError.isNetworkError = true;
+      return Promise.reject(enhancedError);
+    }
+    
     return Promise.reject(error);
   }
 );

@@ -59,7 +59,16 @@ export const AuthProvider = ({ children }) => {
   const login = async (userData) => {
     try {
       setLoading(true);
-      const res = await authAPI.login(userData);
+      
+      // Add a timeout to prevent hanging requests
+      const loginPromise = authAPI.login(userData);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Login request timed out. Server may be unavailable.')), 20000);
+      });
+      
+      // Race the login against the timeout
+      const res = await Promise.race([loginPromise, timeoutPromise]);
+      
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
       setUser(res.data.user);
@@ -70,7 +79,19 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error:', err);
       let errorMessage;
       
-      if (err.response && err.response.data) {
+      // Handle different error types
+      if (err.name === 'AbortError') {
+        errorMessage = 'Login request was interrupted. Please try again.';
+      } else if (err.isNetworkError || (err.message && (
+        err.message.includes('Network Error') ||
+        err.message.includes('timed out') ||
+        err.message.includes('unavailable') ||
+        err.message.includes('connect')
+      ))) {
+        // Specific handling for connection issues
+        errorMessage = 'Unable to connect to the server. Please check your internet connection or try again later.';
+        console.warn('Network connection issue detected during login');
+      } else if (err.response && err.response.data) {
         // Server returned an error response
         errorMessage = err.response.data.error || 'Invalid credentials';
       } else if (err.request) {

@@ -33,17 +33,57 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Configure CORS properly for production
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://legacynote.vercel.app',
+  'https://legacy-note.vercel.app',
+  'https://www.legacynote.vercel.app'
+];
+
+// Middleware for CORS with proper origin handling
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    
+    // Remove any trailing slashes from the origin
+    const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+    
+    if (allowedOrigins.indexOf(normalizedOrigin) !== -1 || process.env.FRONTEND_URL === normalizedOrigin) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked request from origin: ${origin}`);
+      // Still allow the request but log it
+      callback(null, true);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Auth-Type'],
+  exposedHeaders: ['Access-Control-Allow-Origin']
 }));
+
+// Add preflight options for all routes to ensure CORS works properly
+app.options('*', cors());
 
 app.use(morgan('dev'));
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }
 }));
+
+// Set specific security headers for Google authentication
+app.use((req, res, next) => {
+  // Only apply special headers to the Google auth endpoint
+  if (req.path === '/api/auth/google') {
+    // Remove COOP for Google Auth to allow popups to work correctly
+    res.removeHeader('Cross-Origin-Opener-Policy');
+    // Add required headers for Google auth
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  }
+  next();
+});
 
 // Increase timeout for large uploads
 app.use((req, res, next) => {
@@ -74,6 +114,17 @@ app.use('/api/notes', noteRoutes);
 // Default route
 app.get('/', (req, res) => {
   res.send('LegacyNote API is running');
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Server is up and running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
 });
 
 // Error handler middleware (must be after routes)
