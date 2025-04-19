@@ -27,17 +27,21 @@ function AppContent() {
       <Footer />
       <ToastContainer
         position="top-center"
-        autoClose={3000}
+        autoClose={5000}
         hideProgressBar={false}
-        newestOnTop
-        closeOnClick
+        newestOnTop={false}
+        closeOnClick={false}
         rtl={false}
-        pauseOnFocusLoss
+        pauseOnFocusLoss={false}
         draggable
         pauseOnHover
         theme="colored"
         limit={3}
-        toastClassName="toast-custom-container"
+        toastClassName={(context) => 
+          context?.type === 'error' 
+            ? 'toast-custom-container persistent-error-toast'
+            : 'toast-custom-container'
+        }
         bodyClassName="toast-custom-body"
         style={{
           top: '20px',

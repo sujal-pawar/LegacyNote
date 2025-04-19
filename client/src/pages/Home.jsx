@@ -1,7 +1,17 @@
 import { Link } from 'react-router-dom';
 import { FaClock, FaLock, FaEnvelope, FaUserClock, FaCalendarAlt, FaRegClock, FaShieldAlt, FaHeart, FaUsers } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import image1 from '../assets/images/1.jpg';
+import image2 from '../assets/images/2.jpg';
+import image3 from '../assets/images/3.jpg';
+import image4 from '../assets/images/4.png';
+import image5 from '../assets/images/5.jpg';
+import image6 from '../assets/images/6.jpg';
+import image7 from '../assets/images/7.jpg';
+import EmotionalCarousel from '../components/EmotionalCarousel';
+
+
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
@@ -11,6 +21,86 @@ const Home = () => {
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.5 }
   };
+
+
+  const emotionalStories = [
+
+    {
+      src: image3,
+      alt: 'New parent encouragement',
+      title: 'New Parent Encouragement',
+      quote: "The day our first child was born was overwhelming with joy and anxiety. Amidst the chaos, we received a message we had written to ourselves on our wedding day, envisioning our future family. Reading our past hopes and dreams while holding our newborn brought everything full circle. It was a poignant reminder of our journey and the love that had grown between us.",
+      author: '— Michael, 34',
+    }, {
+      src: image1,
+      alt: 'Graduation celebration',
+      title: 'Graduation Day Surprise',
+      quote: "When I graduated from college, I thought the day would be bittersweet without my father, who had passed away when I was 15. But then, a letter arrived—written by him years earlier. He had planned for this moment, leaving words of pride and encouragement that made me feel his presence. It was as if he was there, cheering me on, reminding me of his unwavering belief in me. That message turned my tears of sorrow into tears of joy.",
+      author: '— Jamie, 23',
+    },
+    {
+      src: image2,
+      alt: 'Wedding day message',
+      title: 'Wedding Day Wisdom',
+      quote: "On the morning of my wedding, I felt a pang of sadness knowing my grandmother couldn't attend due to her health. Just before I walked down the aisle, I received a voice message she had recorded months prior. Her voice, filled with love and sage advice, enveloped me. She spoke of love's endurance and the importance of patience and understanding. Hearing her words gave me strength and made me feel she was right there beside me.",
+      author: '— Sarah, 31',
+    },
+    {
+      src: image4,
+      alt: 'First job success',
+      title: 'First Job Pep Talk',
+      quote: "Starting my first job was nerve-wracking. As I sat at my new desk, a scheduled email popped up—a note from my college self. It was filled with dreams, aspirations, and a reminder of my resilience. Reading it reignited my confidence and reminded me of the passion that led me here. It was the pep talk I didn't know I needed.",
+      author: '— Ayesha, 27',
+    },
+    {
+      src: image5,
+      alt: 'Health milestone',
+      title: 'Health Milestone Message',
+      quote: "After a grueling battle with cancer, I found a letter I had written to myself before treatment began. It spoke of hope, strength, and the will to fight. Reading it post-recovery was an emotional release, acknowledging the pain endured and the victory achieved. It was a testament to my journey and the power of self-belief.",
+      author: '— Priya, 42',
+    },
+    {
+      src: image6,
+      alt: 'Retirement reflections',
+      title: 'Retirement Reflections',
+      quote: "On my retirement day, I opened a time capsule I had created at 25. Inside was a letter filled with youthful dreams and ambitions. Reflecting on my career, I realized how many of those aspirations I had achieved. It was a profound moment of gratitude, recognizing the growth and accomplishments over the decades.",
+      author: '— Robert, 65',
+    },
+  ];
+
+
+  const TimelineItem = ({ position, number, title, description, delay, children }) => {
+    const { scrollYProgress } = useScroll({
+      offset: ["start end", "end start"]
+    });
+
+    const isRight = position === "right";
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: isRight ? -50 : 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: delay || 0 }}
+        className={`relative ${isRight ? 'md:text-right md:pr-12' : 'md:pl-12'}`}
+      >
+        <div
+          className={`absolute ${isRight ? 'right-0' : 'left-0'} top-0 transform 
+          ${isRight ? 'translate-x-1/2' : '-translate-x-1/2'} -translate-y-1/2 
+          ${isRight ? 'md:translate-x-6' : 'md:-translate-x-6'} 
+          w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold`}
+        >
+          {number}
+        </div>
+        <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">{title}</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">
+          {description}
+        </p>
+        {children}
+      </motion.div>
+    );
+  };
+
 
   return (
     <div className="">
@@ -93,7 +183,7 @@ const Home = () => {
         </div>
       </section>
 
-      
+
       {/* Features Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900 dark:text-white">
         <div className="container mx-auto px-4">
@@ -231,6 +321,144 @@ const Home = () => {
                   Document your current goals and ambitions, then receive them years later to reflect
                   on your journey and achievements.
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Emotional Deliveries Carousel */}
+      <EmotionalCarousel stories={emotionalStories} />
+      
+      {/* Timeline Showcase */}
+      <section className="py-20 bg-white dark:bg-gray-800 overflow-x-hidden">
+        <div className="container mx-auto px-4 z-1">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-16">From Creation to Delivery</h2>
+
+          <div className="relative timeline-container">
+            {/* Timeline line */}
+            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 transform md:-translate-x-1/2 bg-indigo-200 dark:bg-indigo-900"></div>
+
+            {/* Timeline items container */}
+            <div className="space-y-24 relative">
+              {/* Item 1 - Message Creation */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="relative pl-12 md:pl-0 md:pr-16">
+                  {/* Circle indicator */}
+                  <div className="absolute left-0 top-0 md:left-auto md:right-0  md:translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">1</div>
+                  <div className="md:text-right">
+                    <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Message Creation</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      Users craft their heartfelt messages and select delivery dates.
+                    </p>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-100px 0px" }}
+                      transition={{ duration: 0.6 }}
+                      className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                    >
+                      <p className="text-gray-700 dark:text-gray-300 italic">
+                        "Dear future me, today I'm starting my journey toward my dream career. I hope by the time you read this, you've made progress and stayed true to our values."
+                      </p>
+                      <div className="mt-3 text-sm text-indigo-600 dark:text-indigo-300 font-medium">
+                        Message created: April 19, 2025
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+                <div className="hidden md:block"></div>
+              </div>
+
+              {/* Item 2 - Secure Storage */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="hidden md:block"></div>
+                <div className="relative pl-12 md:pl-16">
+                  {/* Circle indicator */}
+                  <div className="absolute left-0 top-0 max-sm:top-[14px] md:left-0 transform -translate-y-1/2 md:-translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">2</div>
+                  <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Secure Storage</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    Messages are encrypted and safely stored until their delivery date.
+                  </p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px 0px" }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                  >
+                    <div className="flex items-center mb-3">
+                      <FaLock className="text-indigo-600 dark:text-indigo-400 mr-2" />
+                      <span className="font-medium text-gray-800 dark:text-gray-200">End-to-End Encrypted</span>
+                    </div>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      Your message is securely encrypted with military-grade protocols. Only the intended recipient will be able to access it when the time comes.
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Item 3 - The Wait */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="relative pl-12 md:pl-0 md:pr-16">
+                  {/* Circle indicator */}
+                  <div className="absolute left-0 top-0 max-sm:top-[14px] md:left-auto md:right-0 transform -translate-y-1/2 md:translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">3</div>
+                  <div className="md:text-right">
+                    <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">The Wait</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      Time passes as the message waits for its perfect moment to arrive.
+                    </p>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-100px 0px" }}
+                      transition={{ duration: 0.6, delay: 0.4 }}
+                      className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                    >
+                      <div className="flex justify-center mb-3">
+                        <FaRegClock className="text-3xl text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 text-center">
+                        <span className="font-medium">3 years, 2 months, 15 days</span> until delivery
+                      </p>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mt-3">
+                        <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '35%' }}></div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+                <div className="hidden md:block"></div>
+              </div>
+
+              {/* Item 4 - Delivery Moment */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="hidden md:block"></div>
+                <div className="relative pl-12 md:pl-16">
+                  {/* Circle indicator */}
+                  <div className="absolute left-0 top-0 max-sm:top-[14px] md:left-0 transform -translate-y-1/2 md:-translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">4</div>
+                  <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Delivery Moment</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    The emotional moment when recipients open their time capsule messages.
+                  </p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px 0px" }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
+                    className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                  >
+                    <div className="border-l-4 border-indigo-500 pl-4 mb-4">
+                      <p className="text-gray-700 dark:text-gray-300 italic">
+                        "Opening my father's message on my wedding day brought tears to my eyes. His wisdom and love reached across time to be with me on my special day."
+                      </p>
+                      <p className="mt-2 font-medium text-indigo-600 dark:text-indigo-300">— Michael, 32</p>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <FaEnvelope className="text-indigo-600 dark:text-indigo-400 mr-2" />
+                      <span className="text-gray-700 dark:text-gray-300">Delivered: June 12, 2028</span>
+                    </div>
+                  </motion.div>
+                </div>
               </div>
             </div>
           </div>

@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Chrome, Edge, Safari */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+/* Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
 :root {
   --primary-color: #4f46e5;
   --primary-hover: #4338ca;
@@ -512,5 +523,85 @@ a:hover {
     top: 1em;
     left: 50%;
     transform: translateX(-50%);
+  }
+}
+
+/* Toast styles */
+.persistent-error-toast {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+  transform: translate3d(0, 0, 0) !important;
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+}
+
+/* Login Error Animation */
+@keyframes pulse-error {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.login-error-banner {
+  animation: pulse-error 2s infinite;
+  border-left: 6px solid #ef4444;
+}
+
+.Toastify__toast--error {
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+  border-left: 6px solid #ef4444 !important;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* Timeline Styles */
+.timeline-container {
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .timeline-container::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: #c7d2fe; /* indigo-200 */
+    transform: translateX(-50%);
+    z-index: 0;
+  }
+
+  .dark .timeline-container::after {
+    background-color: #312e81; /* indigo-900 */
+  }
+}
+
+@media (max-width: 767px) {
+  .timeline-container {
+    padding-left: 1.5rem;
+  }
+  
+  .timeline-container::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: #c7d2fe; /* indigo-200 */
+    z-index: 0;
+  }
+  
+  .dark .timeline-container::after {
+    background-color: #312e81; /* indigo-900 */
   }
 }

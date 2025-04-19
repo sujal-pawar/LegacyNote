@@ -1,6 +1,9 @@
 const Note = require('../models/Note');
 const User = require('../models/User');
 const { sendNoteEmail, sendNoteCreationConfirmation } = require('../utils/email');
+const { StatusCodes } = require('http-status-codes');
+const { NotFoundError, BadRequestError, UnauthenticatedError } = require('../errors');
+const { cloudinary, getOptimizedUrl, getThumbnailUrl } = require('../config/cloudinary');
 
 // @desc    Get all notes for a user
 // @route   GET /api/notes
@@ -58,168 +61,106 @@ exports.getNote = async (req, res, next) => {
 // @access  Private
 exports.createNote = async (req, res, next) => {
   try {
-    // Extract note data from request
     const { title, content, deliveryDate, isPublic } = req.body;
+    let { recipients } = req.body;
     
-    // Handle recipients data - properly parse JSON string if it exists
-    let recipientsData = [];
-    let recipientData = {};
-    
-    // First try to parse recipients array from JSON string
-    if (req.body.recipients) {
+    // Parse recipients if it's a JSON string
+    if (recipients && typeof recipients === 'string') {
       try {
-        recipientsData = JSON.parse(req.body.recipients);
-        console.log('Successfully parsed recipients array:', recipientsData);
-      } catch (parseError) {
-        console.error('Error parsing recipients JSON:', parseError);
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid recipients data format',
-          details: 'Recipients data could not be parsed properly'
-        });
+        recipients = JSON.parse(recipients);
+      } catch (err) {
+        throw new BadRequestError('Invalid recipients format: must be a valid JSON string or array');
       }
     }
     
-    // Also handle single recipient for backward compatibility
-    if (req.body.recipient) {
-      try {
-        if (typeof req.body.recipient === 'string') {
-          recipientData = JSON.parse(req.body.recipient);
-        } else {
-          recipientData = req.body.recipient;
+    // Validate recipients format if provided
+    if (recipients && !Array.isArray(recipients)) {
+      throw new BadRequestError('Recipients must be an array');
+    }
+
+    // Process recipients if any
+    let recipientsList = [];
+    if (recipients && recipients.length > 0) {
+      recipientsList = recipients.map(recipient => {
+        if (!recipient.name || !recipient.email) {
+          throw new BadRequestError('Each recipient must have a name and email');
         }
-      } catch (parseError) {
-        console.error('Error parsing recipient JSON:', parseError);
-        // Continue without recipient if parsing fails
-        recipientData = {};
-      }
-    }
-    
-    // Parse the exact delivery date and time
-    const parsedDeliveryDate = new Date(deliveryDate);
-    
-    // Create note with basic data
-    const noteData = {
-      title,
-      content,
-      deliveryDate: parsedDeliveryDate,
-      isPublic: isPublic === 'true' || isPublic === true,
-      user: req.user.id,
-      exactTimeDelivery: true // Flag to indicate this note should be delivered at exact time
-    };
-
-    // Flag to track if recipients are defined
-    let hasRecipients = false;
-    
-    // Handle multiple recipients if provided
-    if (recipientsData && Array.isArray(recipientsData) && recipientsData.length > 0) {
-      // Validate maximum number of recipients
-      if (recipientsData.length > 10) {
-        return res.status(400).json({
-          success: false,
-          error: 'Too many recipients',
-          details: 'Maximum of 10 recipients allowed'
-        });
-      }
-      
-      // Format and sanitize recipients data
-      noteData.recipients = recipientsData.map(recipient => ({
-        name: recipient.name,
-        email: recipient.email.toLowerCase()
-      }));
-      
-      // Check if any recipient is self (for self-message flag)
-      if (recipientsData.some(r => r.email.toLowerCase() === req.user.email.toLowerCase())) {
-        noteData.isSelfMessage = true;
-      }
-      
-      hasRecipients = true;
-      console.log(`Note will be created with ${noteData.recipients.length} recipients`);
-    }
-    // For backward compatibility, still handle single recipient
-    else if (recipientData && recipientData.email) {
-      noteData.recipient = {
-        name: recipientData.name,
-        email: recipientData.email.toLowerCase()
-      };
-      
-      // Check if this is a self-message (sent to self)
-      if (recipientData.email.toLowerCase() === req.user.email.toLowerCase()) {
-        noteData.isSelfMessage = true;
-      }
-      
-      hasRecipients = true;
-      console.log(`Note will be created with single recipient: ${noteData.recipient.email}`);
-    }
-    
-    // If no recipients are defined, make sure the note is public
-    if (!hasRecipients && !noteData.isPublic) {
-      noteData.isPublic = true;
-      console.log(`Note created without recipients - automatically marked as public`);
-    }
-
-    // Add validation logging
-    console.log('Creating note with data:', {
-      title: noteData.title,
-      hasRecipients,
-      recipientCount: noteData.recipients ? noteData.recipients.length : 0,
-      isPublic: noteData.isPublic
-    });
-
-    // Create the note
-    const note = await Note.create(noteData);
-
-    // Handle file uploads if present
-    if (req.files && req.files.length > 0) {
-      noteData.mediaFiles = req.files.map(file => ({
-        fileName: file.originalname,
-        // For Cloudinary files, use secure_url if available
-        filePath: file.path || (file.secure_url ? file.secure_url : ''),
-        fileType: file.mimetype,
-        fileSize: file.size
-      }));
-      
-      // Update note with media files
-      await Note.findByIdAndUpdate(note._id, {
-        mediaFiles: noteData.mediaFiles
+        return {
+          name: recipient.name,
+          email: recipient.email
+        };
       });
     }
 
+    // Required fields check
+    if (!title) {
+      throw new BadRequestError('Title is required');
+    }
+
+    if (!content) {
+      throw new BadRequestError('Content is required');
+    }
+
+    // Process uploaded files (if any)
+    const mediaFiles = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const mediaFile = {
+          fileName: file.originalname,
+          filePath: file.path,
+          fileType: file.mimetype,
+          fileSize: file.size
+        };
+
+        // Add optimized URLs as additional properties but not as required fields
+        if (file.mimetype.startsWith('image/')) {
+          mediaFile.optimizedUrl = getOptimizedUrl(file.path);
+          mediaFile.thumbnailUrl = getThumbnailUrl(file.path);
+        }
+
+        mediaFiles.push(mediaFile);
+      }
+    }
+
+    // Create a new note
+    const note = await Note.create({
+      title,
+      content,
+      deliveryDate: deliveryDate || null,
+      isPublic: isPublic === 'true' || isPublic === true,
+      recipients: recipientsList,
+      user: req.user.id,
+      mediaFiles
+    });
+
+    // Get the complete note with populated fields
+    const completeNote = await Note.findById(note._id)
+      .populate({
+        path: 'user',
+        select: 'name email'
+      });
+
     // Generate shareable link if the note is public
-    if (noteData.isPublic) {
-      note.generateShareableLink();
-      await note.save();
+    if (note.isPublic) {
+      completeNote.generateShareableLink();
+      await completeNote.save();
     }
 
     // Send confirmation email to the user
     try {
       await sendNoteCreationConfirmation({
         email: req.user.email,
-        note: note,
+        note: completeNote,
         user: req.user
       });
     } catch (emailError) {
       console.error('Failed to send note creation confirmation email:', emailError);
     }
 
-    res.status(201).json({
-      success: true,
-      data: note
-    });
-  } catch (err) {
-    console.error('Error in createNote:', err);
-    
-    // Handle validation errors
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(val => val.message);
-      return res.status(400).json({
-        success: false,
-        error: 'Validation Error',
-        details: messages.join(', ')
-      });
-    }
-    
-    next(err);
+    res.status(StatusCodes.CREATED).json({ note: completeNote });
+  } catch (error) {
+    console.error('Error creating note:', error);
+    throw error;
   }
 };
 
@@ -228,211 +169,126 @@ exports.createNote = async (req, res, next) => {
 // @access  Private
 exports.updateNote = async (req, res, next) => {
   try {
-    // Extract note data from request
-    const { title, content, deliveryDate, isPublic } = req.body;
-    
-    // Handle recipients data - properly parse JSON string if it exists
-    let recipientsData = [];
-    let recipientData = {};
-    
-    // First try to parse recipients array from JSON string
-    if (req.body.recipients) {
-      try {
-        if (typeof req.body.recipients === 'string') {
-          recipientsData = JSON.parse(req.body.recipients);
-          console.log('Successfully parsed recipients array for update:', recipientsData);
-        } else {
-          recipientsData = req.body.recipients;
-        }
-      } catch (parseError) {
-        console.error('Error parsing recipients JSON for update:', parseError);
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid recipients data format',
-          details: 'Recipients data could not be parsed properly'
-        });
-      }
-    }
-    
-    // Also handle single recipient for backward compatibility
-    if (req.body.recipient) {
-      try {
-        if (typeof req.body.recipient === 'string') {
-          recipientData = JSON.parse(req.body.recipient);
-        } else {
-          recipientData = req.body.recipient;
-        }
-      } catch (parseError) {
-        console.error('Error parsing recipient JSON for update:', parseError);
-        // Continue without recipient if parsing fails
-        recipientData = {};
-      }
-    }
+    const { id: noteId } = req.params;
+    const { title, content, deliveryDate, isPublic, deleteMediaFiles } = req.body;
+    let { recipients } = req.body;
     
     // Find the note
-    let note = await Note.findById(req.params.id);
-
+    const note = await Note.findById(noteId);
     if (!note) {
-      return res.status(404).json({
-        success: false,
-        error: 'Note not found',
-        details: 'The note you are trying to update does not exist'
-      });
+      throw new NotFoundError(`No note found with id ${noteId}`);
     }
 
-    // Check if user owns the note
+    // Check if user is authorized to update this note
     if (note.user.toString() !== req.user.id) {
-      return res.status(401).json({
-        success: false,
-        error: 'Not authorized',
-        details: 'You can only update notes that you created'
-      });
+      throw new UnauthenticatedError('You are not authorized to update this note');
     }
 
-    // Check if note is already delivered
-    if (note.isDelivered) {
-      return res.status(400).json({
-        success: false,
-        error: 'Cannot update delivered note',
-        details: 'This note has already been delivered and cannot be modified'
-      });
-    }
-
-    // Parse the exact delivery date and time
-    const parsedDeliveryDate = new Date(deliveryDate);
-
-    // Prepare update data
-    const updateData = {
-      title,
-      content,
-      deliveryDate: parsedDeliveryDate,
-      isPublic: isPublic === 'true' || isPublic === true,
-      exactTimeDelivery: true // Update flag for exact time delivery
-    };
-
-    // Track if recipients are defined for logging
-    let hasRecipients = false;
-
-    // Handle multiple recipients if provided
-    if (recipientsData && Array.isArray(recipientsData)) {
-      // Validate maximum number of recipients
-      if (recipientsData.length > 10) {
-        return res.status(400).json({
-          success: false,
-          error: 'Too many recipients',
-          details: 'Maximum of 10 recipients allowed'
-        });
+    // Parse recipients if it's a JSON string
+    if (recipients && typeof recipients === 'string') {
+      try {
+        recipients = JSON.parse(recipients);
+      } catch (err) {
+        throw new BadRequestError('Invalid recipients format: must be a valid JSON string or array');
       }
-      
-      // If recipients array is empty, remove recipients field
-      if (recipientsData.length === 0) {
-        updateData.recipients = [];
-      } else {
-        // Format and sanitize recipients data
-        updateData.recipients = recipientsData.map(recipient => ({
+    }
+    
+    // Process recipients if any
+    let recipientsList = note.recipients;
+    if (recipients) {
+      if (!Array.isArray(recipients)) {
+        throw new BadRequestError('Recipients must be an array');
+      }
+
+      recipientsList = recipients.map(recipient => {
+        if (!recipient.name || !recipient.email) {
+          throw new BadRequestError('Each recipient must have a name and email');
+        }
+        return {
           name: recipient.name,
-          email: recipient.email.toLowerCase()
-        }));
-        hasRecipients = true;
-      }
-      
-      // Check if any recipient is self (for self-message flag)
-      updateData.isSelfMessage = recipientsData.some(
-        r => r.email?.toLowerCase() === req.user.email.toLowerCase()
-      );
-      
-      console.log(`Note will be updated with ${updateData.recipients?.length || 0} recipients`);
-    }
-    // For backward compatibility, still handle single recipient
-    else if (recipientData) {
-      if (recipientData.email) {
-        updateData.recipient = {
-          name: recipientData.name,
-          email: recipientData.email.toLowerCase()
+          email: recipient.email
         };
-        
-        // Update self-message flag
-        updateData.isSelfMessage = recipientData.email.toLowerCase() === req.user.email.toLowerCase();
-        hasRecipients = true;
-        
-        console.log(`Note will be updated with single recipient: ${updateData.recipient.email}`);
-      } else {
-        // Remove recipient if empty
-        updateData.recipient = undefined;
-        updateData.isSelfMessage = false;
+      });
+    }
+
+    // Delete media files if requested
+    if (deleteMediaFiles && deleteMediaFiles.length > 0) {
+      // Parse deleteMediaFiles if it's a string
+      let filesToDelete = deleteMediaFiles;
+      if (typeof deleteMediaFiles === 'string') {
+        try {
+          filesToDelete = JSON.parse(deleteMediaFiles);
+        } catch (err) {
+          throw new BadRequestError('Invalid deleteMediaFiles format');
+        }
       }
-    } else {
-      // Remove recipient if not provided
-      updateData.recipient = undefined;
-      updateData.recipients = [];
-      updateData.isSelfMessage = false;
-    }
-    
-    // If no recipients are defined, make sure the note is public
-    if (!hasRecipients && !updateData.isPublic) {
-      updateData.isPublic = true;
-      console.log(`Note updated without recipients - automatically marked as public`);
-    }
-
-    // Add validation logging
-    console.log('Updating note with data:', {
-      id: req.params.id,
-      title: updateData.title,
-      hasRecipients,
-      recipientCount: updateData.recipients ? updateData.recipients.length : 0,
-      isPublic: updateData.isPublic
-    });
-
-    // Process uploaded files if any
-    if (req.files && req.files.length > 0) {
-      const newMediaFiles = req.files.map(file => ({
-        fileName: file.originalname,
-        filePath: file.path || (file.secure_url ? file.secure_url : ''),
-        fileType: file.mimetype,
-        fileSize: file.size || file.bytes || 0
-      }));
       
-      // Append new files to existing ones
-      if (note.mediaFiles && note.mediaFiles.length > 0) {
-        updateData.mediaFiles = [...note.mediaFiles, ...newMediaFiles];
-      } else {
-        updateData.mediaFiles = newMediaFiles;
+      // Remove files from Cloudinary
+      for (const fileId of filesToDelete) {
+        const fileToDelete = note.mediaFiles.find(file => file._id.toString() === fileId);
+        if (fileToDelete && fileToDelete.filePath) {
+          try {
+            // Extract public ID from Cloudinary URL
+            const urlParts = fileToDelete.filePath.split('/');
+            const filename = urlParts[urlParts.length - 1];
+            const publicId = filename.split('.')[0];
+            
+            await cloudinary.uploader.destroy(publicId);
+          } catch (cloudinaryError) {
+            console.error('Error deleting file from Cloudinary:', cloudinaryError);
+          }
+        }
+      }
+      
+      // Filter out the deleted files from mediaFiles array
+      const updatedMediaFiles = note.mediaFiles.filter(
+        file => !filesToDelete.includes(file._id.toString())
+      );
+      note.mediaFiles = updatedMediaFiles;
+    }
+
+    // Process uploaded files (if any)
+    if (req.files && req.files.length > 0) {
+      // Add new files to the note's mediaFiles array
+      for (const file of req.files) {
+        const mediaFile = {
+          fileName: file.originalname,
+          filePath: file.path,
+          fileType: file.mimetype,
+          fileSize: file.size
+        };
+
+        // Add optimized URLs as additional properties but not as required fields
+        if (file.mimetype.startsWith('image/')) {
+          mediaFile.optimizedUrl = getOptimizedUrl(file.path);
+          mediaFile.thumbnailUrl = getThumbnailUrl(file.path);
+        }
+
+        note.mediaFiles.push(mediaFile);
       }
     }
 
-    // Update the note with new values
-    note = await Note.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true
-    });
+    // Update the note properties
+    note.title = title || note.title;
+    note.content = content || note.content;
+    note.deliveryDate = deliveryDate !== undefined ? deliveryDate : note.deliveryDate;
+    note.isPublic = isPublic !== undefined ? isPublic : note.isPublic;
+    note.recipients = recipientsList;
 
-    res.status(200).json({
-      success: true,
-      data: note,
-    });
-  } catch (err) {
-    console.error('Error in updateNote:', err);
-    
-    // Handle validation errors
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(val => val.message);
-      return res.status(400).json({
-        success: false,
-        error: 'Validation Error',
-        details: messages.join(', ')
+    // Save the updated note
+    const updatedNote = await note.save();
+
+    // Get the complete note with populated fields
+    const populatedNote = await Note.findById(updatedNote._id)
+      .populate({
+        path: 'user',
+        select: 'name email'
       });
-    }
-    
-    // Handle cast errors (invalid ID)
-    if (err.name === 'CastError') {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid note ID',
-        details: 'The note ID provided is not in a valid format'
-      });
-    }
-    
-    next(err);
+
+    res.status(StatusCodes.OK).json({ note: populatedNote });
+  } catch (error) {
+    console.error('Error updating note:', error);
+    throw error;
   }
 };
 
@@ -455,6 +311,15 @@ exports.deleteNote = async (req, res, next) => {
       return res.status(401).json({
         success: false,
         error: 'Not authorized to delete this note',
+      });
+    }
+
+    // Check if the note is already delivered
+    if (note.isDelivered || (note.deliveryDate && new Date() > new Date(note.deliveryDate))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot delete a delivered note',
+        details: 'Notes cannot be deleted after they have been delivered'
       });
     }
 

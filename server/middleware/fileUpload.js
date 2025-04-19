@@ -1,7 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
-const cloudinary = require('../config/cloudinary');
+const { cloudinary, optimizedImageTransformation } = require('../config/cloudinary');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 // Define storage strategy based on environment
@@ -37,7 +37,28 @@ const getStorage = () => {
           
           return `${userFolder}/${safeOriginalName}_${uniqueSuffix}`;
         },
-        resource_type: 'auto' // Auto-detect resource type
+        resource_type: 'auto', // Auto-detect resource type
+        // Add image optimization transformations
+        transformation: (req, file) => {
+          // Apply optimization only to image files
+          if (file.mimetype.includes('image/')) {
+            return [
+              { quality: 'auto:good' },           // Auto quality optimization
+              { fetch_format: 'auto' },           // Auto format selection (WebP, AVIF, etc.)
+              { width: 2000, crop: 'limit' },     // Limit max width while preserving aspect ratio
+              { dpr: 'auto' },                    // Auto device pixel ratio
+              // Generate responsive variants for different screen sizes
+              { responsive: true, width: 'auto' },
+              // Create a thumbnail version
+              { transformation: [
+                  { width: 300, height: 300, crop: 'fill', gravity: 'auto' }, 
+                  { quality: 'auto' }
+                ]
+              }
+            ];
+          }
+          return []; // No transformations for non-image files
+        }
       }
     });
   } 

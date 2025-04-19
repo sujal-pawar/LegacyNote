@@ -295,7 +295,7 @@ const Dashboard = () => {
                   key={note._id}
                   variants={itemVariants}
                   whileHover={{ y: -5 }}
-                  className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200 border ${note.exactTimeDelivery ? 'border-indigo-200 dark:border-indigo-800' : 'border-gray-100 dark:border-gray-700'}`}
+                  className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200 border border-indigo-200 dark:border-indigo-800`}
                 >
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-3">
@@ -352,14 +352,16 @@ const Dashboard = () => {
                         <FaShare className="mr-1" /> Share
                       </motion.button>
                       
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleDeleteNote(note._id)}
-                        className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-800/40 flex items-center text-sm"
-                      >
-                        <FaTrash className="mr-1" /> Delete
-                      </motion.button>
+                      {!note.isDelivered && !(note.deliveryDate && new Date() > new Date(note.deliveryDate)) && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleDeleteNote(note._id)}
+                          className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-800/40 flex items-center text-sm"
+                        >
+                          <FaTrash className="mr-1" /> Delete
+                        </motion.button>
+                      )}
                     </div>
                   </div>
                 </motion.div>

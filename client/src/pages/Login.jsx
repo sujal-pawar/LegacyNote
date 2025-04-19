@@ -1,17 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { FaLock, FaEnvelope, FaClock, FaShieldAlt, FaGlobe } from 'react-icons/fa';
+import { FaLock, FaEnvelope, FaClock, FaShieldAlt, FaGlobe, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import { toast } from 'react-toastify';
 
 const Login = () => {
-  const { login, googleLogin, refreshUser } = useAuth();
+  const { login, googleLogin, refreshUser, error: authError } = useAuth();
   const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [loginAttempted, setLoginAttempted] = useState(false);
+
+  // If there's an error from AuthContext, show it
+  useEffect(() => {
+    if (authError) {
+      setErrorMessage(authError);
+      setShowError(true);
+    }
+  }, [authError]);
 
   // Validation schema
   const validationSchema = Yup.object({
@@ -25,17 +35,40 @@ const Login = () => {
 
   const initialValues = { email: '', password: '' };
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      setShowError(false);
+      setLoginAttempted(true);
       const success = await login(values);
       if (success) {
         await refreshUser();
         navigate('/dashboard');
+      } else {
+        // Login failed but error is already shown by the toast in AuthContext
+        setShowError(true);
+        setErrorMessage('Invalid credentials. Please check your email and password.');
+        
+        // Force error to persist
+        setTimeout(() => {
+          // Re-show error if it was dismissed
+          setShowError(true);
+        }, 500);
       }
     } catch (error) {
-      setErrorMessage(error.response?.data?.error || 'Login failed. Please try again.');
+      const message = error.response?.data?.error || 'Login failed. Please try again.';
+      setErrorMessage(message);
       setShowError(true);
+      
+      // Custom toast for longer display
+      toast.error(message, {
+        autoClose: 8000,
+        hideProgressBar: false,
+      });
+      
+      // Force error to persist
+      setTimeout(() => {
+        // Re-show error if it was dismissed
+        setShowError(true);
+      }, 500);
     } finally {
       setSubmitting(false);
     }
@@ -43,6 +76,7 @@ const Login = () => {
 
   const handleGoogleLogin = async (credentialResponse) => {
     try {
+      setLoginAttempted(true);
       const decoded = jwtDecode(credentialResponse.credential);
       const success = await googleLogin({
         email: decoded.email,
@@ -52,10 +86,19 @@ const Login = () => {
       if (success) {
         await refreshUser();
         navigate('/dashboard');
+      } else {
+        setErrorMessage('Google login failed. Please try signing in with email and password instead.');
+        setShowError(true);
       }
     } catch (error) {
-      setErrorMessage('Google login failed. Please try again.');
+      setErrorMessage('Google login failed. Please try again or use email and password.');
       setShowError(true);
+      
+      // Custom toast for longer display
+      toast.error('Google login failed. Please try again or use email and password.', {
+        autoClose: 8000,
+        hideProgressBar: false,
+      });
     }
   };
 
@@ -118,9 +161,24 @@ const Login = () => {
                 <p className="mt-2 text-gray-200 dark:text-gray-400">Sign in to access your secure notes</p>
               </div>
 
-              {showError && (
-                <div className="p-4 mb-6 text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800">
-                  {errorMessage}
+              {showError && loginAttempted && (
+                <div className="p-4 mb-8 text-sm font-medium bg-red-600 text-white rounded-lg shadow-lg border-l-4 border-white login-error-banner">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FaExclamationTriangle className="mr-2 text-white flex-shrink-0 text-lg" />
+                      <span className="font-bold text-base">LOGIN FAILED</span>
+                    </div>
+                    <button 
+                      onClick={() => setShowError(false)}
+                      className="text-white hover:text-gray-200 focus:outline-none"
+                      aria-label="Close error message"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                  <p className="mt-2 font-normal text-white/90">
+                    {errorMessage} Please check your credentials and try again.
+                  </p>
                 </div>
               )}
 

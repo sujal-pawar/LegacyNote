@@ -35,6 +35,24 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, [token]);
 
+  // Display error message with longer duration 
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      autoClose: 10000, // 10 seconds
+      hideProgressBar: false,
+      closeOnClick: false,  // Don't close on click
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      position: "top-center",
+      className: "persistent-error-toast",
+      style: { 
+        borderLeft: '6px solid #ef4444',
+        fontWeight: 'bold'
+      }
+    });
+  };
+
   // Register user
   const register = async (userData) => {
     try {
@@ -82,7 +100,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       setError(errorMessage);
-      toast.error(errorMessage);
+      showErrorToast(errorMessage); // Use custom error toast with longer duration
       return false;
     } finally {
       setLoading(false);
@@ -102,7 +120,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (err) {
       setError(err.response?.data?.error || 'Google login failed');
-      toast.error(err.response?.data?.error || 'Google login failed. Please try again.');
+      showErrorToast(err.response?.data?.error || 'Google login failed. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -212,7 +230,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       setError(errorMessage);
-      toast.error(errorMessage);
+      showErrorToast(errorMessage);
       return false;
     } finally {
       setLoading(false);

@@ -11,7 +11,7 @@ const helmet = require('helmet');
 const path = require('path');
 
 // Import error handler
-const errorHandler = require('./middleware/error');
+const errorHandlerMiddleware = require('./middleware/errorHandlerMiddleware');
 
 // Import route files
 const authRoutes = require('./routes/auth');
@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
 });
 
 // Error handler middleware (must be after routes)
-app.use(errorHandler);
+app.use(errorHandlerMiddleware);
 
 // Connect to MongoDB and start server
 connectDB()
