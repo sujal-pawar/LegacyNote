@@ -177,7 +177,7 @@ const defineJobs = () => {
         return note.isReadyForDelivery();
       });
 
-      // logScheduler(`${readyNotes.length} notes are ready for delivery`);
+      logScheduler(`${readyNotes.length} notes are ready for delivery`);
 
       // Process each note
       for (const note of readyNotes) {
@@ -310,7 +310,7 @@ const defineJobs = () => {
       // ... existing code ...
       
       // Final result logging
-      logScheduler(`Delivered ${readyNotes.length} notes successfully`, 'success');
+      // logScheduler(`Delivered ${readyNotes.length} notes successfully`, 'success');
     } catch (error) {
       logScheduler(`Error in note delivery job: ${error.message}`, 'error');
       logScheduler(`Stack trace: ${error.stack}`, 'error');
