@@ -116,40 +116,51 @@ const Dashboard = () => {
       return {
         status: 'delivered',
         label: 'Delivered',
-        badgeClass: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+        badgeClass: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+        deliveryTime: note.deliveredAt ? 
+          `Delivered: ${format(new Date(note.deliveredAt), 'MMM d')} at ${format(new Date(note.deliveredAt), 'h:mm:ss a')}` : 
+          `Delivered`
       };
     } else if (deliveryDate > now) {
-      // Show detailed time for notes with exact time delivery that are coming up soon
+      // Show detailed time for notes with exact time delivery
       if (note.exactTimeDelivery) {
         let timeLabel = 'Pending';
+        let deliveryTime = '';
         
         if (isWithinMinute) {
           timeLabel = `${secondsRemaining}s`;
+          deliveryTime = `Delivers in ${secondsRemaining} second${secondsRemaining !== 1 ? 's' : ''}`;
         } else if (isWithinHour) {
           timeLabel = `${minutesRemaining}m`;
+          deliveryTime = `Delivers in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}`;
         } else if (daysRemaining < 1) {
           timeLabel = `${hoursRemaining}h ${minutesRemaining}m`;
+          deliveryTime = `Delivers in ${hoursRemaining}h ${minutesRemaining}m`;
         } else {
           timeLabel = `${daysRemaining}d ${hoursRemaining}h`;
+          deliveryTime = `Delivers in ${daysRemaining}d ${hoursRemaining}h`;
         }
         
         return {
           status: 'pending',
           label: timeLabel,
-          badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+          badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+          deliveryTime: `Scheduled: ${format(deliveryDate, 'MMM d')} at ${format(deliveryDate, 'h:mm:ss a')} (${deliveryTime})`
         };
       }
       
       return {
         status: 'pending',
         label: 'Pending',
-        badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+        badgeClass: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+        deliveryTime: `Scheduled: ${format(deliveryDate, 'MMM d, yyyy')}`
       };
     } else {
       return {
         status: 'processing',
         label: 'Processing',
-        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+        deliveryTime: `Processing (scheduled for ${format(deliveryDate, 'h:mm:ss a')})`
       };
     }
   };
@@ -296,7 +307,7 @@ const Dashboard = () => {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {filteredNotes.map(note => {
-              const { status, label, badgeClass } = getDeliveryStatus(note);
+              const { status, label, badgeClass, deliveryTime } = getDeliveryStatus(note);
               
               return (
                 <motion.div
@@ -322,13 +333,7 @@ const Dashboard = () => {
                     </p>
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
                       <FaCalendarAlt className="mr-1" />
-                      <span>
-                        {note.exactTimeDelivery ? (
-                          <>Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')} at {format(new Date(note.deliveryDate), 'h:mm a')}</>
-                        ) : (
-                          <>Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')}</>
-                        )}
-                      </span>
+                      <span>{deliveryTime}</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

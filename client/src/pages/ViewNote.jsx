@@ -11,6 +11,7 @@ const ViewNote = () => {
   const [note, setNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [countdown, setCountdown] = useState(null);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -29,6 +30,58 @@ const ViewNote = () => {
 
     fetchNote();
   }, [id]);
+  
+  // Add live countdown timer for pending notes
+  useEffect(() => {
+    if (!note || note.isDelivered || new Date(note.deliveryDate) <= new Date()) {
+      return;
+    }
+    
+    // Start the countdown timer
+    const timer = setInterval(() => {
+      const now = new Date();
+      const deliveryDate = new Date(note.deliveryDate);
+      const timeRemaining = deliveryDate - now;
+      
+      // If delivery time has passed, refresh the note data
+      if (timeRemaining <= 0) {
+        clearInterval(timer);
+        setCountdown(null);
+        // Refresh note data after delivery time has passed
+        setTimeout(() => {
+          notesAPI.getNote(id).then(res => {
+            setNote(res.data.data);
+          }).catch(err => {
+            console.error('Failed to refresh note data:', err);
+          });
+        }, 5000); // Wait 5 seconds to allow server to process
+        return;
+      }
+      
+      // Calculate countdown components
+      const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+      
+      // Format countdown display
+      let countdownText = '';
+      if (days > 0) {
+        countdownText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      } else if (hours > 0) {
+        countdownText = `${hours}h ${minutes}m ${seconds}s`;
+      } else if (minutes > 0) {
+        countdownText = `${minutes}m ${seconds}s`;
+      } else {
+        countdownText = `${seconds}s`;
+      }
+      
+      setCountdown(countdownText);
+    }, 1000);
+    
+    // Clean up the timer
+    return () => clearInterval(timer);
+  }, [note, id]);
 
   const handleDeleteNote = async () => {
     if (window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
@@ -344,18 +397,36 @@ const ViewNote = () => {
             </div>
           </div>
 
+          {/* Add countdown timer for pending notes */}
+          {!note.isDelivered && new Date(note.deliveryDate) > new Date() && countdown && (
+            <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-center">
+              <div className="text-sm font-medium text-indigo-800 dark:text-indigo-300">Countdown to delivery:</div>
+              <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums">
+                {countdown}
+              </div>
+            </div>
+          )}
+
           <div className="mb-6 flex items-center text-gray-600 dark:text-gray-400">
             <FaCalendarAlt className="mr-2" />
             <span>
               {note.exactTimeDelivery ? (
                 <>
-                  Delivery Date/Time: {format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at {format(new Date(note.deliveryDate), 'h:mm a')}
-                  {isDelivered && ` (Delivered on ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at ${format(new Date(note.deliveredAt), 'h:mm a')})`}
+                  Delivery Date/Time: {format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at exactly {format(new Date(note.deliveryDate), 'h:mm:ss a')}
+                  {isDelivered && note.deliveredAt && (
+                    <span className="ml-2 text-green-600 dark:text-green-400">
+                      (Delivered on {format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm:ss a')})
+                    </span>
+                  )}
                 </>
               ) : (
                 <>
                   Delivery Date: {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
-                  {isDelivered && ` (Delivered on ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')})`}
+                  {isDelivered && note.deliveredAt && (
+                    <span className="ml-2 text-green-600 dark:text-green-400">
+                      (Delivered on {format(new Date(note.deliveredAt), 'MMMM d, yyyy')})
+                    </span>
+                  )}
                 </>
               )}
             </span>
@@ -419,15 +490,36 @@ const ViewNote = () => {
             )}
             
             {/* Add delivery confirmation message */}
-            {note.isDelivered && note.deliveredAt && (
+            {note.isDelivered ? (
               <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg mb-2 flex items-center">
                 <FaClock className="mr-2 text-green-600 dark:text-green-400" />
                 <div className="text-sm text-green-700 dark:text-green-300">
                   <p className="font-medium">Note successfully delivered!</p>
-                  <p>This note was delivered on {format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm a')}.
-                  {note.recipients && note.recipients.length > 0 ? 
-                    ' Email notifications have been sent to all recipients. Please note that email delivery to recipients\' inboxes may take a few more minutes depending on their email service.' : 
-                    ' All specified delivery actions have been completed.'}
+                  <p>
+                    This note was delivered on {format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm:ss a')}.
+                    {note.recipients && note.recipients.length > 0 ? 
+                      ' Email notifications have been sent to all recipients.' : 
+                      ' All specified delivery actions have been completed.'}
+                  </p>
+                </div>
+              </div>
+            ) : new Date(note.deliveryDate) <= new Date() ? (
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-2 flex items-center">
+                <FaSpinner className="animate-spin mr-2 text-blue-600 dark:text-blue-400" />
+                <div className="text-sm text-blue-700 dark:text-blue-300">
+                  <p className="font-medium">Note is being processed for delivery</p>
+                  <p>The note was scheduled for {format(new Date(note.deliveryDate), 'h:mm:ss a')} and is being processed for delivery. 
+                  This typically takes 2-5 minutes. You can refresh this page to check delivery status.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-2 flex items-center">
+                <FaClock className="mr-2 text-yellow-600 dark:text-yellow-400" />
+                <div className="text-sm text-yellow-700 dark:text-yellow-300">
+                  <p className="font-medium">Scheduled for future delivery</p>
+                  <p>
+                    This note is scheduled to be delivered on {format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at exactly {format(new Date(note.deliveryDate), 'h:mm:ss a')}.
+                    {statusInfo.status === 'pending' && ` (${statusInfo.label})`}
                   </p>
                 </div>
               </div>
