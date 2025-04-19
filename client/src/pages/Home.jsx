@@ -8,7 +8,6 @@ import image3 from '../assets/images/3.jpg';
 import image4 from '../assets/images/4.png';
 import image5 from '../assets/images/5.jpg';
 import image6 from '../assets/images/6.jpg';
-import image7 from '../assets/images/7.jpg';
 import EmotionalCarousel from '../components/EmotionalCarousel';
 
 
