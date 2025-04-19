@@ -15,12 +15,12 @@ import AppRoutes from './routes/AppRoutes';
 // Helper component to use hooks inside Router
 function AppContent() {
   const location = useLocation();
-  const hideNavbarRoutes = ['/login', '/register'];
-  const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
+  // Show navbar on all pages, including login and register
+  const shouldHideNavbar = false;
 
   return (
     <div className="app-container">
-      {!shouldHideNavbar && <Navbar />}
+      <Navbar />
       <main className="main-content">
         <AppRoutes />
       </main>
