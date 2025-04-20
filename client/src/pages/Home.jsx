@@ -103,7 +103,7 @@ const Home = () => {
 
 
   return (
-    <div className="">
+    <div className="w-full overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative py-20 max-sm:py-6 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
@@ -328,11 +328,13 @@ const Home = () => {
       </section>
 
       {/* Emotional Deliveries Carousel */}
-      <EmotionalCarousel stories={emotionalStories} />
+      <div className="overflow-hidden">
+        <EmotionalCarousel stories={emotionalStories} />
+      </div>
       
       {/* Timeline Showcase */}
-      <section className="py-20 bg-white dark:bg-gray-800 overflow-x-hidden">
-        <div className="container mx-auto px-4 z-1">
+      <section className="py-20 bg-white dark:bg-gray-800 overflow-hidden">
+        <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-16">From Creation to Delivery</h2>
 
           <div className="relative timeline-container">

@@ -238,11 +238,12 @@ const CreateNote = () => {
     setIsUploading(true);
     setUploadProgress(0);
     
-    // Debug log for isPublic value
-    // console.log('Form submission started');
-    // console.log('Form values:', values);
-    // console.log('Checkbox state in form:', values.isPublic);
-    // console.log('includeRecipients state:', includeRecipients);
+    // Debug logging for debugging public note issues
+    console.log('Form submission values:', {
+      title: values.title,
+      isPublic: values.isPublic,
+      includeRecipients
+    });
     
     try {
       // Create FormData for file uploads
@@ -260,11 +261,12 @@ const CreateNote = () => {
       }
       
       formData.append('deliveryDate', deliveryDate.toISOString());
-      // Explicitly convert boolean to string "true" or "false" - server expects this format
-      formData.append('isPublic', values.isPublic ? 'true' : 'false');
       
-      // Debug log for what's being sent to server
-      // console.log('Sending isPublic as:', values.isPublic ? 'true' : 'false');
+      // IMPORTANT: Ensure isPublic is explicitly converted to boolean string
+      // Force using 'true' or 'false' strings since FormData handles booleans differently
+      const isPublicValue = values.isPublic === true ? 'true' : 'false';
+      formData.append('isPublic', isPublicValue);
+      console.log('Setting isPublic to:', isPublicValue);
       
       formData.append('exactTimeDelivery', 'true'); // Always enable exact time delivery
       
@@ -272,13 +274,10 @@ const CreateNote = () => {
       if (includeRecipients && values.recipients.length > 0) {
         const recipientsJSON = JSON.stringify(values.recipients);
         formData.append('recipients', recipientsJSON);
-        // console.log('Sending recipients:', recipientsJSON);
       }
       
       // Add files to FormData - limit to smaller chunks if many files
       if (selectedFiles.length > 0) {
-        // console.log('Uploading files count:', selectedFiles.length);
-        // Process files in smaller batches if needed
         selectedFiles.forEach((file, index) => {
           formData.append('mediaFiles', file);
           // Update progress as files are added
@@ -287,10 +286,14 @@ const CreateNote = () => {
       }
 
       // Log all form data keys being sent
-      // console.log('FormData keys being sent:');
-      // for (let key of formData.keys()) {
-      //   console.log('- ' + key);
-      // }
+      console.log('FormData keys being sent:');
+      for (let key of formData.keys()) {
+        if (key !== 'mediaFiles') {
+          console.log(`- ${key}: ${formData.get(key)}`);
+        } else {
+          console.log('- mediaFiles: [files]');
+        }
+      }
 
       // Add upload progress tracking
       const config = {
@@ -301,36 +304,70 @@ const CreateNote = () => {
         }
       };
 
-      // console.log('Sending API request...');
-      const response = await notesAPI.createNote(formData, config);
-      // console.log('API Response:', response.data);
-      
-      // Complete progress
-      setUploadProgress(100);
-      
-      // Show success toast
-      showSuccessToast('Note created successfully!');
-      navigate('/dashboard');
+      // Try the direct API approach first
+      try {
+        console.log('Sending API request...');
+        const response = await notesAPI.createNote(formData, config);
+        console.log('API Response:', response.data);
+        
+        // Complete progress
+        setUploadProgress(100);
+        
+        // Show success toast
+        showSuccessToast('Note created successfully!');
+        navigate('/dashboard');
+        return;
+      } catch (innerError) {
+        console.error('First attempt failed, trying fallback method:', innerError);
+        
+        // Fallback to direct fetch if the API call failed
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Authentication required. Please log in again.');
+        }
+        
+        // Try direct fetch to production endpoint as fallback
+        const response = await fetch('https://legacy-note-backend.onrender.com/api/notes', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create note');
+        }
+        
+        const data = await response.json();
+        console.log('Fallback API Response:', data);
+        
+        // Complete progress
+        setUploadProgress(100);
+        
+        // Show success toast
+        showSuccessToast('Note created successfully!');
+        navigate('/dashboard');
+      }
     } catch (err) {
-      // console.error('Note creation error details:', err);
+      console.error('Note creation error details:', err);
       
       let errorMessage = 'Failed to create note';
       
       if (err.response) {
         // Server responded with an error
         errorMessage = err.response.data?.error || err.response.data?.message || 'Server error';
-        // console.error('Server error response:', err.response.data);
-        // console.error('Status code:', err.response.status);
-        // console.error('Response headers:', err.response.headers);
+        console.error('Server error response:', err.response.data);
+        console.error('Status code:', err.response.status);
       } else if (err.request) {
         // Request was made but no response
         errorMessage = 'Network error - no response from server';
-        // console.error('Network error - no response received');
-        // console.error('Request details:', err.request);
+        console.error('Network error - no response received');
       } else {
         // Error in request setup
         errorMessage = err.message || 'Error preparing request';
-        // console.error('Request error:', err.message);
+        console.error('Request error:', err.message);
       }
       
       setSubmitError(errorMessage);
@@ -419,7 +456,7 @@ const CreateNote = () => {
                       name="title"
                       id="title"
                       className="w-full px-3 py-4 text-3xl font-bold border-0 border-b border-gray-200 dark:border-gray-700 focus:ring-0 focus:border-indigo-500 rounded-none dark:bg-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-                      placeholder="Enter your time capsule title..."
+                      placeholder="Enter title..."
                     />
                     <ErrorMessage 
                       name="title" 
@@ -584,6 +621,7 @@ const CreateNote = () => {
                           type="checkbox"
                           name="isPublic"
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mt-0.5 mr-3"
+                          id="isPublicCheckbox"
                         />
                         <div>
                           <span className="font-medium text-gray-700 dark:text-gray-200">Make this note public</span>
@@ -600,13 +638,23 @@ const CreateNote = () => {
                         <input
                           type="checkbox"
                           checked={includeRecipients}
-                          onChange={() => setIncludeRecipients(!includeRecipients)}
+                          onChange={(e) => {
+                            setIncludeRecipients(e.target.checked);
+                            // If adding recipients, make sure the user knows the note will be shared
+                            if (e.target.checked) {
+                              // Optional: you could automatically check isPublic when recipients are added
+                              // formRef.current?.setFieldValue('isPublic', true);
+                            }
+                          }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mt-0.5 mr-3"
                         />
                         <div>
                           <span className="font-medium text-gray-700 dark:text-gray-200">Send to specific recipients</span>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Add email recipients to receive this note on the delivery date
+                            Add email recipients to receive this note on the delivery date 
+                            <span className="ml-1 text-amber-600 dark:text-amber-400">
+                              (will be accessible to those recipients)
+                            </span>
                           </p>
                         </div>
                       </label>
@@ -616,6 +664,13 @@ const CreateNote = () => {
                     {(!values.isPublic && !includeRecipients) && (
                       <div className="text-sm text-red-500 dark:text-red-400 p-3 mt-3 bg-red-50 dark:bg-red-900/20 rounded-md">
                         Please select at least one: make public or send to recipients
+                      </div>
+                    )}
+                    
+                    {/* Information about automatic sharing */}
+                    {includeRecipients && (
+                      <div className="text-sm text-indigo-600 dark:text-indigo-400 p-3 mt-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-md">
+                        <span className="font-medium">Note:</span> Messages sent to recipients will be accessible via a special link in their email.
                       </div>
                     )}
                   </div>

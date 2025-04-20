@@ -61,8 +61,16 @@ exports.getNote = async (req, res, next) => {
 // @access  Private
 exports.createNote = async (req, res, next) => {
   try {
-    const { title, content, deliveryDate, isPublic } = req.body;
-    let { recipients } = req.body;
+    const { title, content, deliveryDate, exactTimeDelivery } = req.body;
+    let { recipients, isPublic } = req.body;
+    
+    console.log('Received note data:', { 
+      title, 
+      deliveryDate, 
+      isPublic,
+      isPublicType: typeof isPublic,
+      recipientsProvided: !!recipients
+    });
     
     // Parse recipients if it's a JSON string
     if (recipients && typeof recipients === 'string') {
@@ -101,6 +109,19 @@ exports.createNote = async (req, res, next) => {
       throw new BadRequestError('Content is required');
     }
 
+    // Handle isPublic value properly - formData sends strings, direct JSON might send booleans
+    // This ensures consistent handling of 'true', true, 'false', false
+    let isPublicFlag = isPublic === true || isPublic === 'true';
+    
+    // IMPORTANT: If there are recipients, automatically make the note public
+    // so recipients can access the note via email links
+    if (recipientsList.length > 0 && !isPublicFlag) {
+      console.log('Auto-setting isPublic=true because recipients are present');
+      isPublicFlag = true;
+    }
+    
+    console.log('Final isPublic value:', isPublicFlag);
+    
     // Process uploaded files (if any)
     const mediaFiles = [];
     if (req.files && req.files.length > 0) {
@@ -127,7 +148,7 @@ exports.createNote = async (req, res, next) => {
       title,
       content,
       deliveryDate: deliveryDate || null,
-      isPublic: isPublic === 'true' || isPublic === true,
+      isPublic: isPublicFlag,
       recipients: recipientsList,
       user: req.user.id,
       mediaFiles
@@ -142,6 +163,7 @@ exports.createNote = async (req, res, next) => {
 
     // Generate shareable link if the note is public
     if (note.isPublic) {
+      console.log('Generating shareable link for public note');
       completeNote.generateShareableLink();
       await completeNote.save();
     }
@@ -156,6 +178,12 @@ exports.createNote = async (req, res, next) => {
     } catch (emailError) {
       console.error('Failed to send note creation confirmation email:', emailError);
     }
+
+    console.log('Note created successfully:', { 
+      id: completeNote._id,
+      isPublic: completeNote.isPublic,
+      hasShareableLink: !!completeNote.shareableLink
+    });
 
     res.status(StatusCodes.CREATED).json({ note: completeNote });
   } catch (error) {
@@ -209,6 +237,16 @@ exports.updateNote = async (req, res, next) => {
           email: recipient.email
         };
       });
+    }
+
+    // Handle isPublic value
+    let isPublicValue = isPublic !== undefined ? (isPublic === 'true' || isPublic === true) : note.isPublic;
+    
+    // IMPORTANT: If there are recipients, automatically make the note public
+    // so recipients can access the note via email links
+    if (recipientsList.length > 0 && !isPublicValue) {
+      console.log('Auto-setting isPublic=true because recipients are present');
+      isPublicValue = true;
     }
 
     // Delete media files if requested
@@ -272,8 +310,13 @@ exports.updateNote = async (req, res, next) => {
     note.title = title || note.title;
     note.content = content || note.content;
     note.deliveryDate = deliveryDate !== undefined ? deliveryDate : note.deliveryDate;
-    note.isPublic = isPublic !== undefined ? (isPublic === 'true' || isPublic === true) : note.isPublic;
+    note.isPublic = isPublicValue;
     note.recipients = recipientsList;
+
+    // Generate a shareable link if needed
+    if (isPublicValue && !note.shareableLink) {
+      note.generateShareableLink();
+    }
 
     // Save the updated note
     const updatedNote = await note.save();
@@ -339,11 +382,14 @@ exports.deleteNote = async (req, res, next) => {
 // @access  Private
 exports.shareNote = async (req, res, next) => {
   try {
+    console.log(`User ${req.user.id} attempting to share note ${req.params.id}`);
+    
     // Try to find the note with proper data
     const note = await Note.findById(req.params.id)
       .select('+accessKey');
 
     if (!note) {
+      console.error(`Note not found: ${req.params.id}`);
       return res.status(404).json({
         success: false,
         error: 'Note not found',
@@ -365,19 +411,23 @@ exports.shareNote = async (req, res, next) => {
     
     // Regenerate the link if it doesn't exist or force regeneration was requested
     if (!note.shareableLink || req.body.regenerate === true) {
-      // Generate shareable link
+      // Generate shareable link - this will also ensure isPublic is set to true
       shareableLink = note.generateShareableLink();
-      // console.log(`Generated new shareable link for note ${note._id}`);
+      console.log(`Generated new shareable link for note ${note._id}`);
     } else {
       // Use existing link
       shareableLink = note.shareableLink;
-      // console.log(`Using existing shareable link for note ${note._id}`);
+      console.log(`Using existing shareable link for note ${note._id}`);
+      
+      // Double-check to make sure the note is public
+      if (!note.isPublic) {
+        note.isPublic = true;
+        console.log(`Fixed public status for note ${note._id}`);
+      }
     }
     
-    // Set note to public
-    note.isPublic = true;
-    
     try {
+      // Save the note to persist any changes
       await note.save();
     } catch (saveError) {
       console.error(`Error saving note when sharing ${note._id}:`, saveError);
@@ -388,6 +438,7 @@ exports.shareNote = async (req, res, next) => {
       });
     }
 
+    console.log(`Successfully shared note ${note._id}`);
     res.status(200).json({
       success: true,
       data: {
@@ -417,6 +468,8 @@ exports.getSharedNote = async (req, res, next) => {
   try {
     const { id, accessKey } = req.params;
     
+    console.log(`Attempting to access shared note ${id} with access key ${accessKey.substring(0, 5)}...`);
+    
     if (!id || !accessKey) {
       return res.status(400).json({
         success: false,
@@ -440,7 +493,7 @@ exports.getSharedNote = async (req, res, next) => {
       });
     }
 
-    // Check if access key is valid and note is public
+    // Check if access key is valid
     if (note.accessKey !== accessKey) {
       console.error(`Shared note access failed: Invalid access key for note ${id}`);
       return res.status(403).json({
@@ -450,20 +503,12 @@ exports.getSharedNote = async (req, res, next) => {
       });
     }
 
-    if (!note.isPublic) {
-      console.error(`Shared note access failed: Note ${id} is not marked as public`);
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied',
-        details: 'This note is not available for public access'
-      });
-    }
-
     // Check if the current user is the owner of the note
-    const isOwner = req.user && note.user && req.user.id === note.user.toString();
+    const isOwner = req.user && note.user && req.user.id === note.user._id.toString();
     
     // Check if access is through an email link for recipients
-    // Email links contain the correct accessKey, so if we're here, it's likely a legitimate recipient
+    // Email links contain the correct accessKey, so if we're here with a valid key, 
+    // we should check if the user is a valid recipient
     let isRecipient = false;
     let recipientEmail = '';
     
@@ -486,6 +531,25 @@ exports.getSharedNote = async (req, res, next) => {
     // For debugging
     if (isRecipient) {
       console.log(`Recipient ${recipientEmail} is accessing note ${id}`);
+    }
+
+    // IMPORTANT: Allow access in these cases:
+    // 1. The note has a valid accessKey and is meant to be shared (for anyone with the link)
+    // 2. The current user is the owner of the note (regardless of public status)
+    // 3. The current user is a recipient of the note (regardless of public status)
+    
+    // If we have a valid accessKey, assume the note is meant to be accessible
+    // This is critical for email links to work!
+    const hasValidAccessKey = note.accessKey === accessKey;
+    const hasAccess = hasValidAccessKey || isOwner || isRecipient || note.isPublic;
+    
+    if (!hasAccess) {
+      console.log(`Access denied to note ${id}: public=${note.isPublic}, owner=${isOwner}, recipient=${isRecipient}, validKey=${hasValidAccessKey}`);
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        details: 'You do not have permission to view this note'
+      });
     }
 
     // Check if time condition is met (bypass for note owner or recipients with valid accessKey)
@@ -538,6 +602,8 @@ exports.getSharedNote = async (req, res, next) => {
         // Continue serving the note even if status update fails
       }
     }
+    
+    console.log(`Successfully serving note ${id} to user`);
     
     res.status(200).json({
       success: true,

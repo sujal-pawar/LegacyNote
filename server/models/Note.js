@@ -164,18 +164,35 @@ NoteSchema.methods.isReadyForDelivery = function() {
 
 // Generate shareable link
 NoteSchema.methods.generateShareableLink = function () {
-  // Generate a cryptographically secure random access key (40 hex chars = 160 bits)
-  const accessKey = crypto.randomBytes(20).toString('hex');
-  this.accessKey = accessKey;
+  try {
+    // Generate a cryptographically secure random access key (40 hex chars = 160 bits)
+    const accessKey = crypto.randomBytes(20).toString('hex');
+    this.accessKey = accessKey;
 
-  // Get the frontend URL with a fallback
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    // Get the frontend URL with a fallback
+    const frontendUrl = process.env.FRONTEND_URL || 'https://legacynote.vercel.app';
+    
+    // For local development, use localhost as fallback if frontend URL not set
+    const finalUrl = frontendUrl === 'http://localhost:5173' && process.env.NODE_ENV === 'production' 
+      ? 'https://legacynote.vercel.app' 
+      : frontendUrl;
 
-  // Generate the full shareable link
-  this.shareableLink = `${frontendUrl}/shared-note/${this._id}/${accessKey}`;
+    // Ensure isPublic is set to true when generating a link
+    if (!this.isPublic) {
+      console.log('Warning: Setting isPublic to true as generateShareableLink was called');
+      this.isPublic = true;
+    }
 
-  // console.log(`Generated link: ${this.shareableLink}`);
-  return this.shareableLink;
+    // Generate the full shareable link
+    this.shareableLink = `${finalUrl}/shared-note/${this._id}/${accessKey}`;
+
+    console.log(`Generated shareable link for note ${this._id}`);
+    return this.shareableLink;
+  } catch (error) {
+    console.error('Error generating shareable link:', error);
+    // Return a fallback link that contains the ID but no access key - it won't work but prevents crashing
+    return `${process.env.FRONTEND_URL || 'https://legacynote.vercel.app'}/shared-note/${this._id}/error`;
+  }
 };
 
 // Helper method to check if a note is scheduled to self

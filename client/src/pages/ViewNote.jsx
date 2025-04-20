@@ -12,6 +12,9 @@ const ViewNote = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [countdown, setCountdown] = useState(null);
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareLink, setShareLink] = useState('');
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -95,20 +98,49 @@ const ViewNote = () => {
     }
   };
 
-  const handleShareNote = async () => {
+  const handleShare = async () => {
     try {
-      const res = await notesAPI.shareNote(id);
-      const shareableLink = res.data.data.shareableLink;
+      setIsSharing(true);
       
-      // Copy to clipboard
-      navigator.clipboard.writeText(shareableLink);
+      // First, make sure the note is public if it isn't already
+      if (!note.isPublic) {
+        // Add a direct API call to make the note public before sharing
+        console.log('Note is not public, updating...');
+        const publicUpdateRes = await fetch(`${import.meta.env.VITE_API_URL || 'https://legacy-note-backend.onrender.com/api'}/notes/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            isPublic: true
+          })
+        });
+        
+        if (!publicUpdateRes.ok) {
+          throw new Error('Failed to make note public');
+        }
+        
+        console.log('Note successfully made public');
+      }
       
-      showSuccessToast('Shareable link copied to clipboard');
+      const response = await notesAPI.shareNote(id);
+      const { shareableLink } = response.data.data;
       
-      // Update the note in the state to reflect it's now shared
-      setNote({ ...note, isPublic: true, shareableLink });
-    } catch (err) {
-      showErrorToast('Failed to share note');
+      setShareLink(shareableLink);
+      setShareDialogOpen(true);
+      
+      // Update local state to reflect the note is now public
+      setNote(prevNote => ({
+        ...prevNote,
+        isPublic: true,
+        shareableLink
+      }));
+    } catch (error) {
+      console.error('Error sharing note:', error);
+      showErrorToast('Failed to share note. Please try again.');
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -343,14 +375,23 @@ const ViewNote = () => {
     const isWithinHour = hoursRemaining < 1 && hoursRemaining >= 0 && minutesRemaining >= 0;
     const isWithinMinute = minutesRemaining < 1 && minutesRemaining >= 0 && secondsRemaining >= 0;
 
+    // Check if there are recipients
+    const hasRecipients = note.recipients && note.recipients.length > 0;
+    const recipientCount = hasRecipients ? note.recipients.length : 0;
+    
+    let recipientInfo = '';
+    if (hasRecipients) {
+      recipientInfo = ` This note will be accessible to ${recipientCount} recipient${recipientCount > 1 ? 's' : ''} via email.`;
+    }
+
     if (note.isDelivered) {
       return {
         status: 'delivered',
         label: 'Delivered',
         badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
         message: note.deliveredAt 
-          ? `This note was successfully delivered on ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at ${format(new Date(note.deliveredAt), 'h:mm a')}.`
-          : 'This note has been successfully delivered.'
+          ? `This note was successfully delivered on ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at ${format(new Date(note.deliveredAt), 'h:mm a')}.${recipientInfo}`
+          : `This note has been successfully delivered.${recipientInfo}`
       };
     } else if (deliveryDate > now) {
       // Show detailed time for notes with exact time delivery
@@ -360,16 +401,16 @@ const ViewNote = () => {
         
         if (isWithinMinute) {
           timeLabel = `Delivery in ${secondsRemaining} second${secondsRemaining !== 1 ? 's' : ''}`;
-          message = `This note will be delivered in less than a minute.`;
+          message = `This note will be delivered in less than a minute.${recipientInfo}`;
         } else if (isWithinHour) {
           timeLabel = `Delivery in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}`;
-          message = `This note will be delivered in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.`;
+          message = `This note will be delivered in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.${recipientInfo}`;
         } else if (daysRemaining < 1) {
           timeLabel = `Delivery in ${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''}`;
-          message = `This note will be delivered in ${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} and ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.`;
+          message = `This note will be delivered in ${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} and ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.${recipientInfo}`;
         } else {
           timeLabel = `Delivery in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}`;
-          message = `This note will be delivered on ${format(deliveryDate, 'MMMM d, yyyy')} at ${format(deliveryDate, 'h:mm a')}.`;
+          message = `This note will be delivered on ${format(deliveryDate, 'MMMM d, yyyy')} at ${format(deliveryDate, 'h:mm a')}.${recipientInfo}`;
         }
         
         return {
@@ -384,7 +425,7 @@ const ViewNote = () => {
         status: 'pending',
         label: 'Pending Delivery',
         badgeColor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-        message: `This note will be delivered on ${format(deliveryDate, 'MMMM d, yyyy')}.`
+        message: `This note will be delivered on ${format(deliveryDate, 'MMMM d, yyyy')}.${recipientInfo}`
       };
     } else {
       // If past delivery date but not marked as delivered yet
@@ -395,8 +436,8 @@ const ViewNote = () => {
         label: 'Processing',
         badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
         message: processingTime < 10 
-          ? `This note is being processed for delivery now ${note.exactTimeDelivery ? `(scheduled for ${format(deliveryDate, 'h:mm a')})` : ''}.` 
-          : `This note is taking longer than expected to deliver. It was scheduled for ${format(deliveryDate, 'MMMM d, yyyy')} ${note.exactTimeDelivery ? `at ${format(deliveryDate, 'h:mm a')}` : ''}.`
+          ? `This note is being processed for delivery now ${note.exactTimeDelivery ? `(scheduled for ${format(deliveryDate, 'h:mm a')})` : ''}.${recipientInfo}` 
+          : `This note is taking longer than expected to deliver. It was scheduled for ${format(deliveryDate, 'MMMM d, yyyy')} ${note.exactTimeDelivery ? `at ${format(deliveryDate, 'h:mm a')}` : ''}.${recipientInfo}`
       };
     }
   };
@@ -419,7 +460,7 @@ const ViewNote = () => {
             <div className="hidden sm:flex items-center space-x-2">
               {note.isPublic && note.shareableLink && (
                 <button
-                  onClick={handleShareNote}
+                  onClick={handleShare}
                   className="inline-flex items-center px-3 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
                 >
                   <FaShare className="mr-1.5" /> Share Link
@@ -510,7 +551,7 @@ const ViewNote = () => {
               <div className="flex flex-wrap gap-2 sm:hidden pt-4 border-t border-gray-200 dark:border-gray-700">
                 {note.isPublic && note.shareableLink && (
                   <button
-                    onClick={handleShareNote}
+                    onClick={handleShare}
                     className="flex-grow px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center justify-center"
                   >
                     <FaShare className="mr-1.5" /> Share
@@ -597,18 +638,19 @@ const ViewNote = () => {
                 {note.isPublic && note.shareableLink && (
                   <div className="mt-3">
                     <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Shareable Link:</div>
-                    <div className="flex">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
                       <input 
                         type="text" 
                         value={note.shareableLink} 
                         readOnly 
-                        className="flex-grow p-2 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-l-lg outline-none text-gray-700 dark:text-gray-300 truncate"
+                        className="w-full flex-grow py-2 px-3 text-xs sm:text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-r-none outline-none text-gray-700 dark:text-gray-300 truncate"
                       />
                       <button
-                        onClick={handleShareNote}
-                        className="px-3 py-2 bg-indigo-600 text-white rounded-r-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300"
+                        onClick={handleShare}
+                        className="w-full sm:w-auto px-3 py-2 bg-indigo-600 text-white rounded-lg sm:rounded-l-none hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300 flex items-center justify-center"
                       >
-                        <FaShare className="w-4 h-4" />
+                        <FaShare className="w-4 h-4 mr-2 sm:mr-0" /> 
+                        <span className="sm:hidden">Copy Link</span>
                       </button>
                     </div>
                   </div>
@@ -653,6 +695,56 @@ const ViewNote = () => {
                     ? 'This note has been unlocked and is now visible to all recipients.'
                     : 'This note is encrypted and will be delivered on the scheduled date.'}
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Dialog */}
+      {shareDialogOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <div className="fixed inset-0 transition-opacity">
+              <div className="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
+            </div>
+            <div className="inline-block w-full sm:max-w-lg align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all mx-4 sm:my-8 sm:align-middle">
+              <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                  Share your time capsule
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  Use this link to share your time capsule with anyone. They can view it using this link.
+                </p>
+                <div className="mt-2">
+                  <div className="flex flex-col sm:flex-row rounded-md shadow-sm gap-2 sm:gap-0">
+                    <input
+                      type="text"
+                      readOnly
+                      value={shareLink}
+                      className="flex-1 w-full min-w-0 block px-3 py-2 rounded-md sm:rounded-r-none border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-xs sm:text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(shareLink);
+                        showSuccessToast('Link copied to clipboard!');
+                      }}
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border sm:border-l-0 border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md sm:rounded-l-none bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      <FaShare className="sm:hidden mr-2" /> Copy Link
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={() => setShareDialogOpen(false)}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Done
+                </button>
               </div>
             </div>
           </div>

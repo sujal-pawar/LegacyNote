@@ -19,7 +19,7 @@ function AppContent() {
   const shouldHideNavbar = false;
 
   return (
-    <div className="app-container">
+    <div className="app-container w-full overflow-x-hidden">
       <Navbar />
       <main className="main-content">
         <AppRoutes />
