@@ -37,7 +37,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`sticky top-0 z-50 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white transition-all duration-300 `}
+    <nav className={`fixed top-0 w-full z-50 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white transition-all duration-300`}
     
   >
     

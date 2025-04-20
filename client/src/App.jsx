@@ -21,7 +21,7 @@ function AppContent() {
   return (
     <div className="app-container w-full overflow-x-hidden">
       <Navbar />
-      <main className="main-content">
+      <main className="main-content pt-16">
         <AppRoutes />
       </main>
       <Footer />
