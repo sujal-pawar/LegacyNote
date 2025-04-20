@@ -55,7 +55,7 @@ const CreateNote = () => {
           'Please enter a valid time',
           value => Boolean(value && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value))
         ),
-      isPublic: Yup.boolean(),
+      isPublic: Yup.boolean(), // Keep this for form logic but it's no longer directly set by user
       recipients: Yup.array().of(
         Yup.object().shape({
           name: Yup.string()
@@ -67,7 +67,7 @@ const CreateNote = () => {
       )
       .test(
         'recipients-validation',
-        'At least one recipient is required when sending to recipients',
+        'At least one recipient is required',
         function(value, context) {
           // Get includeRecipients from context
           const { includeRecipients } = this.options.context || {};
@@ -90,12 +90,11 @@ const CreateNote = () => {
       ),
     })
     .test(
-      'at-least-one-checkbox',
-      'Please select at least one: make public or send to someone',
+      'require-recipients',
+      'You must add at least one recipient',
       function (values) {
-        const { isPublic } = values;
         const { includeRecipients } = this.options.context || {};
-        return isPublic || includeRecipients;
+        return includeRecipients;
       }
     )
     .test(
@@ -223,26 +222,31 @@ const CreateNote = () => {
 
   // Handle form submission
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    // Immediately show that we're processing the submission to prevent multiple clicks
     if (submitting) {
+      console.log('Already submitting, ignoring additional click');
       return;
     }
     
-    // Check if at least one option is selected
-    if (!values.isPublic && !includeRecipients) {
-      showErrorToast('Please select at least one: make public or send to recipients');
-      setSubmitting(false);
-      return;
-    }
-    
+    // Immediately set submitting state to true
     setSubmitting(true);
     setIsUploading(true);
-    setUploadProgress(0);
+    setUploadProgress(5);
+    showSuccessToast('Creating your time capsule...');
     
-    // Debug logging for debugging public note issues
+    // Check if recipients are included - only after setting submitting state
+    if (!includeRecipients) {
+      showErrorToast('Please add at least one recipient to send your time capsule');
+      setSubmitting(false);
+      setIsUploading(false);
+      return;
+    }
+    
+    // Debug logging for debugging note issues
     console.log('Form submission values:', {
       title: values.title,
-      isPublic: values.isPublic,
-      includeRecipients
+      includeRecipients,
+      recipientsCount: values.recipients.length
     });
     
     try {
@@ -262,13 +266,15 @@ const CreateNote = () => {
       
       formData.append('deliveryDate', deliveryDate.toISOString());
       
-      // IMPORTANT: Ensure isPublic is explicitly converted to boolean string
-      // Force using 'true' or 'false' strings since FormData handles booleans differently
-      const isPublicValue = values.isPublic === true ? 'true' : 'false';
-      formData.append('isPublic', isPublicValue);
-      console.log('Setting isPublic to:', isPublicValue);
+      // Always set isPublic to true when there are recipients
+      // This ensures recipients can access the note via email links
+      formData.append('isPublic', 'true');
+      console.log('Setting isPublic to: true');
       
       formData.append('exactTimeDelivery', 'true'); // Always enable exact time delivery
+      
+      // Show progress as we process the form data
+      setUploadProgress(10);
       
       // Add recipients if they're included
       if (includeRecipients && values.recipients.length > 0) {
@@ -280,9 +286,12 @@ const CreateNote = () => {
       if (selectedFiles.length > 0) {
         selectedFiles.forEach((file, index) => {
           formData.append('mediaFiles', file);
-          // Update progress as files are added
-          setUploadProgress(Math.round((index + 1) / selectedFiles.length * 10)); // First 10% is prep
+          // Update progress as files are prepared
+          setUploadProgress(10 + Math.round((index + 1) / selectedFiles.length * 10));
         });
+      } else {
+        // If no files, jump to 20% progress
+        setUploadProgress(20);
       }
 
       // Log all form data keys being sent
@@ -299,8 +308,9 @@ const CreateNote = () => {
       const config = {
         onUploadProgress: progressEvent => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          // Scale from 10-90% to leave room for prep and server processing
-          setUploadProgress(10 + Math.round(percentCompleted * 0.8));
+          // Scale from 20-90% to leave room for prep and server processing
+          // This makes the progress feel more responsive to users
+          setUploadProgress(20 + Math.round(percentCompleted * 0.7));
         }
       };
 
@@ -396,7 +406,7 @@ const CreateNote = () => {
             <button
               type="button"
               disabled={submitting}
-              className="px-4 py-2 text-white max-sm:hidden bg-indigo-600 rounded-full hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm"
+              className={`px-4 py-2 text-white max-sm:hidden bg-indigo-600 rounded-full hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-70 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm ${submitting ? 'animate-pulse' : ''}`}
               onClick={() => {
                 // Trigger form submission if the form reference exists
                 if (formRef.current) {
@@ -456,7 +466,7 @@ const CreateNote = () => {
                       name="title"
                       id="title"
                       className="w-full px-3 py-4 text-3xl font-bold border-0 border-b border-gray-200 dark:border-gray-700 focus:ring-0 focus:border-indigo-500 rounded-none dark:bg-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-                      placeholder="Enter title..."
+                      placeholder="Enter Title..."
                     />
                     <ErrorMessage 
                       name="title" 
@@ -614,24 +624,6 @@ const CreateNote = () => {
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                     <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-4">Visibility Options</h3>
                     
-                    {/* Public checkbox */}
-                    <div className="mb-3">
-                      <label className="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <Field
-                          type="checkbox"
-                          name="isPublic"
-                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mt-0.5 mr-3"
-                          id="isPublicCheckbox"
-                        />
-                        <div>
-                          <span className="font-medium text-gray-700 dark:text-gray-200">Make this note public</span>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Public notes can be shared with anyone who has the link
-                          </p>
-                        </div>
-                      </label>
-                    </div>
-                    
                     {/* Recipients checkbox */}
                     <div>
                       <label className="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -640,10 +632,9 @@ const CreateNote = () => {
                           checked={includeRecipients}
                           onChange={(e) => {
                             setIncludeRecipients(e.target.checked);
-                            // If adding recipients, make sure the user knows the note will be shared
+                            // Auto-set isPublic to true when recipients are added
                             if (e.target.checked) {
-                              // Optional: you could automatically check isPublic when recipients are added
-                              // formRef.current?.setFieldValue('isPublic', true);
+                              formRef.current?.setFieldValue('isPublic', true);
                             }
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mt-0.5 mr-3"
@@ -660,10 +651,10 @@ const CreateNote = () => {
                       </label>
                     </div>
                     
-                    {/* Display validation error for requiring at least one option */}
-                    {(!values.isPublic && !includeRecipients) && (
-                      <div className="text-sm text-red-500 dark:text-red-400 p-3 mt-3 bg-red-50 dark:bg-red-900/20 rounded-md">
-                        Please select at least one: make public or send to recipients
+                    {/* Display validation error requiring at least recipients */}
+                    {!includeRecipients && (
+                      <div className="text-sm text-amber-600 dark:text-amber-400 p-3 mt-3 bg-amber-50 dark:bg-amber-900/20 rounded-md">
+                        Please add at least one recipient to send your time capsule
                       </div>
                     )}
                     
@@ -796,7 +787,7 @@ const CreateNote = () => {
                     <button
                       type="button"
                       disabled={submitting}
-                      className="w-full px-4 py-3 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm"
+                      className={`w-full px-4 py-3 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-70 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm ${submitting ? 'animate-pulse' : ''}`}
                       onClick={() => {
                         // Just trigger the form submission directly
                         if (formRef.current) {
@@ -811,6 +802,12 @@ const CreateNote = () => {
                         </span>
                       ) : 'Create Time Capsule'}
                     </button>
+                    
+                    {submitting && (
+                      <p className="text-xs text-center mt-2 text-indigo-600 dark:text-indigo-400">
+                        Your time capsule is being created. Please wait...
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -820,22 +817,35 @@ const CreateNote = () => {
       </div>
 
       {submitting && (
-        <div className="fixed top-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50">
-          <div className="max-w-4xl mx-auto">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <FaSpinner className="animate-spin mr-2" />
-              {uploadProgress < 10 ? 'Preparing data...' : 
-                uploadProgress < 90 ? `Uploading files... ${uploadProgress}%` : 
-                uploadProgress === 100 ? 'Upload complete! Redirecting...' : 
-                'Processing your time capsule...'}
-            </p>
-            <div className="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl max-w-md w-full mx-4 border-2 border-indigo-500 dark:border-indigo-400">
+            <div className="text-center mb-4">
+              <FaSpinner className="animate-spin text-4xl text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                {uploadProgress < 10 ? 'Preparing Your Time Capsule...' : 
+                 uploadProgress < 90 ? 'Uploading Files...' : 
+                 uploadProgress === 100 ? 'Almost Done!' : 
+                 'Processing Your Time Capsule...'}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {uploadProgress < 10 ? 'Encrypting your message and preparing files...' : 
+                 uploadProgress < 90 ? `Uploading your files (${uploadProgress}% complete)` : 
+                 uploadProgress === 100 ? 'Finalizing your time capsule...' : 
+                 'We\'re processing your time capsule...'}
+              </p>
+            </div>
+            
+            <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 mb-4">
               <div 
-                className="bg-indigo-600 h-4 rounded-full transition-all duration-300 ease-in-out flex items-center justify-end"
+                className="bg-indigo-600 h-3 rounded-full transition-all duration-300 ease-in-out relative"
                 style={{ width: `${uploadProgress}%` }}
               >
-                <span className="px-2 text-xs text-white">{uploadProgress}%</span>
+                <div className="absolute right-0 top-0 h-full w-3 bg-white dark:bg-indigo-300 rounded-full animate-pulse"></div>
               </div>
+            </div>
+            
+            <div className="text-xs text-gray-500 dark:text-gray-400 text-center font-medium">
+              Please don't close this window. Your time capsule is being created.
             </div>
           </div>
         </div>
