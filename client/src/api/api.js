@@ -32,7 +32,7 @@ const api = axios.create({
 });
 
 // Log the API URL being used
-console.log('API URL being used:', api.defaults.baseURL);
+// console.log('API URL being used:', api.defaults.baseURL);
 
 // Add retry functionality
 api.interceptors.response.use(undefined, async (err) => {
@@ -45,7 +45,7 @@ api.interceptors.response.use(undefined, async (err) => {
   
   // Network error or timeout - retry once (unless it's an abort)
   if (message.includes('Network Error') || message.includes('timeout') || err.code === 'ECONNABORTED') {
-    console.log('Network issue detected, retrying request...');
+    // console.log('Network issue detected, retrying request...');
     
     // Mark as retried to prevent infinite loops
     config.__isRetry = true;
@@ -94,7 +94,7 @@ api.interceptors.response.use(
     
     // Create a more user-friendly error message
     if (!error.response && error.message && error.message.includes('Network Error')) {
-      console.error('Network error detected:', error);
+      // console.error('Network error detected:', error);
       // Create a more helpful error object
       const enhancedError = new Error(
         'Unable to connect to the server. Please check your internet connection and try again.'
@@ -127,11 +127,11 @@ export const authAPI = {
     }).catch(error => {
       // Enhanced error logging for Google auth issues
       if (error.code === 'ECONNABORTED') {
-        console.error('Google auth timeout:', error);
+        // console.error('Google auth timeout:', error);
         throw new Error('Google authentication timed out. Please try again.');
       }
       if (error.name === 'AbortError') {
-        console.error('Google auth aborted:', error);
+        // console.error('Google auth aborted:', error);
         throw new Error('Google authentication was interrupted. Please try again.');
       }
       throw error; // Re-throw other errors
@@ -157,21 +157,47 @@ export const notesAPI = {
       // Check if noteData is FormData
       if (noteData instanceof FormData) {
         // Log the data being sent (for debugging)
-        if (process.env.NODE_ENV !== 'production') {
-          for (let [key, value] of noteData.entries()) {
-            if (key !== 'mediaFiles') { // Don't log file binary data
-              // Remove commented console.log statements
-            } else {
-              // Remove commented console.log statements
-            }
+        // console.log('Creating note with FormData...');
+        for (let [key, value] of noteData.entries()) {
+          if (key !== 'mediaFiles') { // Don't log file binary data
+            // console.log(`FormData ${key}:`, value);
+          } else {
+            // console.log('FormData includes media files (binary data not shown)');
           }
         }
         
-        return await api.post('/notes', noteData, {
+        // Force using the production URL for note creation if local server isn't responding
+        let useBaseUrl = api.defaults.baseURL;
+        // console.log('API URL initially:', useBaseUrl);
+        
+        // If we're in local development and have connectivity issues, try production
+        const isLocal = typeof window !== 'undefined' && 
+          (window.location.hostname.includes('localhost') || 
+           window.location.hostname.includes('127.0.0.1'));
+           
+        if (isLocal) {
+          try {
+            // Test connectivity to local server with a quick timeout
+            // console.log('Testing connectivity to local server...');
+            const testUrl = useBaseUrl.endsWith('/') ? useBaseUrl + 'health' : useBaseUrl + '/health';
+            await fetch(testUrl, { method: 'HEAD', timeout: 2000 });
+            // console.log('Local server is responsive');
+          } catch (err) {
+            // console.warn('Local server may be down, trying production URL as fallback');
+            useBaseUrl = 'https://legacy-note-backend.onrender.com/api';
+          }
+        }
+        
+        // console.log('Using API URL:', useBaseUrl);
+        // console.log('Sending request to server...');
+        
+        // Direct axios call with custom base URL if needed
+        return await axios.post(`${useBaseUrl}/notes`, noteData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
           },
-          timeout: 180000 // Increase timeout to 3 minutes for Render free tier
+          timeout: 180000 // 3 minutes timeout
         });
       }
       
@@ -179,20 +205,20 @@ export const notesAPI = {
         timeout: 30000 // Add a 30 second timeout for JSON requests
       });
     } catch (error) {
-      console.error('API error creating note:', error);
+      // console.error('API error creating note:', error);
       
       // Enhance error message with details
       if (error.response) {
         // The request was made and the server responded with a status code outside of 2xx
-        console.error('Response error:', error.response.data);
+        // console.error('Response error:', error.response.data);
         throw error;
       } else if (error.request) {
         // The request was made but no response was received
-        console.error('Network error - no response received');
+        // console.error('Network error - no response received');
         throw new Error('Network error - server did not respond. Please check your connection.');
       } else {
         // Something happened in setting up the request that triggered an Error
-        console.error('Request setup error:', error.message);
+        // console.error('Request setup error:', error.message);
         throw error;
       }
     }

@@ -127,7 +127,7 @@ const Dashboard = () => {
         label: 'Delivered',
         badgeClass: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
         deliveryTime: note.deliveredAt ? 
-          `Delivered: ${format(new Date(note.deliveredAt), 'MMM d')} at ${format(new Date(note.deliveredAt), 'h:mm:ss a')}` : 
+          `Delivered: ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')}${note.exactTimeDelivery ? ` at ${format(new Date(note.deliveredAt), 'h:mm a')}` : ''}` : 
           `Delivered`
       };
     } else if (deliveryDate > now) {
@@ -348,7 +348,10 @@ const Dashboard = () => {
                         <FaCalendarAlt className="text-blue-600 dark:text-blue-400" />
                         <span className="text-sm dark:text-gray-400 py-3 font-medium">
                           {note.isDelivered ? (
-                            <span>Delivered on {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}</span>
+                            <span>Delivered on {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
+                              {note.exactTimeDelivery && note.deliveredAt && 
+                                ` at ${format(new Date(note.deliveredAt), 'h:mm a')}`}
+                            </span>
                           ) : isReadyForDelivery(note) ? (
                             <span className="text-orange-600 dark:text-orange-400">Processing delivery...</span>
                           ) : (

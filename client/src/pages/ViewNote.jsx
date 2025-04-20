@@ -395,8 +395,8 @@ const ViewNote = () => {
         label: 'Processing',
         badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
         message: processingTime < 10 
-          ? `This note is being processed for delivery now.` 
-          : `This note is taking longer than expected to deliver. It was scheduled for ${format(deliveryDate, 'h:mm a')}.`
+          ? `This note is being processed for delivery now ${note.exactTimeDelivery ? `(scheduled for ${format(deliveryDate, 'h:mm a')})` : ''}.` 
+          : `This note is taking longer than expected to deliver. It was scheduled for ${format(deliveryDate, 'MMMM d, yyyy')} ${note.exactTimeDelivery ? `at ${format(deliveryDate, 'h:mm a')}` : ''}.`
       };
     }
   };
@@ -404,9 +404,9 @@ const ViewNote = () => {
   const statusInfo = getNoteStatus();
 
   return (
-    <div className="min-h-screen py-10 max-sm:py-5 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-lg">
+    <div className="min-h-screen py-6 max-sm:py-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
+        <div className="bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-lg">
           <div className="mb-4 sm:mb-6">
             <Link 
               to="/dashboard" 
@@ -420,9 +420,13 @@ const ViewNote = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-200 break-words pr-2">
               {note.title}
               {note.exactTimeDelivery && (
-                <span className="mt-2 ml-0 sm:ml-3 text-xs sm:text-sm bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 px-2 py-1 rounded-full inline-flex items-center">
-                  <FaClock className="mr-1" /> Exact Time
-                </span>
+                <div className="mt-2 text-base font-normal text-indigo-600 dark:text-indigo-400 flex items-center">
+                  <FaClock className="mr-1" /> 
+                  {new Date(note.deliveryDate) <= new Date() && !note.isDelivered
+                    ? `Processing delivery (scheduled for ${format(new Date(note.deliveryDate), 'h:mm a')})`
+                    : `Delivery scheduled for ${format(new Date(note.deliveryDate), 'h:mm a')}`
+                  }
+                </div>
               )}
             </h1>
             <div className="mt-2 sm:mt-0">
@@ -435,7 +439,9 @@ const ViewNote = () => {
           {/* Add countdown timer for pending notes */}
           {!note.isDelivered && new Date(note.deliveryDate) > new Date() && countdown && (
             <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-center">
-              <div className="text-sm font-medium text-indigo-800 dark:text-indigo-300">Countdown to delivery:</div>
+              <div className="text-sm font-medium text-indigo-800 dark:text-indigo-300">
+                Countdown to delivery{note.exactTimeDelivery ? ` (${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at ${format(new Date(note.deliveryDate), 'h:mm a')})` : ''}:
+              </div>
               <div className="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums">
                 {countdown}
               </div>
@@ -447,19 +453,19 @@ const ViewNote = () => {
             <span className="flex-1">
               {note.exactTimeDelivery ? (
                 <>
-                  Delivery: {format(new Date(note.deliveryDate), 'MMM d, yyyy')} at {format(new Date(note.deliveryDate), 'h:mm a')}
+                  <span className="font-medium">Delivery: </span>{format(new Date(note.deliveryDate), 'MMMM d, yyyy')} <span className="font-medium">at {format(new Date(note.deliveryDate), 'h:mm a')}</span>
                   {isDelivered && note.deliveredAt && (
                     <span className="block sm:inline sm:ml-2 text-green-600 dark:text-green-400 mt-1 sm:mt-0">
-                      (Delivered: {format(new Date(note.deliveredAt), 'MMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm a')})
+                      (Delivered: {format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm a')})
                     </span>
                   )}
                 </>
               ) : (
                 <>
-                  Delivery Date: {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
+                  <span className="font-medium">Delivery Date: </span>{format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
                   {isDelivered && note.deliveredAt && (
                     <span className="block sm:inline sm:ml-2 text-green-600 dark:text-green-400 mt-1 sm:mt-0">
-                      (Delivered: {format(new Date(note.deliveredAt), 'MMM d, yyyy')})
+                      (Delivered: {format(new Date(note.deliveredAt), 'MMMM d, yyyy')})
                     </span>
                   )}
                 </>
@@ -547,11 +553,11 @@ const ViewNote = () => {
               <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-2 flex items-start sm:items-center">
                 <FaSpinner className="animate-spin mr-2 mt-1 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">
-                  <p className="font-medium">Note is being processed for delivery</p>
+                  <p className="font-medium text-base">Note is being processed for delivery</p>
                   <p>
                     {note.exactTimeDelivery 
-                      ? `This note was scheduled with exact time delivery for ${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at ${format(new Date(note.deliveryDate), 'h:mm a')} and is now being processed.`
-                      : `The note was scheduled for ${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} and is being processed.`
+                      ? <span>This note was scheduled with exact time delivery for <strong>{format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at {format(new Date(note.deliveryDate), 'h:mm a')}</strong> and is now being processed.</span>
+                      : `This note was scheduled for ${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} and is being processed.`
                     } 
                     This typically takes 2-5 minutes. Refresh this page to check delivery status.
                   </p>
@@ -566,25 +572,22 @@ const ViewNote = () => {
                 Note was delivered on {format(new Date(note.deliveredAt || note.deliveryDate), 'MMMM d, yyyy')}
                 {note.exactTimeDelivery && ` at ${format(new Date(note.deliveredAt || note.deliveryDate), 'h:mm a')}`}
               </div>
-            ) : new Date(note.deliveryDate) <= new Date() ? (
-              <div className="flex items-center text-blue-600 dark:text-blue-400 mb-4">
-                <FaInfoCircle className="mr-2" />
-                {note.exactTimeDelivery 
-                  ? `This note was scheduled for ${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at ${format(new Date(note.deliveryDate), 'h:mm a')} and is being processed for delivery.`
-                  : `This note was scheduled for ${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} and is being processed for delivery.`}
-              </div>
             ) : (
-              <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-2 flex items-start sm:items-center">
-                <FaClock className="mr-2 mt-1 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
-                <div className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
-                  <p className="font-medium">Scheduled for future delivery</p>
-                  <p className="break-words">
-                    This note is scheduled for {format(new Date(note.deliveryDate), 'MMM d, yyyy')} 
-                    {note.exactTimeDelivery ? ` at ${format(new Date(note.deliveryDate), 'h:mm a')}` : ''}.
-                    {statusInfo.status === 'pending' && ` (${statusInfo.label})`}
-                  </p>
+              new Date(note.deliveryDate) <= new Date() ? (
+                <></>
+              ) : (
+                <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-2 flex items-start sm:items-center">
+                  <FaClock className="mr-2 mt-1 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+                  <div className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
+                    <p className="font-medium">Scheduled for future delivery</p>
+                    <p className="break-words">
+                      This note is scheduled for {format(new Date(note.deliveryDate), 'MMMM d, yyyy')} 
+                      {note.exactTimeDelivery ? ` at ${format(new Date(note.deliveryDate), 'h:mm a')}` : ''}.
+                      {statusInfo.status === 'pending' && ` (${statusInfo.label})`}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </div>
 

@@ -272,7 +272,7 @@ exports.updateNote = async (req, res, next) => {
     note.title = title || note.title;
     note.content = content || note.content;
     note.deliveryDate = deliveryDate !== undefined ? deliveryDate : note.deliveryDate;
-    note.isPublic = isPublic !== undefined ? isPublic : note.isPublic;
+    note.isPublic = isPublic !== undefined ? (isPublic === 'true' || isPublic === true) : note.isPublic;
     note.recipients = recipientsList;
 
     // Save the updated note
@@ -427,7 +427,8 @@ exports.getSharedNote = async (req, res, next) => {
 
     // Try to find the note with the provided ID and access key
     const note = await Note.findById(id)
-      .select('+accessKey +encryptedContent');
+      .select('+accessKey +encryptedContent')
+      .populate('user', 'name email'); // Populate user for checking recipients
 
     // Check if note exists
     if (!note) {
@@ -460,10 +461,36 @@ exports.getSharedNote = async (req, res, next) => {
 
     // Check if the current user is the owner of the note
     const isOwner = req.user && note.user && req.user.id === note.user.toString();
+    
+    // Check if access is through an email link for recipients
+    // Email links contain the correct accessKey, so if we're here, it's likely a legitimate recipient
+    let isRecipient = false;
+    let recipientEmail = '';
+    
+    // Extract user email from the request if authenticated
+    const userEmail = req.user ? req.user.email : '';
+    
+    // Check if user email matches any recipient email 
+    if (userEmail && note.recipients && note.recipients.length > 0) {
+      isRecipient = note.recipients.some(recipient => recipient.email === userEmail);
+      if (isRecipient) {
+        recipientEmail = userEmail;
+      }
+    } 
+    // Check legacy single recipient
+    else if (userEmail && note.recipient && note.recipient.email === userEmail) {
+      isRecipient = true;
+      recipientEmail = userEmail;
+    }
+    
+    // For debugging
+    if (isRecipient) {
+      console.log(`Recipient ${recipientEmail} is accessing note ${id}`);
+    }
 
-    // Check if time condition is met (bypass for note owner)
+    // Check if time condition is met (bypass for note owner or recipients with valid accessKey)
     const currentDate = new Date();
-    if (!isOwner && currentDate < note.deliveryDate && !note.isDelivered) {
+    if (!isOwner && !isRecipient && currentDate < note.deliveryDate && !note.isDelivered) {
       return res.status(403).json({
         success: false,
         error: 'This note is not yet available for viewing',
@@ -488,9 +515,28 @@ exports.getSharedNote = async (req, res, next) => {
     note.accessKey = undefined;
     note.encryptedContent = undefined;
 
-    // Add a flag to indicate this is the owner viewing their own note
+    // Add flags to indicate access type
     if (isOwner) {
       note.isOwner = true;
+    }
+    if (isRecipient) {
+      note.isRecipient = true;
+    }
+    
+    // If the note is being accessed by a recipient or owner and it's past the delivery date
+    // but not marked as delivered yet, update the delivery status
+    if ((isOwner || isRecipient) && currentDate >= note.deliveryDate && !note.isDelivered) {
+      try {
+        await Note.findByIdAndUpdate(id, { 
+          isDelivered: true,
+          deliveredAt: new Date()
+        });
+        note.isDelivered = true;
+        note.deliveredAt = new Date();
+      } catch (updateError) {
+        console.error(`Failed to update delivery status for note ${id}:`, updateError);
+        // Continue serving the note even if status update fails
+      }
     }
     
     res.status(200).json({

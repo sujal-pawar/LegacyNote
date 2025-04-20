@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
-import { FaCalendarAlt, FaEnvelope, FaUser, FaLock, FaArrowLeft, FaFile, FaTimes, FaImage, FaVideo, FaMusic, FaFileAlt, FaPlus, FaUserFriends } from 'react-icons/fa';
+import { FaCalendarAlt, FaEnvelope, FaUser, FaLock, FaArrowLeft, FaFile, FaTimes, FaImage, FaVideo, FaMusic, FaFileAlt, FaPlus, FaUserFriends, FaSpinner } from 'react-icons/fa';
 import { notesAPI } from '../api/api';
 import api from '../api/api';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
@@ -226,7 +226,22 @@ const CreateNote = () => {
       return;
     }
     
+    // Check if at least one option is selected
+    if (!values.isPublic && !includeRecipients) {
+      showErrorToast('Please select at least one: make public or send to recipients');
+      setSubmitting(false);
+      return;
+    }
+    
     setSubmitting(true);
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    // Debug log for isPublic value
+    // console.log('Form submission started');
+    // console.log('Form values:', values);
+    // console.log('Checkbox state in form:', values.isPublic);
+    // console.log('includeRecipients state:', includeRecipients);
     
     try {
       // Create FormData for file uploads
@@ -235,55 +250,86 @@ const CreateNote = () => {
       // Add note data to FormData
       formData.append('title', values.title);
       formData.append('content', values.content);
-      formData.append('deliveryDate', new Date(values.deliveryDate).toISOString());
-      formData.append('isPublic', values.isPublic);
+      
+      // Properly combine date and time values to create an accurate delivery timestamp
+      const deliveryDate = new Date(values.deliveryDate);
+      if (values.deliveryTime) {
+        const [hours, minutes] = values.deliveryTime.split(':');
+        deliveryDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+      }
+      
+      formData.append('deliveryDate', deliveryDate.toISOString());
+      // Explicitly convert boolean to string "true" or "false" - server expects this format
+      formData.append('isPublic', values.isPublic ? 'true' : 'false');
+      
+      // Debug log for what's being sent to server
+      // console.log('Sending isPublic as:', values.isPublic ? 'true' : 'false');
+      
       formData.append('exactTimeDelivery', 'true'); // Always enable exact time delivery
       
       // Add recipients if they're included
       if (includeRecipients && values.recipients.length > 0) {
-        formData.append('recipients', JSON.stringify(values.recipients));
+        const recipientsJSON = JSON.stringify(values.recipients);
+        formData.append('recipients', recipientsJSON);
+        // console.log('Sending recipients:', recipientsJSON);
       }
       
       // Add files to FormData - limit to smaller chunks if many files
       if (selectedFiles.length > 0) {
+        // console.log('Uploading files count:', selectedFiles.length);
         // Process files in smaller batches if needed
         selectedFiles.forEach((file, index) => {
           formData.append('mediaFiles', file);
           // Update progress as files are added
-          setUploadProgress(Math.round((index + 1) / selectedFiles.length * 50)); // First 50% is prep
+          setUploadProgress(Math.round((index + 1) / selectedFiles.length * 10)); // First 10% is prep
         });
       }
+
+      // Log all form data keys being sent
+      // console.log('FormData keys being sent:');
+      // for (let key of formData.keys()) {
+      //   console.log('- ' + key);
+      // }
 
       // Add upload progress tracking
       const config = {
         onUploadProgress: progressEvent => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
+          // Scale from 10-90% to leave room for prep and server processing
+          setUploadProgress(10 + Math.round(percentCompleted * 0.8));
         }
       };
 
+      // console.log('Sending API request...');
       const response = await notesAPI.createNote(formData, config);
+      // console.log('API Response:', response.data);
+      
+      // Complete progress
+      setUploadProgress(100);
       
       // Show success toast
       showSuccessToast('Note created successfully!');
       navigate('/dashboard');
     } catch (err) {
-      console.error('Note creation error details:', err);
+      // console.error('Note creation error details:', err);
       
       let errorMessage = 'Failed to create note';
       
       if (err.response) {
         // Server responded with an error
         errorMessage = err.response.data?.error || err.response.data?.message || 'Server error';
-        console.error('Server error response:', err.response.data);
+        // console.error('Server error response:', err.response.data);
+        // console.error('Status code:', err.response.status);
+        // console.error('Response headers:', err.response.headers);
       } else if (err.request) {
         // Request was made but no response
         errorMessage = 'Network error - no response from server';
-        console.error('Network error - no response received');
+        // console.error('Network error - no response received');
+        // console.error('Request details:', err.request);
       } else {
         // Error in request setup
         errorMessage = err.message || 'Error preparing request';
-        console.error('Request error:', err.message);
+        // console.error('Request error:', err.message);
       }
       
       setSubmitError(errorMessage);
@@ -295,9 +341,9 @@ const CreateNote = () => {
   };
 
   return (
-    <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
+    <div className="min-h-screen py-6 max-sm:py-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
+        <div className="bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-lg">
           <div className="flex items-center mb-6">
             <button 
               onClick={() => navigate('/dashboard')} 
@@ -324,8 +370,21 @@ const CreateNote = () => {
                 // Add extra validation logging to help debug validation issues
                 if (Object.keys(errors).length > 0) {
                   // console.log('Form validation errors:', errors);
+                  return; // Don't submit if there are validation errors
                 }
-                formikHandleSubmit(e);
+                
+                // If required fields are missing, don't submit
+                if (!values.title || !values.content || !values.deliveryDate) {
+                  showErrorToast('Please fill in all required fields');
+                  return;
+                }
+                
+                // Manual submit rather than using formik submit
+                e.preventDefault();
+                handleSubmit(values, { 
+                  setSubmitting: () => {}, 
+                  resetForm: () => {} 
+                });
               }}>
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -503,12 +562,14 @@ const CreateNote = () => {
                     />
                     <span>Send this note to recipients</span>
                   </label>
-                  {errors['at-least-one-checkbox'] && !includeRecipients && !values.isPublic && (
-                  <div className="text-sm text-red-500 dark:text-red-400 mt-1">
-                    {errors['at-least-one-checkbox']}
+                </div>
+                
+                {/* Display validation error for requiring at least one option */}
+                {(!values.isPublic && !includeRecipients) && (
+                  <div className="text-sm text-red-500 dark:text-red-400 p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+                    Please select at least one: make public or send to recipients
                   </div>
                 )}
-                </div>
 
                 {includeRecipients && (
                   <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6">
@@ -626,9 +687,33 @@ const CreateNote = () => {
 
                 <div className="flex gap-4">
                   <button
-                    type="submit"
+                    type="button"
                     disabled={isSubmitting || submitting}
                     className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+                    onClick={() => {
+                      // Direct submission bypassing Formik
+                      // console.log('Submit button clicked directly');
+                      // console.log('Current form state - isPublic:', values.isPublic);
+                      // console.log('Current form state - includeRecipients:', includeRecipients);
+                      
+                      // Manual validation check
+                      if (!values.title || !values.content || !values.deliveryDate) {
+                        showErrorToast('Please fill in all required fields');
+                        return;
+                      }
+                      
+                      // Check if at least one option is selected
+                      if (!values.isPublic && !includeRecipients) {
+                        showErrorToast('Please select at least one: make public or send to recipients');
+                        return;
+                      }
+                      
+                      // Directly call handleSubmit
+                      handleSubmit(values, { 
+                        setSubmitting: (state) => setSubmitting(state), 
+                        resetForm: () => {} 
+                      });
+                    }}
                   >
                     {isSubmitting || submitting ? 'Creating Note...' : 'Create Note'}
                   </button>
@@ -641,17 +726,24 @@ const CreateNote = () => {
                   </button>
                 </div>
                 
-                {(isSubmitting || submitting) && isUploading && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {uploadProgress < 50 ? 'Preparing files...' : 'Uploading files...'}
-                      {uploadProgress === 100 ? ' Complete!' : ''}
-                    </p>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                      <div 
-                        className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-in-out" 
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
+                {(isSubmitting || submitting) && (
+                  <div className="mt-4 fixed top-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50">
+                    <div className="max-w-4xl mx-auto">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                        <FaSpinner className="animate-spin mr-2" />
+                        {uploadProgress < 10 ? 'Preparing data...' : 
+                          uploadProgress < 90 ? `Uploading files... ${uploadProgress}%` : 
+                          uploadProgress === 100 ? 'Upload complete! Redirecting...' : 
+                          'Processing your note...'}
+                      </p>
+                      <div className="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                        <div 
+                          className="bg-indigo-600 h-4 rounded-full transition-all duration-300 ease-in-out flex items-center justify-end"
+                          style={{ width: `${uploadProgress}%` }}
+                        >
+                          <span className="px-2 text-xs text-white">{uploadProgress}%</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

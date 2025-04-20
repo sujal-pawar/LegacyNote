@@ -78,7 +78,7 @@ const EditNote = () => {
       .required('Content is required'),
     deliveryDate: Yup.date()
       .required('Delivery date is required')
-      .min(new Date(), 'Delivery date must be in the future'),
+      .min(new Date(new Date().setHours(0, 0, 0, 0)), 'Delivery date cannot be in the past'),
     isPublic: Yup.boolean(),
     recipients: Yup.array().of(
       Yup.object().shape({
@@ -174,11 +174,19 @@ const EditNote = () => {
       formData.append('title', values.title);
       formData.append('content', values.content);
       formData.append('deliveryDate', values.deliveryDate);
-      formData.append('isPublic', values.isPublic);
+      formData.append('isPublic', values.isPublic ? 'true' : 'false');
       
-      // Add recipients if they're included
+      // Add recipients if they're included - ensure we're handling this properly
       if (includeRecipients && values.recipients && values.recipients.length > 0) {
-        formData.append('recipients', JSON.stringify(values.recipients));
+        // Make sure recipients is stringified properly
+        const recipientsJSON = JSON.stringify(values.recipients);
+        formData.append('recipients', recipientsJSON);
+        
+        // Log for debugging
+        console.log('Submitting recipients:', recipientsJSON);
+      } else if (!includeRecipients) {
+        // If recipients were disabled, explicitly send an empty array
+        formData.append('recipients', JSON.stringify([]));
       }
       
       // Add preserved existing files
@@ -273,9 +281,9 @@ const EditNote = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 md:py-16 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 md:p-8 rounded-xl shadow-lg">
+    <div className="min-h-screen py-6 max-sm:py-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
+        <div className="bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-lg">
           <div className="flex items-center mb-4 md:mb-6">
             <Link 
               to={`/view-note/${id}`} 
@@ -474,18 +482,18 @@ const EditNote = () => {
                         <div className="space-y-2">
                           <div className="flex items-center mb-1 md:mb-2">
                             <h3 className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                              <FaUserFriends className="w-4 h-4 mr-1 md:mr-2" /> Recipients
+                              <FaUserFriends className="w-4 h-4 mr-1 md:mr-2" /> Recipients ({values.recipients.length}/10)
                             </h3>
                             <button
                               type="button"
                               onClick={() => push({ name: '', email: '' })}
                               className="ml-auto px-2 py-1 text-xs md:text-sm text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center"
                             >
-                              <FaPlus className="mr-1" /> Add
+                              <FaPlus className="mr-1" /> Add Recipient
                             </button>
                           </div>
 
-                          {values.recipients.map((_, index) => (
+                          {values.recipients.map((recipient, index) => (
                             <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                               <div className="flex justify-between items-center mb-2">
                                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -544,6 +552,18 @@ const EditNote = () => {
                               </div>
                             </div>
                           ))}
+                          
+                          {values.recipients.length < 10 && (
+                            <div className="mt-3">
+                              <button
+                                type="button"
+                                onClick={() => push({ name: '', email: '' })}
+                                className="w-full py-2 px-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-800/40 transition-colors flex items-center justify-center"
+                              >
+                                <FaPlus className="mr-2" /> Add Another Recipient
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </FieldArray>

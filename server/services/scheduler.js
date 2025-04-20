@@ -158,18 +158,25 @@ const defineJobs = () => {
         const currentTime = currentDate.getTime();
         const deliveryTime = deliveryDate.getTime();
         
-        // Log timing details for debugging
+        // Calculate time difference in minutes for better decision making
         const timeDiff = (currentTime - deliveryTime) / 1000 / 60; // minutes
+        
+        // For notes with exact time delivery, add a 1-minute buffer to prevent immediate delivery
+        // This specifically addresses the issue with midnight timestamps (00:00:00)
+        const isReadyForDelivery = note.exactTimeDelivery 
+          ? (timeDiff > 1) // Only deliver after at least 1 minute past scheduled time
+          : (currentTime > deliveryTime);
+        
+        // Log timing details for debugging
         logScheduler(
           `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
           `Current time: ${currentDate.toISOString()}, ` +
           `Time difference: ${timeDiff.toFixed(2)} minutes, ` +
-          `Ready: ${currentTime > deliveryTime ? 'YES' : 'NO'}`, 
-          currentTime > deliveryTime ? 'info' : 'warning'
+          `Ready: ${isReadyForDelivery ? 'YES' : 'NO'}`, 
+          isReadyForDelivery ? 'info' : 'warning'
         );
         
-        // Only deliver when the current time has PASSED the delivery time (greater than, not equal)
-        return currentTime > deliveryTime;
+        return isReadyForDelivery;
       });
 
       logScheduler(`${readyNotes.length} notes are ready for delivery`);
@@ -337,13 +344,22 @@ exports.startScheduler = async () => {
     await agenda.start();
     logScheduler('Note delivery scheduler started');
     
-    // Schedule the job to run every minute
-    await agenda.every('1 minute', 'check-notes-for-delivery');
-    // logScheduler('Scheduled note delivery checks every minute for efficient delivery timing');
+    // Schedule the job to run every minute with skipImmediate to prevent immediate execution
+    await agenda.every('1 minute', 'check-notes-for-delivery', {}, {
+      skipImmediate: true
+    });
+    logScheduler('Scheduled note delivery checks every minute for efficient delivery timing');
     
-    // Schedule an immediate check as well to handle any pending deliveries
-    await agenda.now('check-notes-for-delivery');
-    logScheduler('Scheduled immediate note delivery check');
+    // We'll still run an immediate check but with more controlled handling
+    // This will help clear any backlog without causing immediate delivery for new notes
+    setTimeout(async () => {
+      try {
+        logScheduler('Running initial delivery check for existing notes');
+        await agenda.now('check-notes-for-delivery');
+      } catch (err) {
+        logScheduler(`Error in initial delivery check: ${err.message}`, 'error');
+      }
+    }, 10000); // Wait 10 seconds before first check to ensure proper initialization
     
     // Add error handling and auto-restart
     process.on('uncaughtException', (error) => {
