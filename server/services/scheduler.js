@@ -78,7 +78,7 @@ const logConnection = (uri) => {
     /(mongodb(\+srv)?:\/\/)([^:]+):([^@]+)@/,
     '$1****:****@'
   );
-  logScheduler(`Connecting to MongoDB: ${maskedUri}`);
+  // logScheduler(`Connecting to MongoDB: ${maskedUri}`);
 };
 
 // Initialize Agenda with improved error handling
@@ -153,28 +153,23 @@ const defineJobs = () => {
 
       // Filter notes that are ready for delivery based on precise time
       const readyNotes = notesToDeliver.filter(note => {
-        // CRITICAL FIX: Ensure we use strict time comparison for exact time delivery
-        if (note.exactTimeDelivery) {
-          const deliveryDate = new Date(note.deliveryDate);
-          const currentTime = currentDate.getTime();
-          const deliveryTime = deliveryDate.getTime();
-          
-          // Log timing details for debugging
-          const timeDiff = (currentTime - deliveryTime) / 1000 / 60; // minutes
-          logScheduler(
-            `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
-            `Current time: ${currentDate.toISOString()}, ` +
-            `Time difference: ${timeDiff.toFixed(2)} minutes, ` +
-            `Ready: ${currentTime > deliveryTime ? 'YES' : 'NO'}`, 
-            currentTime > deliveryTime ? 'info' : 'warning'
-          );
-          
-          // Only deliver when the current time has PASSED the delivery time (greater than, not equal)
-          return currentTime > deliveryTime;
-        }
+        // Always use strict time comparison for all notes
+        const deliveryDate = new Date(note.deliveryDate);
+        const currentTime = currentDate.getTime();
+        const deliveryTime = deliveryDate.getTime();
         
-        // For non-exact time delivery, use the existing method
-        return note.isReadyForDelivery();
+        // Log timing details for debugging
+        const timeDiff = (currentTime - deliveryTime) / 1000 / 60; // minutes
+        logScheduler(
+          `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
+          `Current time: ${currentDate.toISOString()}, ` +
+          `Time difference: ${timeDiff.toFixed(2)} minutes, ` +
+          `Ready: ${currentTime > deliveryTime ? 'YES' : 'NO'}`, 
+          currentTime > deliveryTime ? 'info' : 'warning'
+        );
+        
+        // Only deliver when the current time has PASSED the delivery time (greater than, not equal)
+        return currentTime > deliveryTime;
       });
 
       logScheduler(`${readyNotes.length} notes are ready for delivery`);

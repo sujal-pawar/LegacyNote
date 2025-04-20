@@ -37,81 +37,103 @@ const getStorage = () => {
           
           return `${userFolder}/${safeOriginalName}_${uniqueSuffix}`;
         },
-        resource_type: 'auto', // Auto-detect resource type
-        // Add image optimization transformations
-        transformation: (req, file) => {
-          // Apply optimization only to image files
-          if (file.mimetype.includes('image/')) {
-            return [
-              { quality: 'auto:good' },           // Auto quality optimization
-              { fetch_format: 'auto' },           // Auto format selection (WebP, AVIF, etc.)
-              { width: 2000, crop: 'limit' },     // Limit max width while preserving aspect ratio
-              { dpr: 'auto' },                    // Auto device pixel ratio
-              // Generate responsive variants for different screen sizes
-              { responsive: true, width: 'auto' },
-              // Create a thumbnail version
-              { transformation: [
-                  { width: 300, height: 300, crop: 'fill', gravity: 'auto' }, 
-                  { quality: 'auto' }
-                ]
-              }
-            ];
-          }
-          return []; // No transformations for non-image files
-        }
-      }
+        resource_type: 'auto',
+      },
     });
-  } 
+  }
   
-  // Fallback to local storage for development
-  console.log('Using local storage configuration');
-  return multer.diskStorage({
-    destination: function (req, file, cb) {
-      // Store files in the uploads directory with relative path
+  // Fallback to local storage (for development)
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
       cb(null, 'uploads/');
     },
-    filename: function (req, file, cb) {
-      // Generate unique filename with timestamp and random string
+    filename: (req, file, cb) => {
       const randomString = crypto.randomBytes(8).toString('hex');
       const uniqueSuffix = Date.now() + '-' + randomString;
-      const fileExt = path.extname(file.originalname);
-      cb(null, uniqueSuffix + fileExt);
-    }
+      const extension = path.extname(file.originalname);
+      
+      // Keep original filename for readability
+      const originalName = path.basename(file.originalname, extension);
+      const safeOriginalName = originalName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+      
+      cb(null, `${safeOriginalName}_${uniqueSuffix}${extension}`);
+    },
   });
+  
+  return storage;
 };
 
-// File filter to allow only certain file types
+// File filter function to determine which files to accept
 const fileFilter = (req, file, cb) => {
-  // Define allowed file types
-  const allowedFileTypes = [
-    // Images
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-    // Documents
-    'application/pdf', 'application/msword', 
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    // Audio
-    'audio/mpeg', 'audio/wav', 'audio/ogg',
-    // Video
-    'video/mp4', 'video/webm', 'video/quicktime'
+  // Debug log for received file
+  console.log(`Received file upload request: ${file.originalname}, MIME: ${file.mimetype}, Size: ${file.size ? file.size : 'unknown'}`);
+  
+  // Define allowed MIME types for different file categories
+  const allowedMimeTypes = {
+    images: [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'
+    ],
+    documents: [
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-word.document.12',
+      'application/vnd.ms-word.document.macroEnabled.12',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/rtf',
+      'text/plain',
+      'application/octet-stream' // Fallback for some systems that might not report correct MIME types
+    ],
+    audio: [
+      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'
+    ],
+    video: [
+      'video/mp4', 'video/mpeg', 'video/quicktime', 'video/webm', 'video/x-msvideo'
+    ]
+  };
+  
+  // Combine all allowed MIME types
+  const allAllowedMimeTypes = [
+    ...allowedMimeTypes.images,
+    ...allowedMimeTypes.documents,
+    ...allowedMimeTypes.audio,
+    ...allowedMimeTypes.video
   ];
   
-  if (allowedFileTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only images, documents, audio, and video files are allowed.'), false);
+  // Check if file MIME type is allowed
+  if (allAllowedMimeTypes.includes(file.mimetype)) {
+    console.log(`File accepted: ${file.originalname} (MIME: ${file.mimetype})`);
+    return cb(null, true);
   }
+  
+  // If MIME type check fails, try to check by file extension as a fallback
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', 
+                          '.xls', '.xlsx', '.ppt', '.pptx', '.mp3', '.wav', '.mp4', 
+                          '.webm', '.mov', '.avi', '.txt', '.rtf'];
+  
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+  
+  if (allowedExtensions.includes(fileExtension)) {
+    console.log(`File accepted based on extension: ${file.originalname} with extension ${fileExtension}`);
+    return cb(null, true);
+  }
+  
+  // If all checks fail, reject the file
+  console.log(`File rejected: ${file.originalname} (MIME: ${file.mimetype}, Extension: ${fileExtension})`);
+  cb(new Error(`File type not allowed. Allowed files: images, documents, audio, and video.
+                Detected MIME type: ${file.mimetype}`), false);
 };
 
-// Set up upload middleware with file size limit of 15MB per file, 50MB total
+// Configure multer
 const upload = multer({
   storage: getStorage(),
   fileFilter: fileFilter,
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB per file
-    files: 5,                    // Maximum 5 files
-  }
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
 });
 
 module.exports = upload; 

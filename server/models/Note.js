@@ -157,21 +157,9 @@ NoteSchema.methods.isReadyForDelivery = function() {
   const currentDate = new Date();
   const deliveryDate = new Date(this.deliveryDate);
   
-  // For exact time delivery, compare timestamps
-  if (this.exactTimeDelivery) {
-    // CRITICAL FIX: Only deliver when current time is GREATER THAN the scheduled time
-    // The incorrect comparison was causing immediate delivery
-    return currentDate.getTime() > deliveryDate.getTime();
-  }
-  
-  // For date-only delivery, compare dates without time
-  const currentDay = new Date(currentDate);
-  currentDay.setHours(0, 0, 0, 0);
-  
-  const deliveryDay = new Date(deliveryDate);
-  deliveryDay.setHours(0, 0, 0, 0);
-  
-  return currentDay.getTime() >= deliveryDay.getTime();
+  // Always use exact time comparison for all notes to prevent early delivery
+  // Only deliver when current time is GREATER THAN the scheduled time
+  return currentDate.getTime() > deliveryDate.getTime();
 };
 
 // Generate shareable link

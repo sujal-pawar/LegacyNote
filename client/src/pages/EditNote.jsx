@@ -273,19 +273,19 @@ const EditNote = () => {
   };
 
   return (
-    <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
-          <div className="flex items-center mb-6">
+    <div className="min-h-screen py-8 md:py-16 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 md:p-8 rounded-xl shadow-lg">
+          <div className="flex items-center mb-4 md:mb-6">
             <Link 
               to={`/view-note/${id}`} 
-              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center"
+              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center text-sm md:text-base"
             >
-              <FaArrowLeft className="mr-2" /> Back to Note
+              <FaArrowLeft className="mr-1 md:mr-2" /> Back to Note
             </Link>
           </div>
 
-          <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+          <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
             Edit Note
           </h1>
 
@@ -298,7 +298,7 @@ const EditNote = () => {
             validationContext={{ includeRecipients }}
           >
             {({ isSubmitting, errors, values, touched }) => (
-              <Form className="space-y-6">
+              <Form className="space-y-4 md:space-y-6">
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Title
@@ -325,7 +325,7 @@ const EditNote = () => {
                     as="textarea"
                     name="content"
                     id="content"
-                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[200px]"
+                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[150px] md:min-h-[200px]"
                     placeholder="Write your note here..."
                   />
                   <ErrorMessage 
@@ -336,53 +336,48 @@ const EditNote = () => {
                 </div>
 
                 {/* File Upload Section */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Media Attachments (max 5 files, 5MB each)
-                  </label>
+                <div className="space-y-2 md:space-y-4">
+                  <h3 className="text-base md:text-lg font-medium text-gray-800 dark:text-gray-200">
+                    Attachments
+                  </h3>
                   
-                  {/* Existing files */}
+                  {/* Existing files section */}
                   {existingFiles.length > 0 && (
-                    <div className="mb-4">
+                    <div className="mb-2 md:mb-4">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Existing Files ({existingFiles.length})
+                        Current Files ({existingFiles.length})
                       </h4>
-                      <ul className="space-y-2 mb-4">
+                      <div className="grid grid-cols-1 gap-2">
                         {existingFiles.map((file, index) => (
-                          <li 
-                            key={index} 
-                            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                          <div 
+                            key={file._id || index} 
+                            className="flex items-center justify-between p-2 md:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                           >
-                            <div className="flex items-center">
-                              <span className="mr-2 text-gray-600 dark:text-gray-400">
-                                {getFileIcon(file.fileType)}
-                              </span>
-                              <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[240px]">
+                            <div className="flex items-center overflow-hidden">
+                              {getFileIcon(file.fileType)}
+                              <span className="ml-2 text-sm truncate max-w-[180px] md:max-w-[240px]">
                                 {file.fileName}
-                              </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                ({(file.fileSize / (1024 * 1024)).toFixed(2)} MB)
                               </span>
                             </div>
                             <button
                               type="button"
                               onClick={() => removeExistingFile(index)}
-                              className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                              className="ml-2 flex-shrink-0 text-red-500 hover:text-red-700 p-1"
+                              aria-label="Remove file"
                             >
                               <FaTimes />
                             </button>
-                          </li>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
                   
-                  {/* Upload new files */}
                   <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-100">
-                      <div className="flex flex-col items-center justify-center p-6">
-                        <FaFile className="w-8 h-8 text-gray-500 dark:text-gray-400 mb-2" />
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <label className="flex flex-col items-center justify-center w-full h-24 md:h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center p-4 md:p-6">
+                        <FaFile className="w-6 h-6 md:w-8 md:h-8 text-gray-500 dark:text-gray-400 mb-1 md:mb-2" />
+                        <p className="mb-1 md:mb-2 text-xs md:text-sm text-gray-500 dark:text-gray-400">
                           <span className="font-semibold">Click to upload</span> or drag and drop
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -405,49 +400,41 @@ const EditNote = () => {
                   
                   {/* Selected new files */}
                   {selectedFiles.length > 0 && (
-                    <div className="mt-4">
+                    <div className="mt-2 md:mt-4">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        New Files ({selectedFiles.length})
+                        New Files to Upload ({selectedFiles.length})
                       </h4>
-                      <ul className="space-y-2">
+                      <div className="grid grid-cols-1 gap-2">
                         {selectedFiles.map((file, index) => (
-                          <li 
+                          <div 
                             key={index} 
-                            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                            className="flex items-center justify-between p-2 md:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                           >
-                            <div className="flex items-center">
-                              <span className="mr-2 text-gray-600 dark:text-gray-400">
-                                {getFileIcon(file.type)}
-                              </span>
-                              <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[240px]">
+                            <div className="flex items-center overflow-hidden">
+                              {getFileIcon(file.type)}
+                              <span className="ml-2 text-sm truncate max-w-[180px] md:max-w-[240px]">
                                 {file.name}
-                              </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                ({(file.size / (1024 * 1024)).toFixed(2)} MB)
                               </span>
                             </div>
                             <button
                               type="button"
                               onClick={() => removeFile(index)}
-                              className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                              className="ml-2 flex-shrink-0 text-red-500 hover:text-red-700 p-1"
+                              aria-label="Remove file"
                             >
                               <FaTimes />
                             </button>
-                          </li>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
-                  
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    Total files: {existingFiles.length + selectedFiles.length}/5
-                  </p>
                 </div>
 
                 <div>
                   <label htmlFor="deliveryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     <div className="flex items-center">
-                      <FaCalendarAlt className="w-4 h-4 mr-2" /> Delivery Date
+                      <FaCalendarAlt className="w-4 h-4 mr-1 md:mr-2" /> Delivery Date
                     </div>
                   </label>
                   <Field
@@ -462,13 +449,109 @@ const EditNote = () => {
                     component="div" 
                     className="text-sm text-red-500 dark:text-red-400 mt-1" 
                   />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
                     This note will be available on or after this date.
                   </p>
                 </div>
 
+                {/* Recipients Section */}
+                <div className="my-4 md:my-6">
+                  <div className="flex items-center mb-2 md:mb-4">
+                    <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
+                      <input
+                        type="checkbox"
+                        checked={includeRecipients}
+                        onChange={(e) => setIncludeRecipients(e.target.checked)}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mr-2"
+                      />
+                      <span className="text-sm md:text-base">Include recipients</span>
+                    </label>
+                  </div>
+
+                  {includeRecipients && (
+                    <FieldArray name="recipients">
+                      {({ remove, push }) => (
+                        <div className="space-y-2">
+                          <div className="flex items-center mb-1 md:mb-2">
+                            <h3 className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 flex items-center">
+                              <FaUserFriends className="w-4 h-4 mr-1 md:mr-2" /> Recipients
+                            </h3>
+                            <button
+                              type="button"
+                              onClick={() => push({ name: '', email: '' })}
+                              className="ml-auto px-2 py-1 text-xs md:text-sm text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center"
+                            >
+                              <FaPlus className="mr-1" /> Add
+                            </button>
+                          </div>
+
+                          {values.recipients.map((_, index) => (
+                            <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Recipient {index + 1}
+                                </h4>
+                                {values.recipients.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => remove(index)}
+                                    className="text-red-500 hover:text-red-700 text-sm flex items-center"
+                                  >
+                                    <FaTimes className="mr-1" /> Remove
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                                <div>
+                                  <div className="flex items-center mb-1">
+                                    <FaUser className="w-3 h-3 mr-1 text-gray-500 dark:text-gray-400" />
+                                    <label htmlFor={`recipients.${index}.name`} className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                                      Name
+                                    </label>
+                                  </div>
+                                  <Field
+                                    name={`recipients.${index}.name`}
+                                    placeholder="Recipient name"
+                                    className="w-full px-3 py-2 text-sm border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                  />
+                                  <ErrorMessage
+                                    name={`recipients.${index}.name`}
+                                    component="div"
+                                    className="text-xs text-red-500 mt-1"
+                                  />
+                                </div>
+
+                                <div>
+                                  <div className="flex items-center mb-1">
+                                    <FaEnvelope className="w-3 h-3 mr-1 text-gray-500 dark:text-gray-400" />
+                                    <label htmlFor={`recipients.${index}.email`} className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                                      Email
+                                    </label>
+                                  </div>
+                                  <Field
+                                    name={`recipients.${index}.email`}
+                                    type="email"
+                                    placeholder="email@example.com"
+                                    className="w-full px-3 py-2 text-sm border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                  />
+                                  <ErrorMessage
+                                    name={`recipients.${index}.email`}
+                                    component="div"
+                                    className="text-xs text-red-500 mt-1"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </FieldArray>
+                  )}
+                </div>
+
                 <div>
-                  <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
+                  <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300 text-sm md:text-base">
                     <Field
                       type="checkbox"
                       name="isPublic"
@@ -478,144 +561,27 @@ const EditNote = () => {
                   </label>
                 </div>
 
-                <div>
-                  <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
-                    <input
-                      type="checkbox"
-                      checked={includeRecipients}
-                      onChange={() => setIncludeRecipients(!includeRecipients)}
-                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mr-2"
-                    />
-                    <span>Send this note to recipients</span>
-                  </label>
-                </div>
-
-                {includeRecipients && (
-                  <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
-                        <FaUserFriends className="mr-2" /> Recipients ({values.recipients.length}/10)
-                      </h3>
-                    </div>
-                    
-                    <FieldArray name="recipients">
-                      {({ remove, push }) => (
-                        <div className="space-y-4">
-                          {values.recipients.map((recipient, index) => (
-                            <div key={index} className="p-4 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600">
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="font-medium text-gray-700 dark:text-gray-300">Recipient #{index + 1}</span>
-                                {values.recipients.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => remove(index)}
-                                    className="text-red-500 dark:text-red-400 hover:text-red-700 text-sm flex items-center"
-                                  >
-                                    <FaTimes className="mr-1" /> Remove
-                                  </button>
-                                )}
-                              </div>
-                              
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <label htmlFor={`recipients.${index}.name`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    <div className="flex items-center">
-                                      <FaUser className="w-4 h-4 mr-2" /> Name
-                                    </div>
-                                  </label>
-                                  <Field
-                                    type="text"
-                                    name={`recipients.${index}.name`}
-                                    id={`recipients.${index}.name`}
-                                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    placeholder="Enter name"
-                                  />
-                                  {touched.recipients && 
-                                   touched.recipients[index] && 
-                                   errors.recipients && 
-                                   errors.recipients[index] && 
-                                   errors.recipients[index].name && (
-                                    <div className="text-sm text-red-500 dark:text-red-400 mt-1">
-                                      {errors.recipients[index].name}
-                                    </div>
-                                  )}
-                                </div>
-                                
-                                <div>
-                                  <label htmlFor={`recipients.${index}.email`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    <div className="flex items-center">
-                                      <FaEnvelope className="w-4 h-4 mr-2" /> Email
-                                    </div>
-                                  </label>
-                                  <Field
-                                    type="email"
-                                    name={`recipients.${index}.email`}
-                                    id={`recipients.${index}.email`}
-                                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    placeholder="Enter email"
-                                  />
-                                  {touched.recipients && 
-                                   touched.recipients[index] && 
-                                   errors.recipients && 
-                                   errors.recipients[index] && 
-                                   errors.recipients[index].email && (
-                                    <div className="text-sm text-red-500 dark:text-red-400 mt-1">
-                                      {errors.recipients[index].email}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          {values.recipients.length < 10 && (
-                            <div className="pt-2">
-                              <button
-                                type="button"
-                                onClick={() => push({ name: '', email: '' })}
-                                className="w-full py-2 px-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-800/40 transition-colors flex justify-center items-center"
-                              >
-                                <FaPlus className="mr-2" /> Add Another Recipient
-                              </button>
-                            </div>
-                          )}
-                          
-                          {errors.recipients && typeof errors.recipients === 'string' && (
-                            <div className="text-sm text-red-500 dark:text-red-400 mt-2">
-                              {errors.recipients}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </FieldArray>
-                    
-                    <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                      <p>The note will be sent to all recipients on the scheduled delivery date.</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg mb-6">
-                  <h3 className="text-lg font-semibold mb-2 flex items-center text-gray-800 dark:text-gray-200">
-                    <FaLock className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" /> Security Information
+                <div className="p-3 md:p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg mb-4 md:mb-6">
+                  <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 flex items-center text-gray-800 dark:text-gray-200">
+                    <FaLock className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-indigo-600 dark:text-indigo-400" /> Security Information
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                     Your note will be re-encrypted when updated. It will only be accessible on or after the delivery date.
                   </p>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm md:text-base"
                   >
                     {isSubmitting ? 'Updating Note...' : 'Update Note'}
                   </button>
                   <button
                     type="button"
                     onClick={() => navigate(`/view-note/${id}`)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors text-sm md:text-base"
                   >
                     Cancel
                   </button>

@@ -17,7 +17,7 @@ const agenda = new Agenda({
 // Log MongoDB URI (with password masked for security)
 const mongoUri = process.env.MONGODB_URI || '';
 const maskedUri = mongoUri.replace(/:([^@]+)@/, ':***@');
-console.log(`Connecting to MongoDB: ${maskedUri}`);
+// console.log(`Connecting to MongoDB: ${maskedUri}`);
 
 // Define a simple test job
 agenda.define('test job', async (job) => {

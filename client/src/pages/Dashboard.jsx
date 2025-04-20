@@ -15,6 +15,15 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
+  // Function to determine if a note is ready for delivery
+  const isReadyForDelivery = (note) => {
+    const currentDate = new Date();
+    const deliveryDate = new Date(note.deliveryDate);
+    
+    // Only consider a note ready for delivery when current time exceeds the scheduled time
+    return !note.isDelivered && currentDate.getTime() > deliveryDate.getTime();
+  };
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -156,11 +165,14 @@ const Dashboard = () => {
         deliveryTime: `Scheduled: ${format(deliveryDate, 'MMM d, yyyy')}`
       };
     } else {
+      // For processing notes - delivery time has passed but not marked as delivered yet
       return {
         status: 'processing',
         label: 'Processing',
         badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-        deliveryTime: `Processing (scheduled for ${format(deliveryDate, 'h:mm:ss a')})`
+        deliveryTime: note.exactTimeDelivery ? 
+          `Scheduled: ${format(deliveryDate, 'MMMM d, yyyy')} at ${format(deliveryDate, 'h:mm a')} (Processing)` :
+          `Scheduled: ${format(deliveryDate, 'MMM d, yyyy')} (Processing)`
       };
     }
   };
@@ -331,9 +343,22 @@ const Dashboard = () => {
                     <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
                       {note.content ? note.content.substring(0, 150) + (note.content.length > 150 ? '...' : '') : 'No content available'}
                     </p>
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      <FaCalendarAlt className="mr-1" />
-                      <span>{deliveryTime}</span>
+                    <div className="flex flex-col items-start space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <FaCalendarAlt className="text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm dark:text-gray-400 py-3 font-medium">
+                          {note.isDelivered ? (
+                            <span>Delivered on {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}</span>
+                          ) : isReadyForDelivery(note) ? (
+                            <span className="text-orange-600 dark:text-orange-400">Processing delivery...</span>
+                          ) : (
+                            <span>
+                              Scheduled for {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
+                              {note.exactTimeDelivery && ` at ${format(new Date(note.deliveryDate), 'h:mm a')}`}
+                            </span>
+                          )}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

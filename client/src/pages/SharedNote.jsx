@@ -192,22 +192,57 @@ const SharedNote = () => {
 
     // For other files (documents, etc.)
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-        <div className="flex items-center mb-3 sm:mb-0">
+      <div className="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <div className="flex items-center mb-2">
           {getFileIcon(file.fileType)}
           <span className="text-gray-700 dark:text-gray-300 truncate max-w-[240px]">
             {file.fileName} ({(file.fileSize / (1024 * 1024)).toFixed(2)} MB)
           </span>
         </div>
-        <a
-          href={fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg shadow text-sm flex items-center w-auto justify-center"
-          download={file.fileName}
-        >
-          <FaDownload className="mr-1" /> Download File
-        </a>
+        
+        {file.fileType.includes('pdf') && (
+          <div className="relative mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">PDF Preview:</p>
+            <iframe 
+              src={`${fileUrl}#toolbar=0&navpanes=0`}
+              className="w-full h-64 border border-gray-200 dark:border-gray-700 rounded"
+              title={`Preview of ${file.fileName}`}
+            />
+          </div>
+        )}
+        
+        <div className="flex flex-col sm:flex-row gap-2">
+          <a 
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg shadow text-sm flex items-center justify-center"
+            onClick={(e) => {
+              // For non-viewable files, force download
+              if (file.fileType.includes('pdf') || 
+                  file.fileType.includes('doc') || 
+                  file.fileType.includes('xls') || 
+                  file.fileType.includes('ppt') ||
+                  file.fileType === 'application/octet-stream') {
+                e.preventDefault();
+                const downloadLink = document.createElement('a');
+                downloadLink.href = fileUrl;
+                downloadLink.download = file.fileName;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+              }
+            }}
+          >
+            <FaDownload className="mr-1" /> Download File
+          </a>
+          
+          {(file.fileType.includes('doc') || file.fileType.includes('xls') || file.fileType.includes('ppt')) && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 sm:mt-0 italic">
+              *This file type requires download to view
+            </p>
+          )}
+        </div>
       </div>
     );
   };

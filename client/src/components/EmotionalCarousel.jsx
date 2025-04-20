@@ -53,14 +53,14 @@ const EmotionalCarousel = ({ stories }) => {
           {/* Navigation arrows */}
           <button
             onClick={() => scroll('left')}
-            className="absolute max-sm:bottom-2 left-2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 rounded-full p-2 shadow hover:bg-white dark:hover:bg-gray-800 transition"
+            className="absolute sm:top-1/2 max-sm:bottom-2 left-2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-200/80 rounded-full p-2 shadow hover:bg-white dark:hover:bg-gray-400 transition"
             aria-label="Scroll Left"
           >
             <FaChevronLeft size={20} />
           </button>
           <button
             onClick={() => scroll('right')}
-            className="absolute max-sm:bottom-2 right-2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 rounded-full p-2 shadow hover:bg-white dark:hover:bg-gray-800 transition"
+            className="absolute sm:top-1/2 max-sm:bottom-2 right-2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-200/80 rounded-full p-2 shadow hover:bg-white dark:hover:bg-gray-400 transition"
             aria-label="Scroll Right"
           >
             <FaChevronRight size={20} />
