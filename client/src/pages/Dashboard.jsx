@@ -203,7 +203,7 @@ const Dashboard = () => {
         >
           <div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              Hello <span className="text-indigo-600 dark:text-indigo-400">{user?.name?.split(' ')[0]}!</span>
+              Welcome <span className="text-indigo-600 dark:text-indigo-400">{user?.name?.split(' ')[0]}!</span>
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               {user && `You have ${notes.length} time capsule${notes.length !== 1 ? 's' : ''}`}

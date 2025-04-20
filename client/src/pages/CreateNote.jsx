@@ -359,7 +359,7 @@ const CreateNote = () => {
             <button
               type="button"
               disabled={submitting}
-              className="px-4 py-2 text-white bg-indigo-600 rounded-full hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm"
+              className="px-4 py-2 text-white max-sm:hidden bg-indigo-600 rounded-full hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm"
               onClick={() => {
                 // Trigger form submission if the form reference exists
                 if (formRef.current) {
