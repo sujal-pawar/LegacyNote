@@ -1,8 +1,11 @@
 # LegacyNote - Digital Time Capsule Platform
 
 <div align="center">
+  
   <img src="client/src/assets/logo.png" alt="LegacyNote Logo" width="180" />
+  
   <p><strong>Create digital time capsules that deliver your messages exactly when you want them to.</strong></p>
+  
 </div>
 
 ## 📋 Contents
@@ -270,10 +273,6 @@ Our application is hosted using the following services:
 - **Email Verification**: Required for account security
 - **Secure File Handling**: Validation and sanitization of uploaded files
 - **Cloudinary Secure URLs**: HTTPS-only media delivery
-
-## 👥 Contributors
-
-This project is maintained by the LegacyNote Team. Special thanks to all our contributors and supporters who have helped make this project possible.
 
 ## 📄 License
 
