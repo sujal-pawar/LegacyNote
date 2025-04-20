@@ -380,34 +380,7 @@ const SharedNote = () => {
                     ? `Opened on ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')}`
                     : `Opened on ${format(new Date(), 'MMMM d, yyyy')}`}
                 </span>
-              </div>
-              
-              {/* User interactions */}
-              <div className="flex items-center space-x-2 ml-auto">
-                <button 
-                  onClick={() => setIsLiked(!isLiked)}
-                  className={`p-2 rounded-full flex items-center transition-colors ${isLiked ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'}`}
-                  aria-label={isLiked ? "Unlike" : "Like"}
-                >
-                  {isLiked ? <FaHeart /> : <FaRegHeart />}
-                </button>
-                
-                <button 
-                  onClick={() => setIsBookmarked(!isBookmarked)}
-                  className={`p-2 rounded-full flex items-center transition-colors ${isBookmarked ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400'}`}
-                  aria-label={isBookmarked ? "Remove bookmark" : "Bookmark"}
-                >
-                  {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
-                </button>
-                
-                <button 
-                  onClick={handleShareClick}
-                  className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
-                  aria-label="Share"
-                >
-                  <FaShare />
-                </button>
-              </div>
+              </div>              
             </div>
             
             {/* Note content */}
