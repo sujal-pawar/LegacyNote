@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { FaPlus, FaEdit, FaTrash, FaShare, FaCalendarAlt, FaSpinner, FaClock, FaEnvelope, FaFilter, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaShare, FaCalendarAlt, FaSpinner, FaClock, FaEnvelope, FaFilter, FaSearch, FaExclamationCircle } from 'react-icons/fa';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { notesAPI } from '../api/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -193,67 +193,66 @@ const Dashboard = () => {
       animate="visible"
       exit="exit"
       variants={containerVariants}
-      className="min-h-screen py-16 px-6 max-sm:px-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200"
+      className="min-h-screen py-16 px-6 max-sm:px-4 bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200"
     >
       <div className="container mx-auto">
         {/* Header Section */}
         <motion.div 
           variants={headerVariants}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8"
+          className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4"
         >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2 text-gray-800 dark:text-gray-200">Welcome <span className='text-indigo-500'>{user?.name?.split(' ')[0]}!</span> </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Manage your time capsule notes here.
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link 
-                  to="/create-note" 
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:text-white hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center justify-center"
-                >
-                  <FaPlus className="mr-2" /> Create New Note
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link 
-                  to="/self-message" 
-                  className="px-4 py-2 bg-purple-600 text-white hover:text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 disabled:opacity-50 dark:bg-purple-700 dark:hover:bg-purple-600 transition-colors flex items-center justify-center"
-                >
-                  <FaEnvelope className="mr-2" /> Message to Self
-                </Link>
-              </motion.div>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              Hello <span className="text-indigo-600 dark:text-indigo-400">{user?.name?.split(' ')[0]}!</span>
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              {user && `You have ${notes.length} time capsule${notes.length !== 1 ? 's' : ''}`}
+            </p>
           </div>
-
-          {/* Search and Filter Section */}
-          <div className="mt-6 flex flex-col md:flex-row gap-4">
-            <div className="relative flex-grow">
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              to="/create-note"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center justify-center shadow-sm"
+            >
+              <FaPlus className="mr-2" /> Create Time Capsule
+            </Link>
+          </div>
+        </motion.div>
+        
+        {/* Search and Filter Bar */}
+        <motion.div 
+          variants={headerVariants}
+          className="mb-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700"
+        >
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaSearch className="text-gray-400" />
+                <FaSearch className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Search notes..."
+                placeholder="Search your time capsules..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex-shrink-0 flex items-center">
-              <span className="mr-2 text-gray-600 dark:text-gray-400 flex items-center">
-                <FaFilter className="mr-1" /> Filter:
-              </span>
+            
+            <div className="flex items-center gap-2 whitespace-nowrap w-full sm:w-auto">
+              <div className="flex items-center">
+                <FaFilter className="mr-2 text-indigo-500 dark:text-indigo-400" />
+                <span className="hidden sm:inline text-gray-600 dark:text-gray-400 mr-2">Filter:</span>
+              </div>
+              
               <select
-                className="border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 py-2 px-3"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full sm:w-auto border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
               >
-                <option value="all">All Notes</option>
-                <option value="delivered">Delivered</option>
+                <option value="all">All</option>
                 <option value="pending">Pending</option>
+                <option value="delivered">Delivered</option>
                 <option value="processing">Processing</option>
               </select>
             </div>
@@ -262,147 +261,138 @@ const Dashboard = () => {
 
         {/* Notes Section */}
         {loading ? (
-          <motion.div 
-            variants={itemVariants}
-            className="flex justify-center items-center my-12 text-gray-700 dark:text-gray-300"
-          >
-            <FaSpinner className="animate-spin text-3xl text-indigo-500 mr-2" />
-            <span>Loading your notes...</span>
-          </motion.div>
+          <div className="flex items-center justify-center h-64">
+            <FaSpinner className="animate-spin text-4xl text-indigo-600 dark:text-indigo-400" />
+          </div>
         ) : error ? (
-          <motion.div 
-            variants={itemVariants}
-            className="p-4 bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 rounded-lg"
-          >
-            {error}
-          </motion.div>
+          <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl border border-red-200 dark:border-red-800 text-center">
+            <FaExclamationCircle className="text-3xl text-red-500 dark:text-red-400 mx-auto mb-3" />
+            <p className="text-red-600 dark:text-red-400 mb-2">{error}</p>
+            <button 
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 mt-3"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filteredNotes.length === 0 && searchTerm.length > 0 ? (
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <FaSearch className="text-5xl text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No results found</h2>
+            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+              We couldn't find any time capsules matching "{searchTerm}". 
+              Try a different search term or clear your filters.
+            </p>
+            <button 
+              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              onClick={() => {
+                setSearchTerm('');
+                setFilterStatus('all');
+              }}
+            >
+              Clear Filters
+            </button>
+          </div>
         ) : filteredNotes.length === 0 ? (
-          <motion.div 
-            variants={itemVariants}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center"
-          >
-            {searchTerm || filterStatus !== 'all' ? (
-              <>
-                <FaSearch className="text-5xl text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-200">No Matching Notes</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  We couldn't find any notes matching your search criteria. Try adjusting your filters.
-                </p>
-                <button 
-                  onClick={() => {setSearchTerm(''); setFilterStatus('all');}}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors inline-block"
-                >
-                  Clear Filters
-                </button>
-              </>
-            ) : (
-              <>
-                <FaClock className="text-5xl text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-200">No Notes Yet</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  You haven't created any time capsule notes yet. Start creating your legacy by adding your first note.
-                </p>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link 
-                    to="/create-note" 
-                    className="px-4 py-2 bg-indigo-600 text-white  hover:text-white rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors inline-block"
-                  >
-                    Create Your First Note
-                  </Link>
-                </motion.div>
-              </>
-            )}
-          </motion.div>
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="max-w-md mx-auto">
+              <FaCalendarAlt className="text-5xl text-indigo-500 dark:text-indigo-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No time capsules yet</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                Create your first time capsule and schedule it for future delivery.
+              </p>
+              <Link 
+                to="/create-note" 
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                <FaPlus className="inline mr-2" /> Create Your First Time Capsule
+              </Link>
+            </div>
+          </div>
         ) : (
           <motion.div 
             variants={containerVariants}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {filteredNotes.map(note => {
-              const { status, label, badgeClass, deliveryTime } = getDeliveryStatus(note);
-              
+            {filteredNotes.map((note) => {
+              const deliveryStatus = getDeliveryStatus(note);
+              const isReadyOnly = isReadyForDelivery(note);
               return (
                 <motion.div
                   key={note._id}
                   variants={itemVariants}
-                  whileHover={{ y: -5 }}
-                  className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200 border border-indigo-200 dark:border-indigo-800`}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden h-full flex flex-col transition-all hover:shadow-md"
                 >
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                        {note.title}
-                        {note.exactTimeDelivery && (
-                          <span className="ml-2 text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 px-2 py-1 rounded-full">
-                            Exact Time
-                          </span>
-                        )}
-                      </h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badgeClass}`}>{label}</span>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
-                      {note.content ? note.content.substring(0, 150) + (note.content.length > 150 ? '...' : '') : 'No content available'}
-                    </p>
-                    <div className="flex flex-col items-start space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <FaCalendarAlt className="text-blue-600 dark:text-blue-400" />
-                        <span className="text-sm dark:text-gray-400 py-3 font-medium">
-                          {note.isDelivered ? (
-                            <span>Delivered on {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
-                              {note.exactTimeDelivery && note.deliveredAt && 
-                                ` at ${format(new Date(note.deliveredAt), 'h:mm a')}`}
-                            </span>
-                          ) : isReadyForDelivery(note) ? (
-                            <span className="text-orange-600 dark:text-orange-400">Processing delivery...</span>
-                          ) : (
-                            <span>
-                              Scheduled for {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
-                              {note.exactTimeDelivery && ` at ${format(new Date(note.deliveryDate), 'h:mm a')}`}
+                  <div className="p-5">
+                    <div className="flex flex-col h-full">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${deliveryStatus.badgeClass}`}>
+                          {deliveryStatus.label}
+                        </span>
+                        <div className="flex gap-1 text-gray-500 dark:text-gray-400">
+                          {note.isPublic && (
+                            <span title="Public note" className="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded flex items-center">
+                              <FaShare className="mr-1" /> Shared
                             </span>
                           )}
-                        </span>
+                          {note.recipients && note.recipients.length > 0 && (
+                            <span title={`${note.recipients.length} recipients`} className="text-xs bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded flex items-center">
+                              <FaEnvelope className="mr-1" /> {note.recipients.length}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2">
+                        {note.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 flex-grow">
+                        {note.content}
+                      </p>
+                      
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center">
+                        <FaCalendarAlt className="mr-1.5" /> 
+                        {deliveryStatus.deliveryTime}
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mt-auto">
                         <Link
                           to={`/view-note/${note._id}`}
-                          className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center text-sm"
+                          className="flex-grow px-4 py-2 text-center rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-800/40 text-indigo-700 dark:text-indigo-300 transition-colors"
                         >
-                          View
+                          View Details
                         </Link>
-                      </motion.div>
-                      
-                      {!note.isDelivered && (
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                          <Link
-                            to={`/edit-note/${note._id}`}
-                            className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800/40 flex items-center text-sm"
-                          >
-                            <FaEdit className="mr-1" /> Edit
-                          </Link>
-                        </motion.div>
-                      )}
-                      
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleShareNote(note._id)}
-                        className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md hover:bg-green-200 dark:hover:bg-green-800/40 flex items-center text-sm"
-                      >
-                        <FaShare className="mr-1" /> Share
-                      </motion.button>
-                      
-                      {!note.isDelivered && !(note.deliveryDate && new Date() > new Date(note.deliveryDate)) && (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => handleDeleteNote(note._id)}
-                          className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-800/40 flex items-center text-sm"
-                        >
-                          <FaTrash className="mr-1" /> Delete
-                        </motion.button>
-                      )}
+                        {!note.isDelivered && (
+                          <div className="flex gap-1">
+                            {!isReadyOnly && (
+                              <Link
+                                to={`/edit-note/${note._id}`}
+                                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors"
+                                title="Edit"
+                              >
+                                <FaEdit />
+                              </Link>
+                            )}
+                            <button
+                              onClick={() => handleDeleteNote(note._id)}
+                              className="p-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-800/40 text-red-700 dark:text-red-400 transition-colors"
+                              title="Delete"
+                            >
+                              <FaTrash />
+                            </button>
+                            {note.isPublic && note.shareableLink && (
+                              <button
+                                onClick={() => handleShareNote(note._id)}
+                                className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-800/40 text-indigo-700 dark:text-indigo-300 transition-colors"
+                                title="Copy share link"
+                              >
+                                <FaShare />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>

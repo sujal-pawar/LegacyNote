@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
@@ -16,6 +16,8 @@ const EditNote = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [existingFiles, setExistingFiles] = useState([]);
   const [fileErrors, setFileErrors] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const formRef = useRef(null);
   
   // Max file size in bytes (5MB)
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -167,6 +169,13 @@ const EditNote = () => {
   // Handle form submission
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+      // Update our local submitting state
+      setSubmitting(true);
+      // Also use Formik's setSubmitting if provided
+      if (typeof setSubmitting === 'function') {
+        setSubmitting(true);
+      }
+      
       // Create FormData for file uploads
       const formData = new FormData();
       
@@ -219,7 +228,12 @@ const EditNote = () => {
     } catch (err) {
       showErrorToast(err.message || 'Failed to update note');
     } finally {
+      // Update our local submitting state
       setSubmitting(false);
+      // Also use Formik's setSubmitting if provided
+      if (typeof setSubmitting === 'function') {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -281,22 +295,60 @@ const EditNote = () => {
   };
 
   return (
-    <div className="min-h-screen py-6 max-sm:py-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
-        <div className="bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-lg">
-          <div className="flex items-center mb-4 md:mb-6">
-            <Link 
-              to={`/view-note/${id}`} 
-              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center text-sm md:text-base"
-            >
-              <FaArrowLeft className="mr-1 md:mr-2" /> Back to Note
-            </Link>
-          </div>
-
-          <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
-            Edit Note
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+      {/* Top navigation bar */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <Link 
+            to={`/view-note/${id}`} 
+            className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center font-medium"
+          >
+            <FaArrowLeft className="mr-2" /> Back to Note
+          </Link>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 hidden sm:block">
+            Edit Time Capsule
           </h1>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(`/view-note/${id}`)}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors shadow-sm hidden sm:block"
+            >
+              Cancel
+            </button>
+            <button
+              form="edit-form"
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 text-white bg-indigo-600 rounded-full hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm"
+            >
+              {submitting ? (
+                <span className="flex items-center">
+                  <FaSpinner className="animate-spin mr-2" /> 
+                  Updating...
+                </span>
+              ) : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      </div>
 
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[calc(100vh-69px)] bg-gray-50 dark:bg-gray-900">
+          <FaSpinner className="w-12 h-12 animate-spin text-indigo-600 dark:text-indigo-400" />
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-69px)] px-4 bg-gray-50 dark:bg-gray-900">
+          <div className="text-red-500 dark:text-red-400 text-xl mb-4 p-6 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">{error}</div>
+          <Link
+            to="/dashboard"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center"
+          >
+            <FaArrowLeft className="mr-2" /> Back to Dashboard
+          </Link>
+        </div>
+      ) : !note ? null : (
+        <div className="w-full">
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -304,313 +356,348 @@ const EditNote = () => {
             validateOnChange={false}
             validateOnBlur={true}
             validationContext={{ includeRecipients }}
+            innerRef={formRef}
           >
             {({ isSubmitting, errors, values, touched }) => (
-              <Form className="space-y-4 md:space-y-6">
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Title
-                  </label>
-                  <Field
-                    type="text"
-                    name="title"
-                    id="title"
-                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter note title"
-                  />
-                  <ErrorMessage 
-                    name="title" 
-                    component="div" 
-                    className="text-sm text-red-500 dark:text-red-400 mt-1" 
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Content
-                  </label>
-                  <Field
-                    as="textarea"
-                    name="content"
-                    id="content"
-                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[150px] md:min-h-[200px]"
-                    placeholder="Write your note here..."
-                  />
-                  <ErrorMessage 
-                    name="content" 
-                    component="div" 
-                    className="text-sm text-red-500 dark:text-red-400 mt-1" 
-                  />
-                </div>
-
-                {/* File Upload Section */}
-                <div className="space-y-2 md:space-y-4">
-                  <h3 className="text-base md:text-lg font-medium text-gray-800 dark:text-gray-200">
-                    Attachments
-                  </h3>
-                  
-                  {/* Existing files section */}
-                  {existingFiles.length > 0 && (
-                    <div className="mb-2 md:mb-4">
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Current Files ({existingFiles.length})
-                      </h4>
-                      <div className="grid grid-cols-1 gap-2">
-                        {existingFiles.map((file, index) => (
-                          <div 
-                            key={file._id || index} 
-                            className="flex items-center justify-between p-2 md:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                          >
-                            <div className="flex items-center overflow-hidden">
-                              {getFileIcon(file.fileType)}
-                              <span className="ml-2 text-sm truncate max-w-[180px] md:max-w-[240px]">
-                                {file.fileName}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeExistingFile(index)}
-                              className="ml-2 flex-shrink-0 text-red-500 hover:text-red-700 p-1"
-                              aria-label="Remove file"
-                            >
-                              <FaTimes />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-24 md:h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-100">
-                      <div className="flex flex-col items-center justify-center p-4 md:p-6">
-                        <FaFile className="w-6 h-6 md:w-8 md:h-8 text-gray-500 dark:text-gray-400 mb-1 md:mb-2" />
-                        <p className="mb-1 md:mb-2 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Images, documents, audio, or video (max 5MB each)
-                        </p>
-                      </div>
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        onChange={handleFileSelect} 
-                        multiple 
-                        accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.mp3,.wav,.mp4,.mov,.webm"
+              <Form id="edit-form" className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+                {/* Main editor section - takes 2/3 of the width on large screens */}
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-69px)]">
+                  <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+                    {/* Title field */}
+                    <div>
+                      <Field
+                        type="text"
+                        name="title"
+                        id="title"
+                        className="w-full px-3 py-4 text-3xl font-bold border-0 border-b border-gray-200 dark:border-gray-700 focus:ring-0 focus:border-indigo-500 rounded-none dark:bg-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                        placeholder="Enter your time capsule title..."
                       />
-                    </label>
-                  </div>
-                  
-                  {fileErrors && (
-                    <p className="text-sm text-red-500 dark:text-red-400 mt-1">{fileErrors}</p>
-                  )}
-                  
-                  {/* Selected new files */}
-                  {selectedFiles.length > 0 && (
-                    <div className="mt-2 md:mt-4">
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        New Files to Upload ({selectedFiles.length})
-                      </h4>
-                      <div className="grid grid-cols-1 gap-2">
-                        {selectedFiles.map((file, index) => (
-                          <div 
-                            key={index} 
-                            className="flex items-center justify-between p-2 md:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                          >
-                            <div className="flex items-center overflow-hidden">
-                              {getFileIcon(file.type)}
-                              <span className="ml-2 text-sm truncate max-w-[180px] md:max-w-[240px]">
-                                {file.name}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeFile(index)}
-                              className="ml-2 flex-shrink-0 text-red-500 hover:text-red-700 p-1"
-                              aria-label="Remove file"
-                            >
-                              <FaTimes />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="deliveryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    <div className="flex items-center">
-                      <FaCalendarAlt className="w-4 h-4 mr-1 md:mr-2" /> Delivery Date
-                    </div>
-                  </label>
-                  <Field
-                    type="date"
-                    name="deliveryDate"
-                    id="deliveryDate"
-                    className="w-full px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                  <ErrorMessage 
-                    name="deliveryDate" 
-                    component="div" 
-                    className="text-sm text-red-500 dark:text-red-400 mt-1" 
-                  />
-                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    This note will be available on or after this date.
-                  </p>
-                </div>
-
-                {/* Recipients Section */}
-                <div className="my-4 md:my-6">
-                  <div className="flex items-center mb-2 md:mb-4">
-                    <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
-                      <input
-                        type="checkbox"
-                        checked={includeRecipients}
-                        onChange={(e) => setIncludeRecipients(e.target.checked)}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mr-2"
+                      <ErrorMessage 
+                        name="title" 
+                        component="div" 
+                        className="text-sm text-red-500 dark:text-red-400 mt-1" 
                       />
-                      <span className="text-sm md:text-base">Include recipients</span>
-                    </label>
-                  </div>
+                    </div>
 
-                  {includeRecipients && (
-                    <FieldArray name="recipients">
-                      {({ remove, push }) => (
-                        <div className="space-y-2">
-                          <div className="flex items-center mb-1 md:mb-2">
-                            <h3 className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                              <FaUserFriends className="w-4 h-4 mr-1 md:mr-2" /> Recipients ({values.recipients.length}/10)
-                            </h3>
-                            <button
-                              type="button"
-                              onClick={() => push({ name: '', email: '' })}
-                              className="ml-auto px-2 py-1 text-xs md:text-sm text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center"
-                            >
-                              <FaPlus className="mr-1" /> Add Recipient
-                            </button>
-                          </div>
+                    {/* Content field */}
+                    <div className="flex-grow">
+                      <Field
+                        as="textarea"
+                        name="content"
+                        id="content"
+                        className="w-full px-3 py-3 border-0 rounded-lg dark:bg-gray-700/50 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[50vh] resize-none leading-relaxed"
+                        placeholder="Write your message here... This will be sealed until the delivery date."
+                      />
+                      <ErrorMessage 
+                        name="content" 
+                        component="div" 
+                        className="text-sm text-red-500 dark:text-red-400 mt-1" 
+                      />
+                    </div>
 
-                          {values.recipients.map((recipient, index) => (
-                            <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                              <div className="flex justify-between items-center mb-2">
-                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                  Recipient {index + 1}
-                                </h4>
-                                {values.recipients.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => remove(index)}
-                                    className="text-red-500 hover:text-red-700 text-sm flex items-center"
-                                  >
-                                    <FaTimes className="mr-1" /> Remove
-                                  </button>
-                                )}
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-                                <div>
-                                  <div className="flex items-center mb-1">
-                                    <FaUser className="w-3 h-3 mr-1 text-gray-500 dark:text-gray-400" />
-                                    <label htmlFor={`recipients.${index}.name`} className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                                      Name
-                                    </label>
-                                  </div>
-                                  <Field
-                                    name={`recipients.${index}.name`}
-                                    placeholder="Recipient name"
-                                    className="w-full px-3 py-2 text-sm border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                                  />
-                                  <ErrorMessage
-                                    name={`recipients.${index}.name`}
-                                    component="div"
-                                    className="text-xs text-red-500 mt-1"
-                                  />
-                                </div>
-
-                                <div>
-                                  <div className="flex items-center mb-1">
-                                    <FaEnvelope className="w-3 h-3 mr-1 text-gray-500 dark:text-gray-400" />
-                                    <label htmlFor={`recipients.${index}.email`} className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                                      Email
-                                    </label>
-                                  </div>
-                                  <Field
-                                    name={`recipients.${index}.email`}
-                                    type="email"
-                                    placeholder="email@example.com"
-                                    className="w-full px-3 py-2 text-sm border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                                  />
-                                  <ErrorMessage
-                                    name={`recipients.${index}.email`}
-                                    component="div"
-                                    className="text-xs text-red-500 mt-1"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          {values.recipients.length < 10 && (
-                            <div className="mt-3">
-                              <button
-                                type="button"
-                                onClick={() => push({ name: '', email: '' })}
-                                className="w-full py-2 px-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-800/40 transition-colors flex items-center justify-center"
+                    {/* Media Attachments Section */}
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
+                        <FaFile className="mr-2 text-indigo-500 dark:text-indigo-400" /> Media Attachments
+                      </h3>
+                      
+                      {/* Existing files section */}
+                      {existingFiles.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Current Files ({existingFiles.length})
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {existingFiles.map((file, index) => (
+                              <div 
+                                key={file._id || index} 
+                                className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
                               >
-                                <FaPlus className="mr-2" /> Add Another Recipient
-                              </button>
-                            </div>
-                          )}
+                                <div className="flex items-center overflow-hidden">
+                                  <span className="mr-2 text-indigo-500 dark:text-indigo-400">
+                                    {getFileIcon(file.fileType)}
+                                  </span>
+                                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[180px] sm:max-w-[240px]">
+                                    {file.fileName}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeExistingFile(index)}
+                                  className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  aria-label="Remove file"
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
-                    </FieldArray>
-                  )}
+                      
+                      {/* Add new files */}
+                      <div className="flex items-center justify-center w-full mb-3">
+                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-indigo-200 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-indigo-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all">
+                          <div className="flex flex-col items-center justify-center p-4 md:p-6">
+                            <FaFile className="w-6 h-6 md:w-8 md:h-8 text-indigo-500 dark:text-indigo-400 mb-1 md:mb-2" />
+                            <p className="mb-1 md:mb-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
+                              <span className="font-semibold">Click to upload</span> or drag and drop
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Images, documents, audio, or video (max 5MB each)
+                            </p>
+                          </div>
+                          <input 
+                            type="file" 
+                            className="hidden" 
+                            onChange={handleFileSelect} 
+                            multiple 
+                            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.mp3,.wav,.mp4,.mov,.webm"
+                          />
+                        </label>
+                      </div>
+                      
+                      {fileErrors && (
+                        <p className="text-sm text-red-500 dark:text-red-400 mt-1 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">{fileErrors}</p>
+                      )}
+                      
+                      {/* Selected new files */}
+                      {selectedFiles.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            New Files to Upload ({selectedFiles.length})
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {selectedFiles.map((file, index) => (
+                              <div 
+                                key={index} 
+                                className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
+                              >
+                                <div className="flex items-center overflow-hidden">
+                                  <span className="mr-2 text-indigo-500 dark:text-indigo-400">
+                                    {getFileIcon(file.type)}
+                                  </span>
+                                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[180px] sm:max-w-[240px]">
+                                    {file.name}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeFile(index)}
+                                  className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  aria-label="Remove file"
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300 text-sm md:text-base">
-                    <Field
-                      type="checkbox"
-                      name="isPublic"
-                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mr-2"
-                    />
-                    <span>Make this note public (can be shared with others)</span>
-                  </label>
-                </div>
+                {/* Settings sidebar - takes 1/3 of the width on large screens */}
+                <div className="lg:col-span-1 bg-gray-50 dark:bg-gray-800/50 min-h-[calc(100vh-69px)] border-t lg:border-t-0 border-gray-200 dark:border-gray-700">
+                  <div className="p-4 sm:p-6 space-y-6">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Time Capsule Settings</h2>
+                    
+                    {/* Delivery date field */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                      <label htmlFor="deliveryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        <div className="flex items-center">
+                          <FaCalendarAlt className="w-5 h-5 mr-2 text-indigo-500 dark:text-indigo-400" /> Delivery Date
+                        </div>
+                      </label>
+                      <Field
+                        type="date"
+                        name="deliveryDate"
+                        id="deliveryDate"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                      <ErrorMessage 
+                        name="deliveryDate" 
+                        component="div" 
+                        className="text-sm text-red-500 dark:text-red-400 mt-1" 
+                      />
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                        This note will be available on or after this date.
+                      </p>
+                    </div>
 
-                <div className="p-3 md:p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg mb-4 md:mb-6">
-                  <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 flex items-center text-gray-800 dark:text-gray-200">
-                    <FaLock className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-indigo-600 dark:text-indigo-400" /> Security Information
-                  </h3>
-                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                    Your note will be re-encrypted when updated. It will only be accessible on or after the delivery date.
-                  </p>
-                </div>
+                    {/* Visibility options */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                      <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-4">Visibility Options</h3>
+                      
+                      {/* Public checkbox */}
+                      <div className="mb-3">
+                        <label className="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                          <Field
+                            type="checkbox"
+                            name="isPublic"
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mt-0.5 mr-3"
+                          />
+                          <div>
+                            <span className="font-medium text-gray-700 dark:text-gray-200">Make this note public</span>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              Public notes can be shared with anyone who has the link
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                      
+                      {/* Recipients checkbox */}
+                      <div>
+                        <label className="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={includeRecipients}
+                            onChange={(e) => setIncludeRecipients(e.target.checked)}
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mt-0.5 mr-3"
+                          />
+                          <div>
+                            <span className="font-medium text-gray-700 dark:text-gray-200">Send to specific recipients</span>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              Add email recipients to receive this note on the delivery date
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full sm:w-auto px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm md:text-base"
-                  >
-                    {isSubmitting ? 'Updating Note...' : 'Update Note'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/view-note/${id}`)}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors text-sm md:text-base"
-                  >
-                    Cancel
-                  </button>
+                    {/* Recipients section */}
+                    {includeRecipients && (
+                      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <FieldArray name="recipients">
+                          {({ remove, push }) => (
+                            <div className="space-y-3">
+                              <div className="flex items-center mb-1 md:mb-2">
+                                <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 flex items-center">
+                                  <FaUserFriends className="w-4 h-4 mr-2 text-indigo-500 dark:text-indigo-400" /> Recipients ({values.recipients.length}/10)
+                                </h3>
+                                <button
+                                  type="button"
+                                  onClick={() => push({ name: '', email: '' })}
+                                  className="ml-auto px-2 py-1 text-xs md:text-sm text-indigo-600 border border-indigo-200 dark:border-indigo-700 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center"
+                                  disabled={values.recipients.length >= 10}
+                                >
+                                  <FaPlus className="mr-1" /> Add
+                                </button>
+                              </div>
+
+                              {values.recipients.map((recipient, index) => (
+                                <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                      Recipient {index + 1}
+                                    </h4>
+                                    {values.recipients.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => remove(index)}
+                                        className="text-red-500 hover:text-red-700 text-xs flex items-center"
+                                      >
+                                        <FaTimes className="mr-1" /> Remove
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  <div className="grid grid-cols-1 gap-3">
+                                    <div>
+                                      <div className="flex items-center mb-1">
+                                        <FaUser className="w-3 h-3 mr-1 text-gray-500 dark:text-gray-400" />
+                                        <label htmlFor={`recipients.${index}.name`} className="text-xs text-gray-500 dark:text-gray-400">
+                                          Name
+                                        </label>
+                                      </div>
+                                      <Field
+                                        name={`recipients.${index}.name`}
+                                        placeholder="Recipient name"
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500"
+                                      />
+                                      <ErrorMessage
+                                        name={`recipients.${index}.name`}
+                                        component="div"
+                                        className="text-xs text-red-500 mt-1"
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <div className="flex items-center mb-1">
+                                        <FaEnvelope className="w-3 h-3 mr-1 text-gray-500 dark:text-gray-400" />
+                                        <label htmlFor={`recipients.${index}.email`} className="text-xs text-gray-500 dark:text-gray-400">
+                                          Email
+                                        </label>
+                                      </div>
+                                      <Field
+                                        name={`recipients.${index}.email`}
+                                        type="email"
+                                        placeholder="email@example.com"
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500"
+                                      />
+                                      <ErrorMessage
+                                        name={`recipients.${index}.email`}
+                                        component="div"
+                                        className="text-xs text-red-500 mt-1"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              
+                              {values.recipients.length < 10 && (
+                                <div className="mt-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => push({ name: '', email: '' })}
+                                    className="w-full py-2 px-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-800/40 transition-colors flex items-center justify-center"
+                                  >
+                                    <FaPlus className="mr-2" /> Add Another Recipient
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </FieldArray>
+                      </div>
+                    )}
+
+                    {/* Security Info */}
+                    <div className="p-4 bg-gradient-to-r from-indigo-50 to-indigo-50 dark:from-indigo-900/30 dark:to-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 shadow-sm">
+                      <h3 className="text-base font-medium mb-2 flex items-center text-gray-800 dark:text-gray-200">
+                        <FaLock className="w-4 h-4 md:w-5 md:h-5 mr-2 text-indigo-500 dark:text-indigo-400" /> Security Information
+                      </h3>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                        Your note will be re-encrypted when updated. It will only be accessible on or after the delivery date.
+                      </p>
+                    </div>
+
+                    {/* Mobile-only buttons */}
+                    <div className="flex flex-col sm:hidden gap-3">
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="w-full py-2 px-4 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+                      >
+                        {submitting ? 'Saving Changes...' : 'Save Changes'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/view-note/${id}`)}
+                        className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </Form>
             )}
           </Formik>
         </div>
-      </div>
+      )}
     </div>
   );
 };

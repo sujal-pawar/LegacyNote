@@ -179,7 +179,9 @@ export const notesAPI = {
           try {
             // Test connectivity to local server with a quick timeout
             // console.log('Testing connectivity to local server...');
-            const testUrl = useBaseUrl.endsWith('/') ? useBaseUrl + 'health' : useBaseUrl + '/health';
+            // Extract the base URL without '/api' to hit the root health endpoint
+            const baseServerUrl = useBaseUrl.replace('/api', '');
+            const testUrl = baseServerUrl.endsWith('/') ? baseServerUrl + 'health' : baseServerUrl + '/health';
             await fetch(testUrl, { method: 'HEAD', timeout: 2000 });
             // console.log('Local server is responsive');
           } catch (err) {

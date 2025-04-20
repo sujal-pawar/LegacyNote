@@ -249,16 +249,12 @@ const SharedNote = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="container mx-auto py-8 flex justify-center items-center min-h-[60vh]">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center"
-          >
-            <FaSpinner className="animate-spin text-4xl text-primary-color mb-4" />
-            <span className="text-lg text-gray-600 dark:text-gray-300">Loading your time capsule...</span>
-          </motion.div>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <FaSpinner className="animate-spin text-4xl text-indigo-600 dark:text-indigo-400 mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">Loading time capsule...</p>
+          </div>
         </div>
       </div>
     );
@@ -266,61 +262,67 @@ const SharedNote = () => {
 
   if (notAvailableYet && availableDate) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="container mx-auto py-8 min-h-[60vh] flex items-center px-4"
-        >
-          <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg border border-yellow-200 dark:border-yellow-700">
-            <div className="flex items-center text-yellow-600 dark:text-yellow-400 mb-4">
-              <FaExclamationTriangle className="text-4xl mr-3" />
-              <h1 className="text-3xl font-bold">Time Capsule Not Yet Available</h1>
-            </div>
-            <p className="mb-6 text-lg text-gray-700 dark:text-gray-300">
-              This time capsule is scheduled to be delivered on{' '}
-              <span className="font-semibold text-yellow-700 dark:text-yellow-400">
-                {format(availableDate, 'MMMM d, yyyy')}
-              </span>
-              . Please check back then to view its contents.
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <FaLock className="text-5xl text-indigo-500 dark:text-indigo-400 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3">
+              Time Capsule Not Available Yet
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-lg mx-auto">
+              This time capsule is scheduled to be opened on:
             </p>
-            <Link
-              to="/"
-              className="btn btn-primary flex text-white hover:text-white items-center w-auto inline-flex transform hover:scale-105 transition-transform"
-            >
-              <FaArrowLeft className="mr-2" /> Return to Homepage
+            
+            <div className="inline-block bg-indigo-50 dark:bg-indigo-900/30 px-6 py-4 rounded-lg mb-6 text-center">
+              <p className="text-xl font-semibold text-indigo-800 dark:text-indigo-300">
+                {availableDate && format(availableDate, 'MMMM d, yyyy')}
+              </p>
+              <p className="text-lg text-indigo-700 dark:text-indigo-400">
+                {availableDate && format(availableDate, 'h:mm a')}
+              </p>
+            </div>
+            
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-lg mx-auto">
+              Please come back after this date to view the contents of this time capsule.
+            </p>
+            
+            <Link to="/" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center">
+              <FaArrowLeft className="mr-2" /> Go Home
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   if (error || !note) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="container mx-auto py-8 min-h-[60vh] flex items-center px-4"
-        >
-          <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg border border-red-200 dark:border-red-700">
-            <div className="flex items-center text-red-600 dark:text-red-400 mb-4">
-              <FaExclamationCircle className="text-4xl mr-3" />
-              <h1 className="text-3xl font-bold">Unable to Access Time Capsule</h1>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <FaExclamationTriangle className="text-5xl text-amber-500 dark:text-amber-400 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3">
+              Unable to Access Time Capsule
+            </h1>
+            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-6 max-w-lg mx-auto text-left">
+              <p className="text-red-700 dark:text-red-400 font-medium mb-2">{error}</p>
+              {errorDetails && (
+                <p className="text-red-600 dark:text-red-300 text-sm">{errorDetails}</p>
+              )}
             </div>
-            <p className="mb-3 text-lg font-semibold text-gray-800 dark:text-gray-200">{error || 'Failed to load shared note'}</p>
-            {errorDetails && <p className="mb-6 text-gray-600 dark:text-gray-400">{errorDetails}</p>}
-            <div className="mt-6">
-              <Link
-                to="/"
-                className="btn btn-primary flex items-center w-auto inline-flex transform hover:scale-105 transition-transform"
-              >
-                <FaArrowLeft className="mr-2" /> Return to Homepage
-              </Link>
+            <div className="max-w-lg mx-auto text-gray-600 dark:text-gray-400 mb-6 text-sm">
+              <p className="mb-2">This could happen for several reasons:</p>
+              <ul className="list-disc pl-5 text-left">
+                <li>The link might be incorrect or expired</li>
+                <li>The time capsule may have been deleted</li>
+                <li>You may not have permission to view this time capsule</li>
+              </ul>
             </div>
+            <Link to="/" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center">
+              <FaArrowLeft className="mr-2" /> Return Home
+            </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -330,74 +332,70 @@ const SharedNote = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-5 dark:opacity-10"></div>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="container mx-auto py-8 min-h-[60vh] px-4"
-      >
-        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-          {/* Header Section */}
-          <div className="bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 p-6 text-white">          
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">              
-              <div>                
-                <h1 className="text-3xl sm:text-4xl font-bold mb-2">{note.title}</h1>
-                <div className="flex items-center text-white/90">
-                  <FaCalendarAlt className="mr-2" />
-                  <span>
-                    Created for delivery on: {format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
-                  </span>
-                  {note.isOwner && (
-                    <div className="ml-3 bg-white/20 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                      Owner
-                    </div>
-                  )}
-                </div>
-                {note.sender && (
-                  <div className="mt-2 text-white/90">
-                    <span className="font-semibold">From: </span>
-                    {note.sender.name}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Content Section */}
-          <div className="p-6 sm:p-8">
-            <div className="mb-6">
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800 flex items-center">
-                <FaLock className="mr-3 text-blue-600 dark:text-blue-400" />
-                <span className="text-blue-700 dark:text-blue-300">
-                  This is a securely shared time capsule that was encrypted for privacy.
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+      <div className="container max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="p-6 md:p-8">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4 break-words">
+              {note.title}
+            </h1>
+            
+            {/* Metadata and actions */}
+            <div className="flex flex-wrap items-center gap-2 mb-6 text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-lg flex items-center">
+                <FaCalendarAlt className="mr-1.5" />
+                <span>
+                  {note.deliveredAt 
+                    ? `Opened on ${format(new Date(note.deliveredAt), 'MMMM d, yyyy')}`
+                    : `Opened on ${format(new Date(), 'MMMM d, yyyy')}`}
                 </span>
               </div>
+              
+              {/* User interactions */}
+              <div className="flex items-center space-x-2 ml-auto">
+                <button 
+                  onClick={() => setIsLiked(!isLiked)}
+                  className={`p-2 rounded-full flex items-center transition-colors ${isLiked ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'}`}
+                  aria-label={isLiked ? "Unlike" : "Like"}
+                >
+                  {isLiked ? <FaHeart /> : <FaRegHeart />}
+                </button>
+                
+                <button 
+                  onClick={() => setIsBookmarked(!isBookmarked)}
+                  className={`p-2 rounded-full flex items-center transition-colors ${isBookmarked ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400'}`}
+                  aria-label={isBookmarked ? "Remove bookmark" : "Bookmark"}
+                >
+                  {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
+                </button>
+                
+                <button 
+                  onClick={handleShareClick}
+                  className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+                  aria-label="Share"
+                >
+                  <FaShare />
+                </button>
+              </div>
             </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mb-8 p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600 whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed"
-            >
+            
+            {/* Note content */}
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 mb-8 whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed shadow-sm border border-indigo-100 dark:border-indigo-800">
               {note.content}
-            </motion.div>
-
+            </div>
+            
+            {/* Media files section */}
             {note.mediaFiles && note.mediaFiles.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Attachments ({note.mediaFiles.length})</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  If media files aren't displaying correctly, you can download them directly using the download buttons. If files are still processing, wait a few minutes and refresh the page.
-                </p>
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                  Attachments
+                </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {note.mediaFiles.map((file, index) => (
-                    <div key={index} className="p-4 border rounded-lg dark:border-gray-600">
+                    <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800/50">
                       {file && file.filePath ? renderMediaPreview(file) : (
-                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                          <p className="text-yellow-700 dark:text-yellow-400 mb-2">
-                            File information is incomplete or missing
-                          </p>
+                        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-sm text-center">
+                          File information is incomplete
                         </div>
                       )}
                     </div>
@@ -405,30 +403,27 @@ const SharedNote = () => {
                 </div>
               </div>
             )}
-
-            {/* Call to Action */}
-            <div className="p-6 bg-gradient-to-r from-indigo-50 to-primary-color/10 dark:from-indigo-900/30 dark:to-primary-color/20 rounded-lg border border-blue-100 dark:border-blue-800">
-              <p className="text-gray-700 dark:text-gray-300 mb-4">
-                This time capsule was shared with you using LegacyNote, a secure digital time capsule platform.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to="/register"
-                  className="btn btn-primary flex items-center justify-center transform hover:scale-105 transition-transform"
-                >
+            
+            {/* Footer with call to action */}
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="bg-gradient-to-r from-indigo-50 to-indigo-50 dark:from-indigo-900/30 dark:to-indigo-900/20 rounded-xl p-6 text-center">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
                   Create Your Own Time Capsule
-                </Link>
-                <Link
-                  to="/"
-                  className="btn btn-outline flex items-center justify-center transform hover:scale-105 transition-transform"
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Want to create your own time capsule to send to the future?
+                </p>
+                <Link 
+                  to="/register" 
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 inline-block transition-colors"
                 >
-                  Learn More
+                  Get Started
                 </Link>
               </div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

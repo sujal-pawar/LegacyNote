@@ -74,7 +74,12 @@ function App() {
       nonce="abcdefg123456" // Add a nonce for better security
       flow="implicit" // Explicit setting of the flow
     >
-      <Router>
+      <Router
+        future={{ 
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <ThemeProvider>
           <AuthProvider>
             <AppContent />

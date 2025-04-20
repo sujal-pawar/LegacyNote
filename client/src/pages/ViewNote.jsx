@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { FaCalendarAlt, FaEdit, FaEnvelope, FaShare, FaTrash, FaSpinner, FaArrowLeft, FaLock, FaImage, FaVideo, FaMusic, FaFileAlt, FaFile, FaUserFriends, FaClock, FaDownload, FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
+import { FaCalendarAlt, FaEdit, FaEnvelope, FaShare, FaTrash, FaSpinner, FaArrowLeft, FaLock, FaImage, FaVideo, FaMusic, FaFileAlt, FaFile, FaUserFriends, FaClock, FaDownload, FaCheckCircle } from 'react-icons/fa';
 import { notesAPI } from '../api/api';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
 
@@ -393,7 +393,7 @@ const ViewNote = () => {
       return {
         status: 'processing',
         label: 'Processing',
-        badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
         message: processingTime < 10 
           ? `This note is being processed for delivery now ${note.exactTimeDelivery ? `(scheduled for ${format(deliveryDate, 'h:mm a')})` : ''}.` 
           : `This note is taking longer than expected to deliver. It was scheduled for ${format(deliveryDate, 'MMMM d, yyyy')} ${note.exactTimeDelivery ? `at ${format(deliveryDate, 'h:mm a')}` : ''}.`
@@ -404,260 +404,260 @@ const ViewNote = () => {
   const statusInfo = getNoteStatus();
 
   return (
-    <div className="min-h-screen py-6 max-sm:py-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
-        <div className="bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-lg">
-          <div className="mb-4 sm:mb-6">
-            <Link 
-              to="/dashboard" 
-              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center w-auto inline-flex text-sm sm:text-base"
-            >
-              <FaArrowLeft className="mr-2" /> Back to Dashboard
-            </Link>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+      {/* Top navigation bar */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <Link 
+            to="/dashboard" 
+            className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center font-medium"
+          >
+            <FaArrowLeft className="mr-2" /> Back to Dashboard
+          </Link>
+          
+          {!loading && !error && note && (
+            <div className="hidden sm:flex items-center space-x-2">
+              {note.isPublic && note.shareableLink && (
+                <button
+                  onClick={handleShareNote}
+                  className="inline-flex items-center px-3 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                >
+                  <FaShare className="mr-1.5" /> Share Link
+                </button>
+              )}
+              
+              {!note.isDelivered && new Date() < new Date(note.deliveryDate) && (
+                <Link
+                  to={`/edit-note/${id}`}
+                  className="inline-flex items-center px-3 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                >
+                  <FaEdit className="mr-1.5 " /> Edit
+                </Link>
+              )}
+              
+              {!note.isDelivered && (
+                <button
+                  onClick={handleDeleteNote}
+                  className="inline-flex items-center px-3 py-2 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-full hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                >
+                  <FaTrash className="mr-1.5" /> Delete
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 sm:mb-6 gap-2 sm:gap-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-200 break-words pr-2">
-              {note.title}
-              {note.exactTimeDelivery && (
-                <div className="mt-2 text-base font-normal text-indigo-600 dark:text-indigo-400 flex items-center">
-                  <FaClock className="mr-1" /> 
-                  {new Date(note.deliveryDate) <= new Date() && !note.isDelivered
-                    ? `Processing delivery (scheduled for ${format(new Date(note.deliveryDate), 'h:mm a')})`
-                    : `Delivery scheduled for ${format(new Date(note.deliveryDate), 'h:mm a')}`
-                  }
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[calc(100vh-69px)] bg-gray-50 dark:bg-gray-900">
+          <FaSpinner className="w-12 h-12 animate-spin text-indigo-600 dark:text-indigo-400" />
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-69px)] px-4 bg-gray-50 dark:bg-gray-900">
+          <div className="text-red-500 dark:text-red-400 text-xl mb-4 p-6 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">{error}</div>
+          <Link
+            to="/dashboard"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center"
+          >
+            <FaArrowLeft className="mr-2" /> Return to Dashboard
+          </Link>
+        </div>
+      ) : !note ? null : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+          {/* Main content section - takes 2/3 of the width on large screens */}
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-69px)]">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+              {/* Title and Created Date */}
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+                  {note.title}
+                </h1>
+                <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
+                  <FaCalendarAlt className="mr-1.5" />
+                  <span>Created on {format(new Date(note.createdAt), 'MMMM d, yyyy')}</span>
+                </div>
+              </div>
+
+              {/* Note Content */}
+              <div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed shadow-sm border border-gray-100 dark:border-gray-700 min-h-[200px] text-lg">
+                {note.content}
+              </div>
+
+              {/* Media Files Section */}
+              {note.mediaFiles && note.mediaFiles.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                    <FaFile className="mr-2 text-indigo-500 dark:text-indigo-400" /> 
+                    Attachments ({note.mediaFiles.length})
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    {note.mediaFiles.map((file, index) => (
+                      <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
+                        {file && file.filePath ? renderMediaPreview(file) : (
+                          <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
+                            <p className="text-yellow-700 dark:text-yellow-400 mb-2 text-sm">
+                              File information is incomplete or missing
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
-            </h1>
-            <div className="mt-2 sm:mt-0">
-              <span className={`${statusInfo.badgeColor} px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap`}>
-                {statusInfo.label}
-              </span>
+              
+              {/* Mobile Action Buttons */}
+              <div className="flex flex-wrap gap-2 sm:hidden pt-4 border-t border-gray-200 dark:border-gray-700">
+                {note.isPublic && note.shareableLink && (
+                  <button
+                    onClick={handleShareNote}
+                    className="flex-grow px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center justify-center"
+                  >
+                    <FaShare className="mr-1.5" /> Share
+                  </button>
+                )}
+                
+                {!note.isDelivered && new Date() < new Date(note.deliveryDate) && (
+                  <Link
+                    to={`/edit-note/${id}`}
+                    className="flex-grow px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center justify-center"
+                  >
+                    <FaEdit className="mr-1.5" /> Edit
+                  </Link>
+                )}
+                
+                {!note.isDelivered && (
+                  <button
+                    onClick={handleDeleteNote}
+                    className="flex-grow px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-300 dark:bg-red-700 dark:hover:bg-red-600 transition-colors flex items-center justify-center"
+                  >
+                    <FaTrash className="mr-1.5" /> Delete
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Add countdown timer for pending notes */}
-          {!note.isDelivered && new Date(note.deliveryDate) > new Date() && countdown && (
-            <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-center">
-              <div className="text-sm font-medium text-indigo-800 dark:text-indigo-300">
-                Countdown to delivery{note.exactTimeDelivery ? ` (${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at ${format(new Date(note.deliveryDate), 'h:mm a')})` : ''}:
-              </div>
-              <div className="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums">
-                {countdown}
-              </div>
-            </div>
-          )}
-
-          <div className="mb-4 sm:mb-6 flex flex-wrap items-start text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-            <FaCalendarAlt className="mr-2 mt-1 flex-shrink-0" />
-            <span className="flex-1">
-              {note.exactTimeDelivery ? (
-                <>
-                  <span className="font-medium">Delivery: </span>{format(new Date(note.deliveryDate), 'MMMM d, yyyy')} <span className="font-medium">at {format(new Date(note.deliveryDate), 'h:mm a')}</span>
-                  {isDelivered && note.deliveredAt && (
-                    <span className="block sm:inline sm:ml-2 text-green-600 dark:text-green-400 mt-1 sm:mt-0">
-                      (Delivered: {format(new Date(note.deliveredAt), 'MMMM d, yyyy')} at {format(new Date(note.deliveredAt), 'h:mm a')})
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <span className="font-medium">Delivery Date: </span>{format(new Date(note.deliveryDate), 'MMMM d, yyyy')}
-                  {isDelivered && note.deliveredAt && (
-                    <span className="block sm:inline sm:ml-2 text-green-600 dark:text-green-400 mt-1 sm:mt-0">
-                      (Delivered: {format(new Date(note.deliveredAt), 'MMMM d, yyyy')})
-                    </span>
-                  )}
-                </>
-              )}
-            </span>
-          </div>
-
-          {/* Display legacy single recipient */}
-          {!note.recipients && note.recipient && note.recipient.email && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Recipient</h3>
-              <div className="flex items-center text-sm sm:text-base text-gray-700 dark:text-gray-300">
-                <FaEnvelope className="mr-2 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                <span className="break-words">
-                  {note.recipient.name} ({note.recipient.email})
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Display multiple recipients if available */}
-          {note.recipients && note.recipients.length > 0 && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center mb-3">
-                <FaUserFriends className="mr-2 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  Recipients ({note.recipients.length})
+          {/* Info sidebar - takes 1/3 of the width on large screens */}
+          <div className="lg:col-span-1 bg-gray-50 dark:bg-gray-800/50 min-h-[calc(100vh-69px)] border-t lg:border-t-0 border-gray-200 dark:border-gray-700">
+            <div className="p-4 sm:p-6 space-y-6">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Time Capsule Details</h2>
+              
+              {/* Delivery Status Card */}
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-3">
+                  {getNoteStatus().icon}
+                  {getNoteStatus().text}
                 </h3>
-              </div>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {note.recipients.map((recipient, index) => (
-                  <div key={index} className="flex items-start sm:items-center text-sm sm:text-base text-gray-700 dark:text-gray-300 p-2 bg-white dark:bg-gray-800 rounded-lg">
-                    <FaEnvelope className="mr-2 mt-1 sm:mt-0 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                    <span className="break-words">
-                      {recipient.name} ({recipient.email})
+                
+                <div className={`p-3 rounded-lg ${getNoteStatus().color}`}>
+                  <div className="flex items-center mb-1">
+                    {note.isDelivered ? (
+                      <FaCheckCircle className="w-5 h-5 mr-2 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <FaClock className="w-5 h-5 mr-2 text-amber-600 dark:text-amber-400" />
+                    )}
+                    <span className="font-medium dark:text-white">
+                      {note.isDelivered ? 'Delivered' : 'Scheduled for'}
                     </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mb-4 sm:mb-6">
-            <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-2 flex items-center">
-              <FaLock className="mr-2 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                This note is {note.isPublic ? 'public and can be shared' : 'private'} and is encrypted for security.
-              </span>
-            </div>
-            
-            {/* Add shareable link display section when available */}
-            {note.isPublic && note.shareableLink && (
-              <div className="p-3 sm:p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg mb-2">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <div className="flex items-center">
-                    <FaShare className="mr-2 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                      Shareable Link:
-                    </span>
-                  </div>
-                  <div className="flex-1 w-full flex items-center">
-                    <input
-                      type="text"
-                      readOnly
-                      value={note.shareableLink}
-                      className="flex-1 text-xs sm:text-sm bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-800 rounded-l-md py-1 px-2 w-full text-gray-700 dark:text-gray-300"
-                      onClick={(e) => e.target.select()}
-                    />
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(note.shareableLink);
-                        showSuccessToast('Link copied to clipboard!');
-                      }}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm py-1 px-3 rounded-r-md flex items-center"
-                    >
-                      <FaShare className="mr-1" /> Copy
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Add delivery status info when processing */}
-            {!note.isDelivered && new Date(note.deliveryDate) <= new Date() && (
-              <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-2 flex items-start sm:items-center">
-                <FaSpinner className="animate-spin mr-2 mt-1 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">
-                  <p className="font-medium text-base">Note is being processed for delivery</p>
-                  <p>
-                    {note.exactTimeDelivery 
-                      ? <span>This note was scheduled with exact time delivery for <strong>{format(new Date(note.deliveryDate), 'MMMM d, yyyy')} at {format(new Date(note.deliveryDate), 'h:mm a')}</strong> and is now being processed.</span>
-                      : `This note was scheduled for ${format(new Date(note.deliveryDate), 'MMMM d, yyyy')} and is being processed.`
-                    } 
-                    This typically takes 2-5 minutes. Refresh this page to check delivery status.
+                  
+                  <p className="text-sm ml-7 dark:text-gray-300">
+                    {format(new Date(note.deliveryDate), 'MMMM d, yyyy h:mm a')}
                   </p>
+                  
+                  {countdown && (
+                    <div className="mt-3 text-center font-mono font-bold p-2 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 rounded">
+                      Delivers in: {countdown}
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-            
-            {/* Add delivery confirmation message */}
-            {note.isDelivered ? (
-              <div className="flex items-center text-green-600 dark:text-green-400 mb-4">
-                <FaCheckCircle className="mr-2" />
-                Note was delivered on {format(new Date(note.deliveredAt || note.deliveryDate), 'MMMM d, yyyy')}
-                {note.exactTimeDelivery && ` at ${format(new Date(note.deliveredAt || note.deliveryDate), 'h:mm a')}`}
-              </div>
-            ) : (
-              new Date(note.deliveryDate) <= new Date() ? (
-                <></>
-              ) : (
-                <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-2 flex items-start sm:items-center">
-                  <FaClock className="mr-2 mt-1 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
-                  <div className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
-                    <p className="font-medium">Scheduled for future delivery</p>
-                    <p className="break-words">
-                      This note is scheduled for {format(new Date(note.deliveryDate), 'MMMM d, yyyy')} 
-                      {note.exactTimeDelivery ? ` at ${format(new Date(note.deliveryDate), 'h:mm a')}` : ''}.
-                      {statusInfo.status === 'pending' && ` (${statusInfo.label})`}
+              
+              {/* Visibility Status */}
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-3">Visibility</h3>
+                
+                <div className="flex items-start p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                  <div className={`flex-shrink-0 p-1.5 rounded-full ${note.isPublic ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
+                    <FaLock className="w-4 h-4" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="font-medium text-gray-700 dark:text-gray-300">
+                      {note.isPublic ? 'Public - Can be shared' : 'Private - For your eyes only'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {note.isPublic 
+                        ? 'This note can be shared with anyone with the link.' 
+                        : 'This note is only visible to you.'}
                     </p>
                   </div>
                 </div>
-              )
-            )}
-          </div>
-
-          <div className="mb-6 p-4 sm:p-6 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg whitespace-pre-wrap text-gray-800 dark:text-gray-200 text-sm sm:text-base overflow-auto">
-            {note.content}
-          </div>
-
-          {/* Media files section */}
-          {note.mediaFiles && note.mediaFiles.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Attachments ({note.mediaFiles.length})</h3>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
-                If any media doesn't display correctly, you can use the download buttons to access files directly.
-              </p>
-              <div className="grid grid-cols-1 gap-4">
-                {note.mediaFiles.map((file, index) => (
-                  <div key={index} className="p-3 sm:p-4 border rounded-lg dark:border-gray-600">
-                    {file && file.filePath ? renderMediaPreview(file) : (
-                      <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                        <p className="text-yellow-700 dark:text-yellow-400 mb-2 text-sm">
-                          File information is incomplete or missing
-                        </p>
-                      </div>
-                    )}
+                
+                {note.isPublic && note.shareableLink && (
+                  <div className="mt-3">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Shareable Link:</div>
+                    <div className="flex">
+                      <input 
+                        type="text" 
+                        value={note.shareableLink} 
+                        readOnly 
+                        className="flex-grow p-2 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-l-lg outline-none text-gray-700 dark:text-gray-300 truncate"
+                      />
+                      <button
+                        onClick={handleShareNote}
+                        className="px-3 py-2 bg-indigo-600 text-white rounded-r-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300"
+                      >
+                        <FaShare className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                ))}
+                )}
+              </div>
+              
+              {/* Recipients Card */}
+              {note.recipients && note.recipients.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
+                    <FaUserFriends className="mr-2 text-indigo-500 dark:text-indigo-400" /> 
+                    Recipients ({note.recipients.length})
+                  </h3>
+                  
+                  <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
+                    {note.recipients.map((recipient, index) => (
+                      <div key={index} className="flex items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                          {recipient.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="ml-2 overflow-hidden">
+                          <p className="font-medium text-gray-700 dark:text-gray-300 text-sm truncate">
+                            {recipient.name}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center">
+                            <FaEnvelope className="mr-1 w-3 h-3" /> {recipient.email}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Security Info */}
+              <div className="p-4 bg-gradient-to-r from-indigo-50 to-indigo-50 dark:from-indigo-900/30 dark:to-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 shadow-sm">
+                <h3 className="text-base font-medium mb-2 flex items-center text-gray-800 dark:text-gray-200">
+                  <FaLock className="w-4 h-4 mr-2 text-indigo-500 dark:text-indigo-400" /> Security Information
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {note.isDelivered 
+                    ? 'This note has been unlocked and is now visible to all recipients.'
+                    : 'This note is encrypted and will be delivered on the scheduled date.'}
+                </p>
               </div>
             </div>
-          )}
-
-          {/* Actions Button Group - Keep these at bottom for mobile friendly access */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-start items-stretch sm:items-center mt-6">
-            {/* Edit button - only for undelivered notes */}
-            {!isDelivered && isPending && (
-              <Link
-                to={`/edit-note/${note._id}`}
-                className="btn btn-primary flex items-center justify-center"
-              >
-                <FaEdit className="mr-2" /> Edit Note
-              </Link>
-            )}
-            
-            {/* Share button - can be disabled based on status */}
-            <button
-              onClick={handleShareNote}
-              disabled={!note.isPublic && isDelivered}
-              title={note.isPublic 
-                ? "Copy the shareable link to your clipboard" 
-                : "Make this note public and generate a shareable link that anyone can access"}
-              className={`btn ${
-                note.isPublic ? 'btn-secondary' : 'btn-outline'
-              } flex items-center justify-center ${
-                !note.isPublic && isDelivered ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <FaShare className="mr-2" /> {note.isPublic ? 'Copy Link to Clipboard' : 'Make Public & Generate Link'}
-            </button>
-            
-            {/* Delete button - only for undelivered notes */}
-            {!isDelivered && (
-              <button
-                onClick={handleDeleteNote}
-                className="btn btn-danger flex items-center justify-center"
-              >
-                <FaTrash className="mr-2" /> Delete Note
-              </button>
-            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
