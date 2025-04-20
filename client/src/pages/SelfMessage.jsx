@@ -147,7 +147,7 @@ const SelfMessage = () => {
                         {/* Display media files badge if present */}
                         {message.mediaFiles && message.mediaFiles.length > 0 && (
                           <div className="mt-2 flex items-center">
-                            <span className="inline-flex items-center text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+                            <span className="inline-flex items-center text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-full">
                               <FaFile className="mr-1" /> 
                               {message.mediaFiles.length} {message.mediaFiles.length === 1 ? 'attachment' : 'attachments'}
                             </span>
