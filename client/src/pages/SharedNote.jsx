@@ -17,6 +17,37 @@ const SharedNote = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
+  // Add handleShareClick function to fix the reference error
+  const handleShareClick = () => {
+    const currentUrl = window.location.href;
+    
+    // Check if browser supports the navigator.clipboard API
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(currentUrl)
+        .then(() => {
+          showSuccessToast('Link copied to clipboard!');
+        })
+        .catch((err) => {
+          console.error('Failed to copy link:', err);
+          showErrorToast('Failed to copy link to clipboard');
+        });
+    } else {
+      // Fallback for browsers that don't support clipboard API
+      try {
+        const tempInput = document.createElement('input');
+        tempInput.value = currentUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        showSuccessToast('Link copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+        showErrorToast('Failed to copy link to clipboard');
+      }
+    }
+  };
+
   useEffect(() => {
     const fetchSharedNote = async () => {
       try {
