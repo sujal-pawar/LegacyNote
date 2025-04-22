@@ -34,6 +34,9 @@ const isSameOrBefore = (date1, date2, exactTime = false) => {
 };
 
 // Add these utility functions at the top after imports
+let logCounter = 0; // Counter to track log frequency
+const LOG_INTERVAL = 10; // Only log every 10 checks
+
 const logScheduler = (message, type = 'info') => {
   const timestamp = new Date().toISOString();
   const prefix = `[SCHEDULER ${timestamp}]`;
@@ -132,7 +135,15 @@ const defineJobs = () => {
 
   agenda.define('check-notes-for-delivery', async (job) => {
     try {
-      logScheduler('Running note delivery check...');
+      // Increment counter for log frequency
+      logCounter = (logCounter + 1) % LOG_INTERVAL;
+      
+      // Only log the start message at the specified interval
+      const shouldLog = logCounter === 0;
+      
+      if (shouldLog) {
+        logScheduler('Running note delivery check...');
+      }
       
       // Find notes that should be delivered and haven't been delivered yet
       const currentDate = new Date();
@@ -148,8 +159,6 @@ const defineJobs = () => {
         console.error('Failed to query notes from database:', findError);
         return;
       }
-
-      // logScheduler(`Found ${notesToDeliver.length} undelivered notes to check`);
 
       // Filter notes that are ready for delivery based on precise time
       const readyNotes = notesToDeliver.filter(note => {
@@ -168,7 +177,7 @@ const defineJobs = () => {
           : (currentTime > deliveryTime);
         
         // Only log if note is ready for delivery or in debug mode
-        if (isReadyForDelivery || process.env.DEBUG_SCHEDULER === 'true') {
+        if ((isReadyForDelivery || process.env.DEBUG_SCHEDULER === 'true') && (isReadyForDelivery || shouldLog)) {
           logScheduler(
             `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
             `Current time: ${currentDate.toISOString()}, ` +
@@ -181,7 +190,10 @@ const defineJobs = () => {
         return isReadyForDelivery;
       });
 
-      logScheduler(`${readyNotes.length} notes are ready for delivery`);
+      // Only log at the interval or if there are notes to deliver
+      if (shouldLog || readyNotes.length > 0) {
+        logScheduler(`${readyNotes.length} notes are ready for delivery${!shouldLog && readyNotes.length === 0 ? ' (scheduler working)' : ''}`);
+      }
 
       // Process each note
       for (const note of readyNotes) {
