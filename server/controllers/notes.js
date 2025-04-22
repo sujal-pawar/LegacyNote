@@ -386,7 +386,7 @@ exports.shareNote = async (req, res, next) => {
     
     // Try to find the note with proper data
     const note = await Note.findById(req.params.id)
-      .select('+accessKey');
+      .select('+accessKey +encryptedContent');
 
     if (!note) {
       console.error(`Note not found: ${req.params.id}`);
@@ -427,6 +427,12 @@ exports.shareNote = async (req, res, next) => {
     }
     
     try {
+      // Ensure content is set to prevent validation errors
+      if (!note.content && note.encryptedContent) {
+        note.content = note.decryptContent();
+        console.log(`Retrieved content for note ${note._id} before saving`);
+      }
+      
       // Save the note to persist any changes
       await note.save();
     } catch (saveError) {
