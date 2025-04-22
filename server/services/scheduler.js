@@ -167,14 +167,16 @@ const defineJobs = () => {
           ? (timeDiff > 1) // Only deliver after at least 1 minute past scheduled time
           : (currentTime > deliveryTime);
         
-        // Log timing details for debugging
-        logScheduler(
-          `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
-          `Current time: ${currentDate.toISOString()}, ` +
-          `Time difference: ${timeDiff.toFixed(2)} minutes, ` +
-          `Ready: ${isReadyForDelivery ? 'YES' : 'NO'}`, 
-          isReadyForDelivery ? 'info' : 'warning'
-        );
+        // Only log if note is ready for delivery or in debug mode
+        if (isReadyForDelivery || process.env.DEBUG_SCHEDULER === 'true') {
+          logScheduler(
+            `Note ${note._id}: Scheduled for ${deliveryDate.toISOString()}, ` +
+            `Current time: ${currentDate.toISOString()}, ` +
+            `Time difference: ${timeDiff.toFixed(2)} minutes, ` +
+            `Ready: ${isReadyForDelivery ? 'YES' : 'NO'}`, 
+            isReadyForDelivery ? 'info' : 'warning'
+          );
+        }
         
         return isReadyForDelivery;
       });

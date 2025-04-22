@@ -118,6 +118,9 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  // Log when the health endpoint is called
+  console.log(`[${new Date().toISOString()}] Health check endpoint called from IP: ${req.ip || 'unknown'}`);
+  
   res.status(200).json({
     status: 'success',
     message: 'Server is up and running',
