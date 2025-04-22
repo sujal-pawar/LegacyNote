@@ -89,6 +89,15 @@ p {
   margin-bottom: 1rem;
 }
 
+#root > div > main > div > div.grid.grid-cols-1.lg\:grid-cols-3.gap-0 > div.lg\:col-span-1.bg-gray-50.dark\:bg-gray-800\/50.min-h-\[calc\(100vh-69px\)\].border-t.lg\:border-t-0.border-gray-200.dark\:border-gray-700 > div > div:nth-child(4) > div > div > div.ml-2.overflow-hidden > p.font-medium.text-gray-700.dark\:text-gray-300.text-sm.truncate{
+  margin-bottom: 5px;
+}
+
+#root > div > main > div > div.grid.grid-cols-1.lg\:grid-cols-3.gap-0 > div.lg\:col-span-1.bg-gray-50.dark\:bg-gray-800\/50.min-h-\[calc\(100vh-69px\)\].border-t.lg\:border-t-0.border-gray-200.dark\:border-gray-700 > div > div:nth-child(4) > div > div > div.ml-2.overflow-hidden > p.text-xs.text-gray-500.dark\:text-gray-400.truncate.flex.items-center{
+  margin-bottom: 5px;
+}
+
+
 a {
   color: var(--primary-color);
   text-decoration: none;

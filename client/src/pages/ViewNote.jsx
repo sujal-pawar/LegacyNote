@@ -672,10 +672,10 @@ const ViewNote = () => {
                           {recipient.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="ml-2 overflow-hidden">
-                          <p className="font-medium text-gray-700 dark:text-gray-300 text-sm truncate">
+                          <p className="font-medium mb-[10px] text-gray-700 dark:text-gray-300 text-sm truncate">
                             {recipient.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center">
+                          <p className="text-xs text-gray-500 mb-[10px] dark:text-gray-400 truncate flex items-center">
                             <FaEnvelope className="mr-1 w-3 h-3" /> {recipient.email}
                           </p>
                         </div>

@@ -530,24 +530,7 @@ const EditNote = () => {
                     {/* Visibility options */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                       <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-4">Visibility Options</h3>
-                      
-                      {/* Public checkbox */}
-                      <div className="mb-3">
-                        <label className="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                          <Field
-                            type="checkbox"
-                            name="isPublic"
-                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 mt-0.5 mr-3"
-                          />
-                          <div>
-                            <span className="font-medium text-gray-700 dark:text-gray-200">Make this note public</span>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              Public notes can be shared with anyone who has the link
-                            </p>
-                          </div>
-                        </label>
-                      </div>
-                      
+                                            
                       {/* Recipients checkbox */}
                       <div>
                         <label className="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
