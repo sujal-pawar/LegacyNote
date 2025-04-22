@@ -224,7 +224,7 @@ const CreateNote = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     // Immediately show that we're processing the submission to prevent multiple clicks
     if (submitting) {
-      console.log('Already submitting, ignoring additional click');
+      //// console.log('Already submitting, ignoring additional click');
       return;
     }
     
@@ -243,11 +243,11 @@ const CreateNote = () => {
     }
     
     // Debug logging for debugging note issues
-    console.log('Form submission values:', {
-      title: values.title,
-      includeRecipients,
-      recipientsCount: values.recipients.length
-    });
+    // // console.log('Form submission values:', {
+    //   title: values.title,
+    //   includeRecipients,
+    //   recipientsCount: values.recipients.length
+    // });
     
     try {
       // Create FormData for file uploads
@@ -269,7 +269,7 @@ const CreateNote = () => {
       // Always set isPublic to true when there are recipients
       // This ensures recipients can access the note via email links
       formData.append('isPublic', 'true');
-      console.log('Setting isPublic to: true');
+      // // console.log('Setting isPublic to: true');
       
       formData.append('exactTimeDelivery', 'true'); // Always enable exact time delivery
       
@@ -294,16 +294,6 @@ const CreateNote = () => {
         setUploadProgress(20);
       }
 
-      // Log all form data keys being sent
-      console.log('FormData keys being sent:');
-      for (let key of formData.keys()) {
-        if (key !== 'mediaFiles') {
-          console.log(`- ${key}: ${formData.get(key)}`);
-        } else {
-          console.log('- mediaFiles: [files]');
-        }
-      }
-
       // Add upload progress tracking
       const config = {
         onUploadProgress: progressEvent => {
@@ -316,9 +306,9 @@ const CreateNote = () => {
 
       // Try the direct API approach first
       try {
-        console.log('Sending API request...');
+        // // console.log('Sending API request...');
         const response = await notesAPI.createNote(formData, config);
-        console.log('API Response:', response.data);
+        // // console.log('API Response:', response.data);
         
         // Complete progress
         setUploadProgress(100);
@@ -351,7 +341,7 @@ const CreateNote = () => {
         }
         
         const data = await response.json();
-        console.log('Fallback API Response:', data);
+        //// console.log('Fallback API Response:', data);
         
         // Complete progress
         setUploadProgress(100);
@@ -439,7 +429,7 @@ const CreateNote = () => {
             <Form className="grid grid-cols-1 lg:grid-cols-3 gap-0" onSubmit={(e) => {
               // Add extra validation logging to help debug validation issues
               if (Object.keys(errors).length > 0) {
-                // console.log('Form validation errors:', errors);
+                // // console.log('Form validation errors:', errors);
                 return; // Don't submit if there are validation errors
               }
               

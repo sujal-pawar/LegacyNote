@@ -190,9 +190,7 @@ const EditNote = () => {
         // Make sure recipients is stringified properly
         const recipientsJSON = JSON.stringify(values.recipients);
         formData.append('recipients', recipientsJSON);
-        
-        // Log for debugging
-        console.log('Submitting recipients:', recipientsJSON);
+                
       } else if (!includeRecipients) {
         // If recipients were disabled, explicitly send an empty array
         formData.append('recipients', JSON.stringify([]));

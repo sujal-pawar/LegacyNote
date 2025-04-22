@@ -64,13 +64,13 @@ exports.createNote = async (req, res, next) => {
     const { title, content, deliveryDate, exactTimeDelivery } = req.body;
     let { recipients, isPublic } = req.body;
     
-    console.log('Received note data:', { 
-      title, 
-      deliveryDate, 
-      isPublic,
-      isPublicType: typeof isPublic,
-      recipientsProvided: !!recipients
-    });
+    // console.log('Received note data:', { 
+    //   title, 
+    //   deliveryDate, 
+    //   isPublic,
+    //   isPublicType: typeof isPublic,
+    //   recipientsProvided: !!recipients
+    // });
     
     // Parse recipients if it's a JSON string
     if (recipients && typeof recipients === 'string') {
@@ -179,11 +179,11 @@ exports.createNote = async (req, res, next) => {
       console.error('Failed to send note creation confirmation email:', emailError);
     }
 
-    console.log('Note created successfully:', { 
-      id: completeNote._id,
-      isPublic: completeNote.isPublic,
-      hasShareableLink: !!completeNote.shareableLink
-    });
+    // console.log('Note created successfully:', { 
+    //   id: completeNote._id,
+    //   isPublic: completeNote.isPublic,
+    //   hasShareableLink: !!completeNote.shareableLink
+    // });
 
     res.status(StatusCodes.CREATED).json({ note: completeNote });
   } catch (error) {
@@ -382,7 +382,7 @@ exports.deleteNote = async (req, res, next) => {
 // @access  Private
 exports.shareNote = async (req, res, next) => {
   try {
-    console.log(`User ${req.user.id} attempting to share note ${req.params.id}`);
+    // console.log(`User ${req.user.id} attempting to share note ${req.params.id}`);
     
     // Try to find the note with proper data
     const note = await Note.findById(req.params.id)
@@ -444,7 +444,7 @@ exports.shareNote = async (req, res, next) => {
       });
     }
 
-    console.log(`Successfully shared note ${note._id}`);
+    // console.log(`Successfully shared note ${note._id}`);
     res.status(200).json({
       success: true,
       data: {

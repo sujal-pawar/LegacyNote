@@ -105,7 +105,7 @@ const ViewNote = () => {
       // First, make sure the note is public if it isn't already
       if (!note.isPublic) {
         // Add a direct API call to make the note public before sharing
-        console.log('Note is not public, updating...');
+        // // console.log('Note is not public, updating...');
         const publicUpdateRes = await fetch(`${import.meta.env.VITE_API_URL || 'https://legacy-note-backend.onrender.com/api'}/notes/${id}`, {
           method: 'PUT',
           headers: {
@@ -121,7 +121,7 @@ const ViewNote = () => {
           throw new Error('Failed to make note public');
         }
         
-        console.log('Note successfully made public');
+        // // console.log('Note successfully made public');
       }
       
       const response = await notesAPI.shareNote(id);
