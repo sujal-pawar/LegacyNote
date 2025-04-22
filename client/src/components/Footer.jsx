@@ -138,7 +138,7 @@ const Footer = () => {
                 <FaTwitter size={24} />
               </motion.a>
               <motion.a
-                href="https://linkedin/sujal-pawar.com"
+                href="https://www.linkedin.com/in/sujal-pawar/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors duration-200"
