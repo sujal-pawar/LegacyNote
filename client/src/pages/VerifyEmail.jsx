@@ -169,6 +169,9 @@ const VerifyEmail = () => {
                 <p className="mb-4 text-gray-700 dark:text-gray-300">
                   We've sent a verification code to <span className="font-semibold">{user?.email}</span>. Please enter the 6-digit verification code below to complete your account creation:
                 </p>
+                <p className="mb-4 text-gray-700 dark:text-gray-300">
+                  If you didn't receive the code,please<span className='text-yellow-300'> check your  spam </span> or click on resend to request a new verification code.
+                </p>
                 
                 <form onSubmit={handleVerifyOTP} className="mb-6">
                   <div className="flex justify-center mb-4">
@@ -203,11 +206,7 @@ const VerifyEmail = () => {
                       'Verify Email & Complete Registration'
                     )}
                   </button>
-                </form>
-                
-                <p className="mb-4 text-gray-700 dark:text-gray-300">
-                  If you didn't receive the code, please check your spam folder or click the button below to request a new verification code.
-                </p>
+                </form>              
 
                 {resendSuccess ? (
                   <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg flex items-start">
