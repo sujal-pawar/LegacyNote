@@ -176,49 +176,54 @@ const Home = () => {
       </section>         
 
       {/* MacbookScroll Demo Section - Hidden on mobile */}
-      <div className="w-full hidden md:block bg-white dark:bg-gray-900">
+      <div className="w-full hidden md:block bg-white dark:bg-black">
         <Suspense fallback={<div className="h-96 flex items-center justify-center dark:bg-black text-gray-700 dark:text-gray-300"><IconLoader2 className="animate-spin" /></div>}>
           {React.createElement(lazy(() => import('../components/MacbookScrollDemo')))}
         </Suspense>
-      </div>   
-
+      </div>      
+      
       {/* Features Section */}
-      <section className="py-20 bg-gray-50 dark:bg-black dark:text-white">
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-black dark:to-black dark:text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Preserve Your Legacy Through Time
             </h2>
+            <div className="w-40 h-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-sm mx-auto my-4 relative right-1"></div>
+
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               LegacyNote provides a secure platform for creating time-locked messages that matter.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-black p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
-              <FaShieldAlt className="text-4xl" />
-            </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">End-to-End Security</h3>
+            <div className="bg-white dark:bg-gray-950 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 dark:border-indigo-400 group">
+              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl inline-block mb-6 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800/30 transition-all duration-300">
+                <FaShieldAlt className="text-4xl text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">End-to-End Security</h3>
               <p className="text-gray-600 dark:text-gray-300">
                 Your notes are encrypted before storage, ensuring that only intended recipients can
                 access them when the time comes.
               </p>
             </div>
 
-            <div className="bg-white dark:bg-black p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
-              <FaRegClock className="text-4xl" />
-            </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Future Delivery</h3>
+            <div className="bg-white dark:bg-gray-950 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 dark:border-indigo-400 group">
+              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl inline-block mb-6 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800/30 transition-all duration-300">
+                <FaRegClock className="text-4xl text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">Future Delivery</h3>
               <p className="text-gray-600 dark:text-gray-300">
                 Schedule your messages to be delivered days, months, or even years into the future
                 with our reliable timing system.
               </p>
             </div>
 
-            <div className="bg-white dark:bg-black p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
-              <FaHeart className="text-4xl" />
-            </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Meaningful Connection</h3>
+            <div className="bg-white dark:bg-gray-950 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 dark:border-indigo-400 group">
+              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl inline-block mb-6 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800/30 transition-all duration-300">
+                <FaHeart className="text-4xl text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">Meaningful Connection</h3>
               <p className="text-gray-600 dark:text-gray-300">
                 Create a bridge between present and future, allowing your thoughts and feelings to
                 transcend time.
@@ -226,28 +231,29 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>            
-
-      {/* Use Cases Section */}
-      <section className="py-16 bg-white dark:bg-black dark:text-white">
+      </section>
+        {/* Use Cases Section */}
+      <section className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-black dark:text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Your Time Capsule, Your Purpose
             </h2>
+          <div className="w-40 h-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-sm mx-auto my-4 relative right-6"></div>
+
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Discover the many ways LegacyNote can help preserve your thoughts, wisdom, and
               memories.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 bg-indigo-100 rounded-full p-3 mr-4">
-                <FaUserClock className="text-indigo-600 text-xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="bg-white dark:bg-gray-950 border dark:border-indigo-900  rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 flex items-start group">
+              <div className="flex-shrink-0 bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-800 rounded-xl p-4 mr-6 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <FaUserClock className="text-white text-2xl" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-2">Letters to Your Future Self</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Letters to Your Future Self</h3>
                 <p className="text-gray-600 dark:text-gray-300">
                   Document your current thoughts, goals, and dreams, then schedule them to arrive at
                   a meaningful future date.
@@ -255,12 +261,12 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="flex items-start">
-              <div className="flex-shrink-0 bg-indigo-100 rounded-full p-3 mr-4">
-                <FaCalendarAlt className="text-indigo-600 text-xl" />
+            <div className="bg-white dark:bg-gray-950 border dark:border-indigo-900 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 flex items-start group">
+              <div className="flex-shrink-0 bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-800 rounded-xl p-4 mr-6 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <FaCalendarAlt className="text-white text-2xl" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-2">Anniversary & Birthday Messages</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Anniversary & Birthday Messages</h3>
                 <p className="text-gray-600 dark:text-gray-300">
                   Prepare heartfelt messages for loved ones to receive on special dates, even if
                   you're not there to deliver them in person.
@@ -268,12 +274,12 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="flex items-start">
-              <div className="flex-shrink-0 bg-indigo-100 rounded-full p-3 mr-4">
-                <FaEnvelope className="text-indigo-600 text-xl" />
+            <div className="bg-white dark:bg-gray-950 border dark:border-indigo-900 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 flex items-start group">
+              <div className="flex-shrink-0 bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-800 rounded-xl p-4 mr-6 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <FaEnvelope className="text-white text-2xl" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-2">Life Wisdom & Memories</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Life Wisdom & Memories</h3>
                 <p className="text-gray-600 dark:text-gray-300">
                   Pass down important life lessons, family history, or personal stories to future
                   generations.
@@ -281,12 +287,12 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="flex items-start">
-              <div className="flex-shrink-0 bg-indigo-100 rounded-full p-3 mr-4">
-                <FaClock className="text-indigo-600 text-xl" />
+            <div className="bg-white dark:bg-gray-950 border dark:border-indigo-900 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 flex items-start group">
+              <div className="flex-shrink-0 bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-800 rounded-xl p-4 mr-6 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <FaClock className="text-white text-2xl" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-2">Long-Term Goal Tracking</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Long-Term Goal Tracking</h3>
                 <p className="text-gray-600 dark:text-gray-300">
                   Document your current goals and ambitions, then receive them years later to reflect
                   on your journey and achievements.
