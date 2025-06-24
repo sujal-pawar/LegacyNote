@@ -340,7 +340,7 @@ const Login = () => {
                     Don't have an account?{' '}
                     <Link
                       to="/register"
-                      className="font-medium text-indigo-500 hover:underline dark:text-indigo-200"
+                      className="font-medium text-white "
                     >
                       Sign up here
                     </Link>

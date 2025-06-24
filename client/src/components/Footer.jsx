@@ -170,7 +170,7 @@ const Footer = () => {
             &copy; {currentYear} LegacyNote.
           </p>
           <p className="text-sm text-gray-400 flex items-center">
-            Made with <FaHeart className="text-red-500 mx-1" /> by LegacyNote Team
+            Made with <FaHeart className="text-red-500 mx-1" /> by Sujal
           </p>
           </div>
           <div className="mt-4 md:mt-0 flex space-x-6">

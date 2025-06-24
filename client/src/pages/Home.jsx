@@ -146,8 +146,7 @@ const Home = () => {
                     </Link>
                   </>
                 )}
-              </div>
-            </div>
+              </div>            </div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -181,35 +180,20 @@ const Home = () => {
             </motion.div>
           </motion.div>
         </div>
-      </section>
-
-
-      {/* Features Section */}
+      </section>      {/* Features Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900 dark:text-white">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Preserve Your Legacy Through Time
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               LegacyNote provides a secure platform for creating time-locked messages that matter.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div
-              variants={fadeInUp}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
                 <FaShieldAlt className="text-4xl" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">End-to-End Security</h3>
@@ -217,17 +201,9 @@ const Home = () => {
                 Your notes are encrypted before storage, ensuring that only intended recipients can
                 access them when the time comes.
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              variants={fadeInUp}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
                 <FaRegClock className="text-4xl" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Future Delivery</h3>
@@ -235,17 +211,9 @@ const Home = () => {
                 Schedule your messages to be delivered days, months, or even years into the future
                 with our reliable timing system.
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              variants={fadeInUp}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
                 <FaHeart className="text-4xl" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Meaningful Connection</h3>
@@ -253,7 +221,7 @@ const Home = () => {
                 Create a bridge between present and future, allowing your thoughts and feelings to
                 transcend time.
               </p>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -465,32 +433,18 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* About Us Section */}
+      </section>      {/* About Us Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900 dark:text-white">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">About LegacyNote</h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               We're dedicated to helping you preserve your thoughts, memories, and messages for the future.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="space-y-6"
-            >
-              <div className="flex items-start">
+            <div className="space-y-6">              <div className="flex items-start">
                 <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-900 rounded-full p-3 mr-4">
                   <FaUsers className="text-indigo-600 dark:text-indigo-400 text-xl" />
                 </div>
@@ -515,16 +469,9 @@ const Home = () => {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 rounded-xl p-8 text-white"
-            >
-              <h3 className="text-2xl font-bold mb-4">Why Choose LegacyNote?</h3>
+            <div className="bg-gradient-to-r from-indigo-900 via-indigo-700 to-indigo-500 rounded-xl p-8 text-white">              <h3 className="text-2xl font-bold mb-4">Why Choose LegacyNote?</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
                   <FaShieldAlt className="text-indigo-300 mr-3 mt-1" />
@@ -543,21 +490,13 @@ const Home = () => {
                   <span>Perfect for future self-messages</span>
                 </li>
               </ul>
-            </motion.div>
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white">
+      </section>      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-indigo-900 via-indigo-700 to-indigo-500 text-white">
         <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl font-bold mb-6">Ready to Create Your Legacy?</h2>
+          <div>            <h2 className="text-3xl font-bold mb-6">Ready to Create Your Legacy?</h2>
             <p className="text-xl mb-8 max-w-3xl mx-auto text-indigo-100">
               Start preserving your thoughts and messages for the future. It only takes a minute to
               begin.
@@ -577,7 +516,7 @@ const Home = () => {
                 Get Started For Free
               </Link>
             )}
-          </motion.div>
+          </div>
         </div>
       </section><hr />
     </div>
