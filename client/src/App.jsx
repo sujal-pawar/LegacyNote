@@ -15,16 +15,17 @@ import AppRoutes from './routes/AppRoutes';
 // Helper component to use hooks inside Router
 function AppContent() {
   const location = useLocation();
-  // Show navbar on all pages, including login and register
-  const shouldHideNavbar = false;
+  // Hide navbar and footer on login and register pages
+  const authPages = ['/login', '/register'];
+  const isAuthPage = authPages.includes(location.pathname);
 
   return (
     <div className="app-container w-full overflow-x-hidden">
-      <Navbar />
-      <main className="main-content pt-16">
+      {!isAuthPage && <Navbar />}
+      <main className={!isAuthPage ? "main-content pt-16" : "main-content"}>
         <AppRoutes />
       </main>
-      <Footer />
+      {!isAuthPage && <Footer />}
       <ToastContainer
         position="top-center"
         autoClose={5000}
