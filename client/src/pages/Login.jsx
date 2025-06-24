@@ -163,30 +163,7 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-hidden">
-      {/* Connection warning - make it an absolute positioned overlay */}
-      {connectionIssue && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4">
-          <div className="p-4 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-lg flex items-start shadow-lg">
-            <FaWifi className="text-yellow-500 dark:text-yellow-400 mr-3 mt-1 flex-shrink-0 text-lg" />
-            <div>
-              <p className="font-medium">Connection Issue Detected</p>
-              <p className="text-sm my-1">We're having trouble connecting to our servers. This might be due to:</p>
-              <ul className="list-disc list-inside text-sm ml-2 mb-2">
-                <li>Your internet connection</li>
-                <li>Our server being temporarily down</li>
-                <li>Network restrictions at your location</li>
-              </ul>
-              <button 
-                onClick={runConnectionDiagnostics}
-                className="text-sm inline-flex items-center px-3 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-md"
-              >
-                <FaServer className="mr-1" /> Run Connection Check
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="h-screen w-screen flex bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-hidden">      
 
       {/* 50/50 split container - no rounded corners and full height */}
       <div className="flex flex-row w-full h-full">
@@ -325,7 +302,7 @@ const Login = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2 border border-gray-100/50 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+                    className="w-full px-4 py-2 border font-semibold border-gray-100/50 text-indigo-800 bg-indigo-200 rounded-lg hover:bg-indigo-300 focus:ring-4 focus:ring-indigo-300 disabled:opacity-50"
                   >
                     {isSubmitting ? "Signing in..." : "Sign In"}
                   </button>
