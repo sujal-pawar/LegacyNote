@@ -26,25 +26,6 @@ const Login = () => {
     }
   }, [authError]);
 
-  // Check connection to server on page load
-  useEffect(() => {
-    const checkServerConnection = async () => {
-      const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const baseUrl = serverUrl.replace('/api', '');
-      
-      try {
-        const diagnostics = await diagnoseConnectionIssues(baseUrl);
-        if (!diagnostics.serverResponding) {
-          setConnectionIssue(true);
-          console.warn('Server connection issue detected:', diagnostics);
-        }
-      } catch (error) {
-        console.error('Error checking server status:', error);
-      }
-    };
-    
-    checkServerConnection();
-  }, []);
 
   // Function to run connection diagnostics
   const runConnectionDiagnostics = async () => {
@@ -393,21 +374,23 @@ const Login = () => {
           </div>
         </div>
       </div>
-
-      {/* Add conditional rendering to show more help if there are connection issues */}
+      
+      {/* Connection Troubleshooting - Position at the bottom of the screen */}
       {connectionIssue && showDiagnostics && (
-        <div className="p-4 lg:px-12 w-full bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Connection Troubleshooting</h3>
-          <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-1">
-            <li>Try refreshing the page</li>
-            <li>Check if you can reach other websites</li>
-            <li>Try again in a few minutes (our server might be temporarily down)</li>
-            <li>Try using a different internet connection</li>
-            <li>Clear your browser cache and cookies</li>
-          </ul>
-          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-            If problems persist, please contact support at <span className="text-indigo-600 dark:text-indigo-400">support@legacynote.com</span>
-          </p>
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Connection Troubleshooting</h3>
+            <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              <li>Try refreshing the page</li>
+              <li>Check if you can reach other websites</li>
+              <li>Try again in a few minutes (our server might be temporarily down)</li>
+              <li>Try using a different internet connection</li>
+              <li>Clear your browser cache and cookies</li>
+            </ul>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              If problems persist, please contact support at <span className="text-indigo-600 dark:text-indigo-400">support@legacynote.com</span>
+            </p>
+          </div>
         </div>
       )}
     </div>
