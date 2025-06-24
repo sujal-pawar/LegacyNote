@@ -8,6 +8,9 @@ import image3 from '../assets/images/3.jpg';
 import image4 from '../assets/images/4.png';
 import image5 from '../assets/images/5.jpg';
 import image6 from '../assets/images/6.jpg';
+import image7 from '../assets/images/7.jpeg';
+import image8 from '../assets/images/8.jpg'
+import image9 from '../assets/images/9.png'
 import EmotionalCarousel from '../components/EmotionalCarousel';
 
 
@@ -180,8 +183,10 @@ const Home = () => {
             </motion.div>
           </motion.div>
         </div>
-      </section>      {/* Features Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900 dark:text-white">
+      </section>      
+      
+      {/* Features Section */}
+      <section className="py-20 bg-gray-50 dark:bg-black dark:text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -227,7 +232,7 @@ const Home = () => {
       </section>
 
       {/* Use Cases Section */}
-      <section className="py-16 bg-white dark:bg-gray-800 dark:text-white">
+      <section className="py-16 bg-white dark:bg-black dark:text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -301,32 +306,68 @@ const Home = () => {
       </div>
       
       {/* Timeline Showcase */}
-      <section className="py-20 bg-white dark:bg-gray-800 overflow-hidden">
+      <section className="py-20 bg-white dark:bg-black overflow-hidden">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-16">From Creation to Delivery</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">From Creation to Delivery</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Follow the journey of your messages from inception to their meaningful delivery
+            </p>
+          </div>
 
           <div className="relative timeline-container">
-            {/* Timeline line */}
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 transform md:-translate-x-1/2 bg-indigo-200 dark:bg-indigo-900"></div>
+            {/* Timeline line with animation */}
+            <motion.div 
+              initial={{ height: 0 }}
+              whileInView={{ height: '100%' }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5 }}
+              className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 transform md:-translate-x-1/2 bg-gradient-to-b from-indigo-300 via-indigo-500 to-indigo-700 dark:from-indigo-700 dark:via-indigo-600 dark:to-indigo-900"
+            ></motion.div>
 
             {/* Timeline items container */}
-            <div className="space-y-24 relative">
+            <div className="space-y-28 md:space-y-32 relative">
               {/* Item 1 - Message Creation */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                 <div className="relative pl-12 md:pl-0 md:pr-16">
-                  {/* Circle indicator */}
-                  <div className="absolute left-0 top-0 md:left-auto md:right-0  md:translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">1</div>
+                  {/* Circle indicator with pulse animation */}
+                  <motion.div 
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, type: "spring" }}
+                    className="absolute left-0 top-0 md:left-auto md:right-0 md:translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-bold z-10 shadow-lg"
+                  >
+                    <div className="relative">
+                      1
+                      <div className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-30"></div>
+                    </div>
+                  </motion.div>
                   <div className="md:text-right">
-                    <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Message Creation</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    <motion.h3 
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5 }}
+                      className="text-xl md:text-2xl font-semibold mb-3 text-gray-900 dark:text-white"
+                    >
+                      Message Creation
+                    </motion.h3>
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      className="text-gray-600 dark:text-gray-300 mb-4"
+                    >
                       Users craft their heartfelt messages and select delivery dates.
-                    </p>
+                    </motion.p>
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-100px 0px" }}
-                      transition={{ duration: 0.6 }}
-                      className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: 0.3 }}
+                      className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/40 dark:to-indigo-900/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
                     >
                       <p className="text-gray-700 dark:text-gray-300 italic">
                         "Dear future me, today I'm starting my journey toward my dream career. I hope by the time you read this, you've made progress and stayed true to our values."
@@ -337,25 +378,78 @@ const Home = () => {
                     </motion.div>
                   </div>
                 </div>
-                <div className="hidden md:block"></div>
+                <div className="hidden md:block relative">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <img 
+                      src={image7} 
+                      alt="Creating a message" 
+                      className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
+                    />
+                  </motion.div>
+                </div>
               </div>
 
               {/* Item 2 - Secure Storage */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="hidden md:block"></div>
-                <div className="relative pl-12 md:pl-16">
-                  {/* Circle indicator */}
-                  <div className="absolute left-0 top-0 max-sm:top-[14px] md:left-0 transform -translate-y-1/2 md:-translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">2</div>
-                  <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Secure Storage</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    Messages are encrypted and safely stored until their delivery date.
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                <div className="hidden md:block relative">
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <img 
+                      src={image8} 
+                      alt="Secure encryption" 
+                      className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
+                    />
+                  </motion.div>
+                </div>
+                <div className="relative pl-12 md:pl-16">
+                  {/* Circle indicator with pulse animation */}
+                  <motion.div 
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, type: "spring" }}
+                    className="absolute left-0 top-0 max-sm:top-[14px] md:left-0 transform -translate-y-1/2 md:-translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-bold z-10 shadow-lg"
+                  >
+                    <div className="relative">
+                      2
+                      <div className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-30"></div>
+                    </div>
+                  </motion.div>
+                  <motion.h3 
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    className="text-xl md:text-2xl font-semibold mb-3 text-gray-900 dark:text-white"
+                  >
+                    Secure Storage
+                  </motion.h3>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="text-gray-600 dark:text-gray-300 mb-4"
+                  >
+                    Messages are encrypted and safely stored until their delivery date.
+                  </motion.p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px 0px" }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/40 dark:to-indigo-900/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
                     <div className="flex items-center mb-3">
                       <FaLock className="text-indigo-600 dark:text-indigo-400 mr-2" />
@@ -369,21 +463,46 @@ const Home = () => {
               </div>
 
               {/* Item 3 - The Wait */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                 <div className="relative pl-12 md:pl-0 md:pr-16">
-                  {/* Circle indicator */}
-                  <div className="absolute left-0 top-0 max-sm:top-[14px] md:left-auto md:right-0 transform -translate-y-1/2 md:translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">3</div>
+                  {/* Circle indicator with pulse animation */}
+                  <motion.div 
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, type: "spring" }}
+                    className="absolute left-0 top-0 max-sm:top-[14px] md:left-auto md:right-0 transform -translate-y-1/2 md:translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-bold z-10 shadow-lg"
+                  >
+                    <div className="relative">
+                      3
+                      <div className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-30"></div>
+                    </div>
+                  </motion.div>
                   <div className="md:text-right">
-                    <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">The Wait</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    <motion.h3 
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5 }}
+                      className="text-xl md:text-2xl font-semibold mb-3 text-gray-900 dark:text-white"
+                    >
+                      The Wait
+                    </motion.h3>
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      className="text-gray-600 dark:text-gray-300 mb-4"
+                    >
                       Time passes as the message waits for its perfect moment to arrive.
-                    </p>
+                    </motion.p>
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-100px 0px" }}
-                      transition={{ duration: 0.6, delay: 0.4 }}
-                      className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: 0.3 }}
+                      className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/40 dark:to-indigo-900/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
                     >
                       <div className="flex justify-center mb-3">
                         <FaRegClock className="text-3xl text-indigo-600 dark:text-indigo-400" />
@@ -391,31 +510,96 @@ const Home = () => {
                       <p className="text-gray-700 dark:text-gray-300 text-center">
                         <span className="font-medium">3 years, 2 months, 15 days</span> until delivery
                       </p>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mt-3">
-                        <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '35%' }}></div>
-                      </div>
+                      <motion.div 
+                        className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mt-3 overflow-hidden"
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: 0.6 }}
+                      >
+                        <motion.div 
+                          className="bg-gradient-to-r from-indigo-400 to-indigo-600 h-2 rounded-full" 
+                          initial={{ width: 0 }}
+                          whileInView={{ width: '35%' }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1, delay: 0.7 }}
+                        ></motion.div>
+                      </motion.div>
                     </motion.div>
                   </div>
                 </div>
-                <div className="hidden md:block"></div>
+                <div className="hidden md:block relative">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <img 
+                      src={image9} 
+                      alt="Waiting period" 
+                      className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
+                    />
+                  </motion.div>
+                </div>
               </div>
 
               {/* Item 4 - Delivery Moment */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="hidden md:block"></div>
-                <div className="relative pl-12 md:pl-16">
-                  {/* Circle indicator */}
-                  <div className="absolute left-0 top-0 max-sm:top-[14px] md:left-0 transform -translate-y-1/2 md:-translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold z-10">4</div>
-                  <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Delivery Moment</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    The emotional moment when recipients open their time capsule messages.
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                <div className="hidden md:block relative">
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <img 
+                      src="/images/family-sharing.jpg" 
+                      alt="Message delivery" 
+                      className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
+                    />
+                  </motion.div>
+                </div>
+                <div className="relative pl-12 md:pl-16">
+                  {/* Circle indicator with pulse animation */}
+                  <motion.div 
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, type: "spring" }}
+                    className="absolute left-0 top-0 max-sm:top-[14px] md:left-0 transform -translate-y-1/2 md:-translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-bold z-10 shadow-lg"
+                  >
+                    <div className="relative">
+                      4
+                      <div className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-30"></div>
+                    </div>
+                  </motion.div>
+                  <motion.h3 
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    className="text-xl md:text-2xl font-semibold mb-3 text-gray-900 dark:text-white"
+                  >
+                    Delivery Moment
+                  </motion.h3>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="text-gray-600 dark:text-gray-300 mb-4"
+                  >
+                    The emotional moment when recipients open their time capsule messages.
+                  </motion.p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px 0px" }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                    className="bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-lg shadow-md"
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/40 dark:to-indigo-900/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
                     <div className="border-l-4 border-indigo-500 pl-4 mb-4">
                       <p className="text-gray-700 dark:text-gray-300 italic">
@@ -433,8 +617,10 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>      {/* About Us Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900 dark:text-white">
+      </section>
+      
+      {/* About Us Section */}
+      <section className="py-20 bg-gray-50 dark:bg-black dark:text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">About LegacyNote</h2>
@@ -493,7 +679,9 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>      {/* CTA Section */}
+      </section>     
+      
+      {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-900 via-indigo-700 to-indigo-500 text-white">
         <div className="container mx-auto px-4 text-center">
           <div>            <h2 className="text-3xl font-bold mb-6">Ready to Create Your Legacy?</h2>
