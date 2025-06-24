@@ -14,7 +14,7 @@ const EmotionalCarousel = ({ stories }) => {
   };
 
   return (
-    <section className="py-20 bg-gray-50 dark:bg-black">
+    <section className="py-20 bg-gray-50  dark:bg-black">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -34,7 +34,7 @@ const EmotionalCarousel = ({ stories }) => {
             {stories.map((story, index) => (
               <div
                 key={index}
-                className="carousel-card snap-center flex-shrink-0 w-full md:w-2/3 lg:w-1/2 bg-white dark:bg-black rounded-xl shadow-lg overflow-hidden"
+                className="carousel-card border border-1 snap-center flex-shrink-0 w-full md:w-2/3 lg:w-1/2 bg-white dark:bg-black rounded-xl shadow-lg overflow-hidden"
               >
                 <div className="relative">
                   <img src={story.src} alt={story.alt} className="w-full h-80 object-cover" />

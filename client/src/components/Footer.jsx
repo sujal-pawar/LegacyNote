@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { FaClock, FaGithub, FaTwitter, FaEnvelope, FaLinkedin, FaHeart, FaShieldAlt, FaLock, FaUserLock } from 'react-icons/fa';
-import { motion } from 'framer-motion';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,12 +9,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <Link to="/" className="flex text-white items-center font-bold text-2xl mb-4 group">
               <FaClock className="mr-2 text-indigo-500 dark:text-indigo-400 group-hover:rotate-12 transition-transform" />
               LegacyNote
@@ -28,15 +22,10 @@ const Footer = () => {
               <FaShieldAlt className="mr-2 text-indigo-500 dark:text-indigo-400" />
               <span>End-to-End Encrypted</span>
             </div>
-          </motion.div>
+          </div>
 
           {/* Quick Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+          <div>
             <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">Quick Links</h3>
             <ul className="space-y-3">
               <li>
@@ -76,15 +65,10 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </motion.div>
+          </div>
 
           {/* Features */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <div>
             <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">Features</h3>
             <ul className="space-y-3">
               <li className="flex items-center text-gray-400">
@@ -104,74 +88,59 @@ const Footer = () => {
                 End-to-End Encryption
               </li>
             </ul>
-          </motion.div>
+          </div>
 
           {/* Connect Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
+          <div>
             <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">Connect With Us</h3>
             <div className="flex space-x-4 mb-4">
-              <motion.a
+              <a
                 href="https://github.com/sujal-pawar"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors duration-200"
                 aria-label="GitHub"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
               >
                 <FaGithub size={24} />
-              </motion.a>
-              <motion.a
+              </a>
+              <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors duration-200"
                 aria-label="Twitter"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
               >
                 <FaTwitter size={24} />
-              </motion.a>
-              <motion.a
+              </a>
+              <a
                 href="https://www.linkedin.com/in/sujal-pawar/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors duration-200"
                 aria-label="LinkedIn"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
               >
                 <FaLinkedin size={24} />
-              </motion.a>
-              <motion.a
+              </a>
+              <a
                 href="mailto:legacynote2025@gmail.com"
                 className="text-gray-400 hover:text-white transition-colors duration-200"
                 aria-label="Email"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
               >
                 <FaEnvelope size={24} />
-              </motion.a>
+              </a>
             </div>
-                  
-          </motion.div>
-        </div>
+          </div>        </div>
 
         <hr className="my-8 border-gray-800 dark:border-gray-700" />
 
         <div className="flex flex-col md:flex-row justify-between items-center">
-        <div className="flex flex-col max-sm:items-center " >
-          <p className="text-sm text-gray-400 flex items-center">
-            &copy; {currentYear} LegacyNote.
-          </p>
-          <p className="text-sm text-gray-400 flex items-center">
-            Made with <FaHeart className="text-red-500 mx-1" /> by Sujal
-          </p>
+          <div className="flex flex-col max-sm:items-center">
+            <p className="text-sm text-gray-400 flex items-center">
+              &copy; {currentYear} LegacyNote.
+            </p>
+            <p className="text-sm text-gray-400 flex items-center">
+              Made with <FaHeart className="text-red-500 mx-1" /> by Sujal
+            </p>
           </div>
           <div className="mt-4 md:mt-0 flex space-x-6">
             <Link
