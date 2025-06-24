@@ -132,7 +132,7 @@ const VerifyEmail = () => {
   return (
     <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <div className="container mx-auto px-4">
-        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div className="max-w-md mx-auto bg-white dark:bg-black rounded-xl shadow-md overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 p-6 text-white">
             <div className="flex items-center justify-center mb-4">
               <FaEnvelope className="text-4xl" />

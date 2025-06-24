@@ -77,7 +77,7 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-8 transition-colors duration-200">
       <div className="container mx-auto px-4">
-        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md transition-colors duration-200">
+        <div className="max-w-md mx-auto bg-white dark:bg-black p-8 rounded-lg shadow-md transition-colors duration-200">
           
           <div className="text-center mb-6">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Reset Password</h2>

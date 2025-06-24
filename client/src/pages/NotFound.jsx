@@ -55,7 +55,7 @@ const NotFound = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 sm:p-12 border border-gray-200 dark:border-gray-700 text-center"
+          className="max-w-3xl mx-auto bg-white dark:bg-black rounded-2xl shadow-lg p-8 sm:p-12 border border-gray-200 dark:border-gray-700 text-center"
         >
           <motion.div 
             className="flex items-center justify-center mb-8"

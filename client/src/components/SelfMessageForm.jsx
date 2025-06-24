@@ -177,7 +177,7 @@ const SelfMessageForm = ({ onSuccess }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <div className="bg-white dark:bg-black rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
         <FaEnvelope className="mr-2 text-indigo-600 dark:text-indigo-400" />
         Schedule Message to Self
@@ -230,7 +230,7 @@ const SelfMessageForm = ({ onSuccess }) => {
               </label>
               
               <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-100">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-black dark:border-gray-600 hover:bg-gray-100">
                   <div className="flex flex-col items-center justify-center p-6">
                     <FaFile className="w-8 h-8 text-gray-500 dark:text-gray-400 mb-2" />
                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">

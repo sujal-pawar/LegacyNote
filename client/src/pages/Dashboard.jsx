@@ -223,7 +223,7 @@ const Dashboard = () => {
         {/* Search and Filter Bar */}
         <motion.div 
           variants={headerVariants}
-          className="mb-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700"
+          className="mb-6 bg-white dark:bg-black rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="relative w-full">
@@ -276,7 +276,7 @@ const Dashboard = () => {
             </button>
           </div>
         ) : filteredNotes.length === 0 && searchTerm.length > 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="text-center py-12 bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <FaSearch className="text-5xl text-gray-400 dark:text-gray-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No results found</h2>
             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
@@ -294,7 +294,7 @@ const Dashboard = () => {
             </button>
           </div>
         ) : filteredNotes.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="text-center py-12 bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="max-w-md mx-auto">
               <FaCalendarAlt className="text-5xl text-indigo-500 dark:text-indigo-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No time capsules yet</h2>
@@ -321,7 +321,7 @@ const Dashboard = () => {
                 <motion.div
                   key={note._id}
                   variants={itemVariants}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden h-full flex flex-col transition-all hover:shadow-md"
+                  className="bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden h-full flex flex-col transition-all hover:shadow-md"
                 >
                   <div className="p-5">
                     <div className="flex flex-col h-full">

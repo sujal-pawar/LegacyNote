@@ -274,7 +274,7 @@ const ViewNote = () => {
         </div>
         
         {file.fileType.includes('pdf') && (
-          <div className="relative mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2">
+          <div className="relative mb-3 bg-white dark:bg-black rounded-lg shadow-sm p-2">
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">PDF Preview:</p>
             <iframe 
               src={`${fileUrl}#toolbar=0&navpanes=0`}
@@ -335,7 +335,7 @@ const ViewNote = () => {
     return (
       <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
+          <div className="max-w-3xl mx-auto bg-white dark:bg-black p-8 rounded-xl shadow-lg">
             <div className="flex items-center text-red-600 dark:text-red-400 mb-4">
               <h1 className="text-2xl font-bold">Error</h1>
             </div>
@@ -447,7 +447,7 @@ const ViewNote = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
       {/* Top navigation bar */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+      <div className="bg-white dark:bg-black shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
         <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link 
             to="/dashboard" 
@@ -506,7 +506,7 @@ const ViewNote = () => {
       ) : !note ? null : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
           {/* Main content section - takes 2/3 of the width on large screens */}
-          <div className="lg:col-span-2 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-69px)]">
+          <div className="lg:col-span-2 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-69px)]">
             <div className="p-4 sm:p-6 lg:p-8 space-y-6">
               {/* Title and Created Date */}
               <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
@@ -533,7 +533,7 @@ const ViewNote = () => {
                   </h3>
                   <div className="grid grid-cols-1 gap-4">
                     {note.mediaFiles.map((file, index) => (
-                      <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
+                      <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-black shadow-sm">
                         {file && file.filePath ? renderMediaPreview(file) : (
                           <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
                             <p className="text-yellow-700 dark:text-yellow-400 mb-2 text-sm">
@@ -580,12 +580,12 @@ const ViewNote = () => {
           </div>
 
           {/* Info sidebar - takes 1/3 of the width on large screens */}
-          <div className="lg:col-span-1 bg-gray-50 dark:bg-gray-800/50 min-h-[calc(100vh-69px)] border-t lg:border-t-0 border-gray-200 dark:border-gray-700">
+          <div className="lg:col-span-1 bg-gray-50 dark:bg-black/50 min-h-[calc(100vh-69px)] border-t lg:border-t-0 border-gray-200 dark:border-gray-700">
             <div className="p-4 sm:p-6 space-y-6">
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Time Capsule Details</h2>
               
               {/* Delivery Status Card */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-3">
                   {getNoteStatus().icon}
                   {getNoteStatus().text}
@@ -616,11 +616,11 @@ const ViewNote = () => {
               </div>
               
               {/* Visibility Status */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-3">Visibility</h3>
                 
                 <div className="flex items-start p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                  <div className={`flex-shrink-0 p-1.5 rounded-full ${note.isPublic ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
+                  <div className={`flex-shrink-0 p-1.5 rounded-full ${note.isPublic ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-black text-gray-600 dark:text-gray-400'}`}>
                     <FaLock className="w-4 h-4" />
                   </div>
                   <div className="ml-3">
@@ -659,7 +659,7 @@ const ViewNote = () => {
               
               {/* Recipients Card */}
               {note.recipients && note.recipients.length > 0 && (
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                   <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
                     <FaUserFriends className="mr-2 text-indigo-500 dark:text-indigo-400" /> 
                     Recipients ({note.recipients.length})
@@ -708,7 +708,7 @@ const ViewNote = () => {
             <div className="fixed inset-0 transition-opacity">
               <div className="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
             </div>
-            <div className="inline-block w-full sm:max-w-lg align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all mx-4 sm:my-8 sm:align-middle">
+            <div className="inline-block w-full sm:max-w-lg align-bottom bg-white dark:bg-black rounded-lg text-left overflow-hidden shadow-xl transform transition-all mx-4 sm:my-8 sm:align-middle">
               <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
                   Share your time capsule

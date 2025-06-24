@@ -295,7 +295,7 @@ const EditNote = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
       {/* Top navigation bar */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+      <div className="bg-white dark:bg-black shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
         <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link 
             to={`/view-note/${id}`} 
@@ -359,7 +359,7 @@ const EditNote = () => {
             {({ isSubmitting, errors, values, touched }) => (
               <Form id="edit-form" className="grid grid-cols-1 lg:grid-cols-3 gap-0">
                 {/* Main editor section - takes 2/3 of the width on large screens */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-69px)]">
+                <div className="lg:col-span-2 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-69px)]">
                   <div className="p-4 sm:p-6 lg:p-8 space-y-6">
                     {/* Title field */}
                     <div>
@@ -367,7 +367,7 @@ const EditNote = () => {
                         type="text"
                         name="title"
                         id="title"
-                        className="w-full px-3 py-4 text-3xl font-bold border-0 border-b border-gray-200 dark:border-gray-700 focus:ring-0 focus:border-indigo-500 rounded-none dark:bg-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                        className="w-full px-3 py-4 text-3xl font-bold border-0 border-b border-gray-200 dark:border-gray-700 focus:ring-0 focus:border-indigo-500 rounded-none dark:bg-black dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="Enter your time capsule title..."
                       />
                       <ErrorMessage 
@@ -435,7 +435,7 @@ const EditNote = () => {
                       
                       {/* Add new files */}
                       <div className="flex items-center justify-center w-full mb-3">
-                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-indigo-200 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-indigo-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all">
+                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-indigo-200 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-black dark:border-indigo-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all">
                           <div className="flex flex-col items-center justify-center p-4 md:p-6">
                             <FaFile className="w-6 h-6 md:w-8 md:h-8 text-indigo-500 dark:text-indigo-400 mb-1 md:mb-2" />
                             <p className="mb-1 md:mb-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
@@ -497,12 +497,12 @@ const EditNote = () => {
                 </div>
 
                 {/* Settings sidebar - takes 1/3 of the width on large screens */}
-                <div className="lg:col-span-1 bg-gray-50 dark:bg-gray-800/50 min-h-[calc(100vh-69px)] border-t lg:border-t-0 border-gray-200 dark:border-gray-700">
+                <div className="lg:col-span-1 bg-gray-50 dark:bg-black/50 min-h-[calc(100vh-69px)] border-t lg:border-t-0 border-gray-200 dark:border-gray-700">
                   <div className="p-4 sm:p-6 space-y-6">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Time Capsule Settings</h2>
                     
                     {/* Delivery date field */}
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                       <label htmlFor="deliveryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                         <div className="flex items-center">
                           <FaCalendarAlt className="w-5 h-5 mr-2 text-indigo-500 dark:text-indigo-400" /> Delivery Date
@@ -526,7 +526,7 @@ const EditNote = () => {
                     </div>
 
                     {/* Visibility options */}
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                       <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-4">Visibility Options</h3>
                                             
                       {/* Recipients checkbox */}
@@ -550,7 +550,7 @@ const EditNote = () => {
 
                     {/* Recipients section */}
                     {includeRecipients && (
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                         <FieldArray name="recipients">
                           {({ remove, push }) => (
                             <div className="space-y-3">

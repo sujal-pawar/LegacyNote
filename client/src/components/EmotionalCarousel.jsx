@@ -34,7 +34,7 @@ const EmotionalCarousel = ({ stories }) => {
             {stories.map((story, index) => (
               <div
                 key={index}
-                className="carousel-card snap-center flex-shrink-0 w-full md:w-2/3 lg:w-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden"
+                className="carousel-card snap-center flex-shrink-0 w-full md:w-2/3 lg:w-1/2 bg-white dark:bg-black rounded-xl shadow-lg overflow-hidden"
               >
                 <div className="relative">
                   <img src={story.src} alt={story.alt} className="w-full h-80 object-cover" />

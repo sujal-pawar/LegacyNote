@@ -232,7 +232,7 @@ const SharedNote = () => {
         </div>
         
         {file.fileType.includes('pdf') && (
-          <div className="relative mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2">
+          <div className="relative mb-3 bg-white dark:bg-black rounded-lg shadow-sm p-2">
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">PDF Preview:</p>
             <iframe 
               src={`${fileUrl}#toolbar=0&navpanes=0`}
@@ -295,7 +295,7 @@ const SharedNote = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
         <div className="container max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+          <div className="bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
             <FaLock className="text-5xl text-indigo-500 dark:text-indigo-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3">
               Time Capsule Not Available Yet
@@ -330,7 +330,7 @@ const SharedNote = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
         <div className="container max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+          <div className="bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
             <FaExclamationTriangle className="text-5xl text-amber-500 dark:text-amber-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3">
               Unable to Access Time Capsule
@@ -365,7 +365,7 @@ const SharedNote = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
       <div className="container max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="p-6 md:p-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4 break-words">
               {note.title}
@@ -396,7 +396,7 @@ const SharedNote = () => {
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {note.mediaFiles.map((file, index) => (
-                    <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800/50">
+                    <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-black/50">
                       {file && file.filePath ? renderMediaPreview(file) : (
                         <div className="p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-sm text-center">
                           File information is incomplete

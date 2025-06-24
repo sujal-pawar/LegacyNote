@@ -83,7 +83,7 @@ const SelfMessage = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <div className="bg-white dark:bg-black rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
                   Create a Time Capsule Message
                 </h2>
@@ -106,7 +106,7 @@ const SelfMessage = () => {
             </div>
             
             <div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <div className="bg-white dark:bg-black rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
                   <FaEnvelope className="mr-2" />
                   Your Scheduled Messages

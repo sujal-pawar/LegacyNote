@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { FaClock, FaLock, FaEnvelope, FaUserClock, FaCalendarAlt, FaRegClock, FaShieldAlt, FaHeart, FaUsers } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,7 +9,7 @@ import image3 from '../assets/images/3.jpg';
 import image4 from '../assets/images/4.png';
 import image5 from '../assets/images/5.jpg';
 import image6 from '../assets/images/6.jpg';
-import image7 from '../assets/images/7.jpeg';
+import image7 from '../assets/images/7.jpg';
 import image8 from '../assets/images/8.jpg'
 import image9 from '../assets/images/9.png'
 import EmotionalCarousel from '../components/EmotionalCarousel';
@@ -183,8 +184,8 @@ const Home = () => {
             </motion.div>
           </motion.div>
         </div>
-      </section>      
-      
+      </section>            
+
       {/* Features Section */}
       <section className="py-20 bg-gray-50 dark:bg-black dark:text-white">
         <div className="container mx-auto px-4">
@@ -198,9 +199,9 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
-                <FaShieldAlt className="text-4xl" />
-              </div>
+            <div className="bg-white dark:bg-black p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
+              <FaShieldAlt className="text-4xl" />
+            </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">End-to-End Security</h3>
               <p className="text-gray-600 dark:text-gray-300">
                 Your notes are encrypted before storage, ensuring that only intended recipients can
@@ -208,9 +209,9 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
-                <FaRegClock className="text-4xl" />
-              </div>
+            <div className="bg-white dark:bg-black p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
+              <FaRegClock className="text-4xl" />
+            </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Future Delivery</h3>
               <p className="text-gray-600 dark:text-gray-300">
                 Schedule your messages to be delivered days, months, or even years into the future
@@ -218,9 +219,9 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
-                <FaHeart className="text-4xl" />
-              </div>
+            <div className="bg-white dark:bg-black p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">              <div className="text-indigo-600 dark:text-indigo-400 mb-4">
+              <FaHeart className="text-4xl" />
+            </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Meaningful Connection</h3>
               <p className="text-gray-600 dark:text-gray-300">
                 Create a bridge between present and future, allowing your thoughts and feelings to
@@ -229,7 +230,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section>            
 
       {/* Use Cases Section */}
       <section className="py-16 bg-white dark:bg-black dark:text-white">
@@ -299,12 +300,18 @@ const Home = () => {
           </div>
         </div>
       </section>
+      {/* MacbookScroll Demo Section - Hidden on mobile */}
+      <div className="w-full hidden md:block">
+        <Suspense fallback={<div className="h-96 flex items-center justify-center">Loading presentation...</div>}>
+          {React.createElement(lazy(() => import('../components/MacbookScrollDemo')))}
+        </Suspense>
+      </div>
 
       {/* Emotional Deliveries Carousel */}
       <div className="overflow-hidden">
         <EmotionalCarousel stories={emotionalStories} />
       </div>
-      
+
       {/* Timeline Showcase */}
       <section className="py-20 bg-white dark:bg-black overflow-hidden">
         <div className="container mx-auto px-4">
@@ -317,7 +324,7 @@ const Home = () => {
 
           <div className="relative timeline-container">
             {/* Timeline line with animation */}
-            <motion.div 
+            <motion.div
               initial={{ height: 0 }}
               whileInView={{ height: '100%' }}
               viewport={{ once: true }}
@@ -331,7 +338,7 @@ const Home = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                 <div className="relative pl-12 md:pl-0 md:pr-16">
                   {/* Circle indicator with pulse animation */}
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
@@ -344,7 +351,7 @@ const Home = () => {
                     </div>
                   </motion.div>
                   <div className="md:text-right">
-                    <motion.h3 
+                    <motion.h3
                       initial={{ opacity: 0, x: -20 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -353,7 +360,7 @@ const Home = () => {
                     >
                       Message Creation
                     </motion.h3>
-                    <motion.p 
+                    <motion.p
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
                       viewport={{ once: true }}
@@ -386,9 +393,9 @@ const Home = () => {
                     transition={{ duration: 0.5, delay: 0.4 }}
                     className="w-full h-full flex items-center justify-center"
                   >
-                    <img 
-                      src={image7} 
-                      alt="Creating a message" 
+                    <img
+                      src={image4}
+                      alt="Creating a message"
                       className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
                     />
                   </motion.div>
@@ -405,16 +412,16 @@ const Home = () => {
                     transition={{ duration: 0.5, delay: 0.4 }}
                     className="w-full h-full flex items-center justify-center"
                   >
-                    <img 
-                      src={image8} 
-                      alt="Secure encryption" 
+                    <img
+                      src={image8}
+                      alt="Secure encryption"
                       className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
                     />
                   </motion.div>
                 </div>
                 <div className="relative pl-12 md:pl-16">
                   {/* Circle indicator with pulse animation */}
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
@@ -426,7 +433,7 @@ const Home = () => {
                       <div className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-30"></div>
                     </div>
                   </motion.div>
-                  <motion.h3 
+                  <motion.h3
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -435,7 +442,7 @@ const Home = () => {
                   >
                     Secure Storage
                   </motion.h3>
-                  <motion.p 
+                  <motion.p
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
@@ -466,7 +473,7 @@ const Home = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                 <div className="relative pl-12 md:pl-0 md:pr-16">
                   {/* Circle indicator with pulse animation */}
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
@@ -479,7 +486,7 @@ const Home = () => {
                     </div>
                   </motion.div>
                   <div className="md:text-right">
-                    <motion.h3 
+                    <motion.h3
                       initial={{ opacity: 0, x: -20 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -488,7 +495,7 @@ const Home = () => {
                     >
                       The Wait
                     </motion.h3>
-                    <motion.p 
+                    <motion.p
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
                       viewport={{ once: true }}
@@ -510,15 +517,15 @@ const Home = () => {
                       <p className="text-gray-700 dark:text-gray-300 text-center">
                         <span className="font-medium">3 years, 2 months, 15 days</span> until delivery
                       </p>
-                      <motion.div 
+                      <motion.div
                         className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mt-3 overflow-hidden"
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5, delay: 0.6 }}
                       >
-                        <motion.div 
-                          className="bg-gradient-to-r from-indigo-400 to-indigo-600 h-2 rounded-full" 
+                        <motion.div
+                          className="bg-gradient-to-r from-indigo-400 to-indigo-600 h-2 rounded-full"
                           initial={{ width: 0 }}
                           whileInView={{ width: '35%' }}
                           viewport={{ once: true }}
@@ -536,9 +543,9 @@ const Home = () => {
                     transition={{ duration: 0.5, delay: 0.4 }}
                     className="w-full h-full flex items-center justify-center"
                   >
-                    <img 
-                      src={image9} 
-                      alt="Waiting period" 
+                    <img
+                      src={image9}
+                      alt="Waiting period"
                       className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
                     />
                   </motion.div>
@@ -555,16 +562,16 @@ const Home = () => {
                     transition={{ duration: 0.5, delay: 0.4 }}
                     className="w-full h-full flex items-center justify-center"
                   >
-                    <img 
-                      src="/images/family-sharing.jpg" 
-                      alt="Message delivery" 
+                    <img
+                      src={image6}
+                      alt="Message delivery"
                       className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
                     />
                   </motion.div>
                 </div>
                 <div className="relative pl-12 md:pl-16">
                   {/* Circle indicator with pulse animation */}
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
@@ -576,7 +583,7 @@ const Home = () => {
                       <div className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-30"></div>
                     </div>
                   </motion.div>
-                  <motion.h3 
+                  <motion.h3
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -585,7 +592,7 @@ const Home = () => {
                   >
                     Delivery Moment
                   </motion.h3>
-                  <motion.p 
+                  <motion.p
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
@@ -618,7 +625,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-      
+
       {/* About Us Section */}
       <section className="py-20 bg-gray-50 dark:bg-black dark:text-white">
         <div className="container mx-auto px-4">
@@ -631,17 +638,17 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">              <div className="flex items-start">
-                <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-900 rounded-full p-3 mr-4">
-                  <FaUsers className="text-indigo-600 dark:text-indigo-400 text-xl" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Our Mission</h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    To provide a secure and reliable platform for preserving your most important messages
-                    and ensuring they reach their intended recipients at the perfect moment.
-                  </p>
-                </div>
+              <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-900 rounded-full p-3 mr-4">
+                <FaUsers className="text-indigo-600 dark:text-indigo-400 text-xl" />
               </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Our Mission</h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  To provide a secure and reliable platform for preserving your most important messages
+                  and ensuring they reach their intended recipients at the perfect moment.
+                </p>
+              </div>
+            </div>
 
               <div className="flex items-start">
                 <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-900 rounded-full p-3 mr-4">
@@ -679,8 +686,8 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>     
-      
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-900 via-indigo-700 to-indigo-500 text-white">
         <div className="container mx-auto px-4 text-center">

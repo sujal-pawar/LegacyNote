@@ -40,7 +40,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen flex py-16 items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md dark:bg-gray-800 mx-4">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md dark:bg-black mx-4">
         <div className="mb-6">
           <Link
             to="/login"
