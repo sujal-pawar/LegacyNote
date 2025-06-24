@@ -33,7 +33,7 @@ export default function MacbookScrollDemo() {
             <MacbookScroll
                 title={
                     <span className="text-5xl font-bold text-gray-800 dark:text-gray-200">
-                        <span className="text-[#403BB5]">Let your words travel through time.</span><br />
+                        <span className="text-[#4F47E3]">Let your words travel through time.</span><br />
                         <span className="text-4xl font-medium">Memories that wait for you.</span>
                     </span>
                 }
