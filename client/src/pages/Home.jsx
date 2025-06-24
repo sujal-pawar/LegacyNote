@@ -12,7 +12,9 @@ import image6 from '../assets/images/6.jpg';
 import image7 from '../assets/images/7.jpg';
 import image8 from '../assets/images/8.jpg'
 import image9 from '../assets/images/9.png'
+import image11 from '../assets/images/11.png'
 import EmotionalCarousel from '../components/EmotionalCarousel';
+import { IconLoader, IconLoader2 } from '@tabler/icons-react';
 
 
 
@@ -41,14 +43,7 @@ const Home = () => {
       title: 'Health Milestone Message',
       quote: "After a grueling battle with cancer, I found a letter I had written to myself before treatment began. It spoke of hope, strength, and the will to fight. Reading it post-recovery was an emotional release, acknowledging the pain endured and the victory achieved. It was a testament to my journey and the power of self-belief.",
       author: '— Priya, 42',
-    },
-    {
-      src: image1,
-      alt: 'Graduation celebration',
-      title: 'Graduation Day Surprise',
-      quote: "When I graduated from college, I thought the day would be bittersweet without my father, who had passed away when I was 15. But then, a letter arrived—written by him years earlier. He had planned for this moment, leaving words of pride and encouragement that made me feel his presence. It was as if he was there, cheering me on, reminding me of his unwavering belief in me. That message turned my tears of sorrow into tears of joy.",
-      author: '— Jamie, 23',
-    },
+    },    
     {
       src: image2,
       alt: 'Wedding day message',
@@ -63,13 +58,7 @@ const Home = () => {
       quote: "Starting my first job was nerve-wracking. As I sat at my new desk, a scheduled email popped up—a note from my college self. It was filled with dreams, aspirations, and a reminder of my resilience. Reading it reignited my confidence and reminded me of the passion that led me here. It was the pep talk I didn't know I needed.",
       author: '— Ayesha, 27',
     },
-    {
-      src: image6,
-      alt: 'Retirement reflections',
-      title: 'Retirement Reflections',
-      quote: "On my retirement day, I opened a time capsule I had created at 25. Inside was a letter filled with youthful dreams and ambitions. Reflecting on my career, I realized how many of those aspirations I had achieved. It was a profound moment of gratitude, recognizing the growth and accomplishments over the decades.",
-      author: '— Robert, 65',
-    },
+   
   ];
 
 
@@ -184,7 +173,14 @@ const Home = () => {
             </motion.div>
           </motion.div>
         </div>
-      </section>            
+      </section>         
+
+      {/* MacbookScroll Demo Section - Hidden on mobile */}
+      <div className="w-full hidden md:block bg-white dark:bg-gray-900">
+        <Suspense fallback={<div className="h-96 flex items-center justify-center dark:bg-black text-gray-700 dark:text-gray-300"><IconLoader2 className="animate-spin" /></div>}>
+          {React.createElement(lazy(() => import('../components/MacbookScrollDemo')))}
+        </Suspense>
+      </div>   
 
       {/* Features Section */}
       <section className="py-20 bg-gray-50 dark:bg-black dark:text-white">
@@ -300,17 +296,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-      {/* MacbookScroll Demo Section - Hidden on mobile */}
-      <div className="w-full hidden md:block">
-        <Suspense fallback={<div className="h-96 flex items-center justify-center">Loading presentation...</div>}>
-          {React.createElement(lazy(() => import('../components/MacbookScrollDemo')))}
-        </Suspense>
-      </div>
-
-      {/* Emotional Deliveries Carousel */}
-      <div className="overflow-hidden">
-        <EmotionalCarousel stories={emotionalStories} />
-      </div>
+      
 
       {/* Timeline Showcase */}
       <section className="py-20 bg-white dark:bg-black overflow-hidden">
@@ -413,7 +399,7 @@ const Home = () => {
                     className="w-full h-full flex items-center justify-center"
                   >
                     <img
-                      src={image8}
+                      src={image11}
                       alt="Secure encryption"
                       className="w-4/5 max-h-64 object-cover rounded-lg shadow-lg"
                     />
@@ -625,6 +611,11 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+       {/* Emotional Deliveries Carousel */}
+      <div className="overflow-hidden">
+        <EmotionalCarousel stories={emotionalStories} />
+      </div>
 
       {/* About Us Section */}
       <section className="py-20 bg-gray-50 dark:bg-black dark:text-white">
