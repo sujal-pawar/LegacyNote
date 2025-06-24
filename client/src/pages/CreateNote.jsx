@@ -379,7 +379,7 @@ const CreateNote = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-black dark:to-black transition-colors duration-200">
       {/* Top navigation bar */}
       <div className="bg-white dark:bg-black shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
         <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">

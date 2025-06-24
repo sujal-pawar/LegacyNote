@@ -49,7 +49,7 @@ const NotFound = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-black dark:to-black transition-colors duration-200">
       <div className="container mx-auto py-16 px-6 max-sm:px-4">
         <motion.div 
           variants={containerVariants}

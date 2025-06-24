@@ -193,7 +193,7 @@ const Dashboard = () => {
       animate="visible"
       exit="exit"
       variants={containerVariants}
-      className="min-h-screen py-16 px-6 max-sm:px-4 bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 transition-colors duration-200"
+      className="min-h-screen py-16 px-6 max-sm:px-4 bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-black dark:to-black transition-colors duration-200"
     >
       <div className="container mx-auto">
         {/* Header Section */}
