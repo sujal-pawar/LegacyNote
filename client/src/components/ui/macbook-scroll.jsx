@@ -23,7 +23,7 @@ import { IconWorld } from "@tabler/icons-react";
 import { IconCommand } from "@tabler/icons-react";
 import { IconCaretLeftFilled } from "@tabler/icons-react";
 import { IconCaretDownFilled } from "@tabler/icons-react";
-
+import logo from "@/assets/logo.png"
 
 export const MacbookScroll = ({
   src,
@@ -151,7 +151,7 @@ export const Lid = ({
           className="absolute inset-0 flex items-center justify-center rounded-lg bg-[#010101]"
         >
           <span className="text-white">
-            <AceternityLogo />
+            <img src={logo} alt="logo" height={50} width={50} />
           </span>
         </div>
       </div>
