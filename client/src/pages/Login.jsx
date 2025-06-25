@@ -163,7 +163,7 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-hidden">      
+    <div className="h-screen w-screen flex bg-gray-50 dark:bg-black transition-colors duration-200 overflow-hidden">      
 
       {/* 50/50 split container - no rounded corners and full height */}
       <div className="flex flex-row w-full h-full">

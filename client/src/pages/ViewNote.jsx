@@ -322,7 +322,7 @@ const ViewNote = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-black transition-colors duration-200">
         <div className="flex items-center text-gray-700 dark:text-gray-300">
           <FaSpinner className="animate-spin text-3xl text-indigo-600 dark:text-indigo-400 mr-2" />
           <span>Loading note...</span>
@@ -333,7 +333,7 @@ const ViewNote = () => {
 
   if (error || !note) {
     return (
-      <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="min-h-screen py-16 max-sm:py-8 flex items-center justify-center bg-gray-50 dark:bg-black transition-colors duration-200">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto bg-white dark:bg-black p-8 rounded-xl shadow-lg">
             <div className="flex items-center text-red-600 dark:text-red-400 mb-4">
@@ -490,11 +490,11 @@ const ViewNote = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center min-h-[calc(100vh-69px)] bg-gray-50 dark:bg-gray-900">
+        <div className="flex items-center justify-center min-h-[calc(100vh-69px)] bg-gray-50 dark:bg-black">
           <FaSpinner className="w-12 h-12 animate-spin text-indigo-600 dark:text-indigo-400" />
         </div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-69px)] px-4 bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-69px)] px-4 bg-gray-50 dark:bg-black">
           <div className="text-red-500 dark:text-red-400 text-xl mb-4 p-6 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">{error}</div>
           <Link
             to="/dashboard"
@@ -706,7 +706,7 @@ const ViewNote = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
             <div className="fixed inset-0 transition-opacity">
-              <div className="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
+              <div className="absolute inset-0 bg-gray-500 dark:bg-black opacity-75"></div>
             </div>
             <div className="inline-block w-full sm:max-w-lg align-bottom bg-white dark:bg-black rounded-lg text-left overflow-hidden shadow-xl transform transition-all mx-4 sm:my-8 sm:align-middle">
               <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">

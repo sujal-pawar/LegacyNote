@@ -237,7 +237,7 @@ const EditNote = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-black">
         <FaSpinner className="w-12 h-12 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
@@ -245,7 +245,7 @@ const EditNote = () => {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-gray-50 dark:bg-black">
         <div className="text-red-500 dark:text-red-400 text-xl mb-4">{error}</div>
         <Link
           to="/dashboard"
@@ -332,11 +332,11 @@ const EditNote = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center min-h-[calc(100vh-69px)] bg-gray-50 dark:bg-gray-900">
+        <div className="flex items-center justify-center min-h-[calc(100vh-69px)] bg-gray-50 dark:bg-black">
           <FaSpinner className="w-12 h-12 animate-spin text-indigo-600 dark:text-indigo-400" />
         </div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-69px)] px-4 bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-69px)] px-4 bg-gray-50 dark:bg-black">
           <div className="text-red-500 dark:text-red-400 text-xl mb-4 p-6 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">{error}</div>
           <Link
             to="/dashboard"
