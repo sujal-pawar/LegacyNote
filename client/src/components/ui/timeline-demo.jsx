@@ -69,15 +69,16 @@ export default function TimelineDemo() {
                     </div>         
                     <div className="grid grid-cols-2 gap-4">
                         <img
-                            src={image9}
-                            alt="Waiting period"
-                            className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(79,_70,_229,_0.1),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(79,_70,_229,_0.1)] md:h-44 lg:h-60"
-                        />
-                        <img
                             src={image11}
                             alt="Waiting period"
                             className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(79,_70,_229,_0.1),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(79,_70,_229,_0.1)] md:h-44 lg:h-60"
                         />
+                        <img
+                            src={image9}
+                            alt="Waiting period"
+                            className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(79,_70,_229,_0.1),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(79,_70,_229,_0.1)] md:h-44 lg:h-60"
+                        />
+                        
                     </div>
                 </div>
             ),
