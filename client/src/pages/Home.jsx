@@ -313,7 +313,7 @@ const Home = () => {
       </section>     
       
       {/* Timeline Showcase */}
-      <section className="py-6 bg-white dark:bg-black overflow-hidden">
+      <section className="py-6 bg-gray-50 dark:bg-black overflow-hidden">
         <div className="container mx-auto px-4">        
           {/* Modern Timeline Component */}
           <TimelineDemo />
