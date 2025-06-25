@@ -24,17 +24,15 @@ export const Timeline = ({ data }) => {
 
   return (
     <div
-      className="w-full bg-gray-50 dark:bg-gray-900 font-sans md:px-10"
+      className="w-full bg-gray-50 dark:bg-black font-sans md:px-10"
       ref={containerRef}
-    >      <div className="max-w-7xl mx-auto py-20 px-4 md:px-8 lg:px-10">
-        <h2 className="text-lg md:text-4xl mb-4 text-gray-900 dark:text-gray-100 max-w-4xl">
-          Your Message's Journey
-        </h2>
-        <p className="text-gray-700 dark:text-gray-300 text-sm md:text-base max-w-sm">
-          Follow how your heartfelt messages travel from creation to delivery
+    >
+      <div className="text-center mb-2">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl dark:text-white lg:text-5xl font-bold mb-6">From Creation to Delivery</h2>
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          Follow the journey of your messages from inception to their meaningful delivery
         </p>
       </div>
-
       <div ref={ref} className="relative max-w-7xl mx-auto pb-20">
         {data.map((item, index) => (
           <div
