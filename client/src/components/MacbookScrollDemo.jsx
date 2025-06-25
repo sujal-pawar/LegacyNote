@@ -29,7 +29,7 @@ export default function MacbookScrollDemo() {
     }
 
     return (
-        <div className="overflow-hidden dark:bg-black bg-white w-full">
+        <div className="overflow-hidden dark:bg-black bg-gray-50 w-full">
             <MacbookScroll
                 title={
                     <span className="text-5xl font-bold text-gray-800 dark:text-gray-200">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { FaUser, FaEnvelope, FaLock, FaCheck, FaClock, FaShieldAlt, FaGlobe } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaCheck, FaClock, FaShieldAlt, FaGlobe, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
@@ -106,10 +106,18 @@ const Register = () => {
 
         {/* Right Side - Registration Form - exactly 50% but on mobile takes full width */}
         <div className="w-1/2 max-md:w-full h-full p-8 bg-gradient-to-br from-gray-800 via-indigo-700 to-gray-900 lg:p-12 flex items-center justify-center overflow-y-auto">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white dark:text-gray-200">Create an Account</h2>
-              <p className="mt-2 text-gray-200 dark:text-gray-400">Begin saving your memories for the future</p>
+          <div className="w-full max-w-md">            <div className="flex items-center mb-8">
+              <Link 
+                to="/" 
+                className="p-2 mr-2 rounded-full text-white hover:bg-indigo-600 transition-colors duration-200"
+                aria-label="Back to home"
+              >
+                <FaArrowLeft className="w-5 h-5" />
+              </Link>
+              <div className="text-center flex-grow">
+                <h2 className="text-3xl font-bold text-white dark:text-gray-200">Create an Account</h2>
+                <p className="mt-2 text-gray-200 dark:text-gray-400">Begin saving your memories for the future</p>
+              </div>
             </div>
 
             {showError && (
