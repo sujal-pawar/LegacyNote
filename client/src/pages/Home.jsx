@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaClock, FaLock, FaEnvelope, FaUserClock, FaCalendarAlt, FaRegClock, FaShieldAlt, FaHeart, FaUsers } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
@@ -21,6 +21,13 @@ import { IconLoader, IconLoader2 } from '@tabler/icons-react';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -99,7 +106,7 @@ const Home = () => {
   return (
     <div className="w-full overflow-x-hidden">
       {/* Hero Section */}
-      <section className="relative py-20 max-sm:py-6 bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 text-white overflow-hidden">
+      <section className="relative py-20 max-sm:py-6 bg-gradient-to-r from-indigo-900 to-indigo-600 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
         <div className="container mx-auto px-4 relative">
           <motion.div

@@ -16,6 +16,21 @@ export default function TimelineDemo() {
                     <h2 className="mb-4 text-xl text-gray-800 md:text-2xl font-bold dark:text-gray-200">
                         Craft your message. Choose the date. Seal it for the future
                     </h2>
+                     
+                      <div className="mb-8 md:overflow-visible overflow-x-auto scrollbar-hide">
+                        <div className="flex gap-3 whitespace-nowrap px-1">
+                            {[
+                                "Customize your message",
+                            ].map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-zinc-950 border px-4 py-2 rounded-full shadow-sm"
+                                >                                    
+                                    {item}
+                                </div>
+                            ))}
+                        </div>
+                    </div>     
                     <div className="grid grid-cols-2 gap-4">
                         <img
                             src={image4}
@@ -37,7 +52,21 @@ export default function TimelineDemo() {
                 <div>
                     <h2 className="mb-4 text-xl text-gray-800 md:text-2xl font-bold dark:text-gray-200">
                         Safely stored and encrypted, your messages are delivered only when the time is right.
-                    </h2>                   
+                    </h2>          
+                     <div className="mb-8 md:overflow-visible overflow-x-auto scrollbar-hide">
+                        <div className="flex gap-3 whitespace-nowrap px-1">
+                            {[
+                                "End-to-end encryption",                                                                
+                            ].map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-zinc-950 border px-4 py-2 rounded-full shadow-sm"
+                                >                                    
+                                    {item}
+                                </div>
+                            ))}
+                        </div>
+                    </div>         
                     <div className="grid grid-cols-2 gap-4">
                         <img
                             src={image9}
@@ -63,10 +92,7 @@ export default function TimelineDemo() {
                     <div className="mb-8 md:overflow-visible overflow-x-auto scrollbar-hide">
                         <div className="flex gap-3 whitespace-nowrap px-1">
                             {[
-                                "End-to-end encryption",
-                                "Email notification",
-                                "Secure access link",                                
-                                "Delivery confirmation",                                
+                                "Email notification",                                                             
                             ].map((item, index) => (
                                 <div
                                     key={index}

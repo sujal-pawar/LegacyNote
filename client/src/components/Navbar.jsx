@@ -54,12 +54,14 @@ const Navbar = () => {
           {/* Desktop menu */}
           <div className="hidden md:flex md:items-center md:ml-6">
             <div className="flex space-x-4">
-              <Link
-                to="/"
-                className="px-3 py-2 rounded-md text-md text-white font-medium flex items-center hover:bg-gray-100 hover:text-indigo-900 transition-colors duration-200"
-              >
-                <FaHome className="mr-1" /> Home
-              </Link>
+              {!isAuthenticated && (
+                <Link
+                  to="/"
+                  className="px-3 py-2 rounded-md text-md text-white font-medium flex items-center hover:bg-gray-100 hover:text-indigo-900 transition-colors duration-200"
+                >
+                  Home
+                </Link>
+              )}
 
               {isAuthenticated ? (
                 <>
@@ -133,28 +135,26 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 ">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link
-              to="/"
-              className="block px-3 py-2 rounded-md text-base text-white font-medium flex items-center hover:bg-indigo-700 dark:hover:bg-gray-700 transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <FaHome className="mr-2" /> Home
-            </Link>
+        <div className="md:hidden bg-gradient-to-r from-indigo-900 to-indigo-600 to-indigo-500 ">          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {!isAuthenticated && (              <Link
+                to="/"
+                className="px-3 py-2 rounded-md text-base text-white font-medium flex items-center hover:bg-indigo-700 dark:hover:bg-gray-700 transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+            )}
 
             {isAuthenticated ? (
-              <>
-                <Link
+              <>                <Link
                   to="/dashboard"
-                  className="block px-3 py-2 text-white rounded-md text-base font-medium hover:bg-indigo-700 dark:hover:bg-gray-700 flex items-center transition-colors duration-200"
+                  className="px-3 py-2 text-white rounded-md text-base font-medium hover:bg-indigo-700 dark:hover:bg-gray-700 flex items-center transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <FaUserCircle className="mr-2" /> Dashboard
-                </Link>
-                <Link
+                </Link>                <Link
                   to="/create-note"
-                  className="block px-3 py-2 text-white rounded-md text-base font-medium hover:bg-indigo-700 dark:hover:bg-gray-700 flex items-center transition-colors duration-200"
+                  className="px-3 py-2 text-white rounded-md text-base font-medium hover:bg-indigo-700 dark:hover:bg-gray-700 flex items-center transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <FaPlus className="mr-2" /> New Note
@@ -173,7 +173,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-white flex items-center hover:bg-indigo-700 dark:hover:bg-gray-700 transition-colors duration-200"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-white flex items-center hover:bg-indigo-700  transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <FaLock className="mr-2" /> Login
