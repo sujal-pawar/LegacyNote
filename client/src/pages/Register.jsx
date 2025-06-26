@@ -140,7 +140,7 @@ const Register = () => {
                       name="name"
                       type="text"
                       className="w-full px-3 py-2 border rounded-lg dark:border-gray-300 dark:bg-transparent dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="John Doe"
+                      placeholder="Your Name"
                     />
                     <ErrorMessage name="name" component="div" className="text-sm text-red-600 dark:text-red-300 mt-1" />
                   </div>
