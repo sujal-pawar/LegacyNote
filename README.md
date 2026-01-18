@@ -274,9 +274,6 @@ Our application is hosted using the following services:
 - **Secure File Handling**: Validation and sanitization of uploaded files
 - **Cloudinary Secure URLs**: HTTPS-only media delivery
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
